@@ -23,3 +23,69 @@
 .mx-transactions td > div > a {
   @apply text-blue-600;
 }
+
+.bg-dino {
+  background: linear-gradient(180deg, #89e7e7 0%, #fffbf5 100%);
+}
+
+.dinocard-wrapper {
+  width: 768px;
+  margin-bottom: 30px;
+}
+.mintGazTitle img {
+  width: 399px;
+  padding: 24px;
+}
+
+.dinocard {
+  background: #fffbf5;
+  max-width: 672px;
+  border: 1px solid #e0e6df;
+  margin: 30px auto 30px auto;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 0.75rem;
+}
+.sub-dinocard {
+  width: 200px;
+  flex: 1; /* Les divs prennent la même largeur */
+  padding: 10px;
+  box-sizing: border-box;
+
+  /* justify-content: center; */
+  justify-items: center;
+  display: grid;
+  align-content: space-evenly;
+}
+@media screen and (max-width: 800px) {
+  .dinocard-wrapper {
+    max-width: 361px; /* Par exemple, prendre 100% de la largeur de l'écran */
+  }
+  .mintGazTitle img {
+    width: 306px;
+  }
+
+  .dinocard {
+    display: block;
+  }
+  .sub-dinocard {
+    width: 100%; /* Chaque div prend toute la largeur */
+  }
+}
+
+.mintGazTitle {
+  /* Yellow */
+  width: 100%;
+  height: 100px;
+  justify-content: center;
+  display: grid;
+}
+
+/* .box-item {
+  justify-content: center;
+} */
+
+:root {
+  --my-yellow: rgba(245, 237, 67, 1); /* Déclaration de la variable HSL */
+  --my-yellow-hover: rgba(245, 237, 67, 0.6);
+}

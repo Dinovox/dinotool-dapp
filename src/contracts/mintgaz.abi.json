@@ -1,0 +1,113 @@
+{
+  "buildInfo": {
+    "rustc": {
+      "version": "1.76.0-nightly",
+      "commitHash": "d86d65bbc19b928387f68427fcc3a0da498d8a19",
+      "commitDate": "2023-12-10",
+      "channel": "Nightly",
+      "short": "rustc 1.76.0-nightly (d86d65bbc 2023-12-10)"
+    },
+    "contractCrate": {
+      "name": "mintgaz",
+      "version": "0.0.0"
+    },
+    "framework": {
+      "name": "multiversx-sc",
+      "version": "0.47.8"
+    }
+  },
+  "docs": [
+    "An empty contract. To be used as a template when starting a new contract from scratch."
+  ],
+  "name": "Mintgaz",
+  "constructor": {
+    "inputs": [],
+    "outputs": []
+  },
+  "endpoints": [
+    {
+      "name": "upgrade",
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "fund",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "payment_token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "payment_price",
+          "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "buy",
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "mintable",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Mintable"
+        }
+      ]
+    },
+    {
+      "name": "hasBuyed",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "addr",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    }
+  ],
+  "esdtAttributes": [],
+  "hasCallback": false,
+  "types": {
+    "Mintable": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "payment_token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "payment_price",
+          "type": "BigUint"
+        }
+      ]
+    }
+  }
+}

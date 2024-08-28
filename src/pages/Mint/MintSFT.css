@@ -1,0 +1,102 @@
+.mint-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 50px auto;
+  background-color: #7de9f2;
+  border: 2px solid #f7ea43;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.mint-title {
+  text-align: center;
+  color: rgb(255 119 75);
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.mint-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: 400;
+  font-family: Manrope;
+  line-height: 36px;
+  /* color: rgb(255 119 75); */
+}
+
+.price-input {
+  width: 60px;
+  padding: 5px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #fff;
+}
+
+.text-label {
+  color: rgb(0, 0, 0);
+  margin-right: 10px;
+  text-align: center;
+}
+
+.token-label {
+  margin-left: 10px;
+  color: #f7ea43;
+}
+
+.mint-image {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.mint-image img {
+  width: 200px;
+  border: 2px solid #f7ea43;
+  border-radius: 10px;
+}
+
+.mint-button {
+  background-color: #f7ea43;
+  color: #7de9f2;
+  font-size: 18px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.mint-button:hover {
+  background-color: #ffdb31;
+}
+
+.identifier {
+  margin-left: 10px;
+  color: #847f73;
+}
+
+.dinoButton {
+  background-color: var(--my-yellow);
+  font-family: Bit Cell;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 48px;
+  letter-spacing: -0.02em;
+  text-align: left;
+  height: 60px;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+}
+
+.dinoButton:hover {
+  background-color: var(--my-yellow-hover);
+}

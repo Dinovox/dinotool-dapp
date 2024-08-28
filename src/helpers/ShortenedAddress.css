@@ -1,0 +1,28 @@
+.shortened-address {
+  display: inline-flex; /* Change to inline-flex for inline display */
+  align-items: center;
+  font-family: Arial, sans-serif;
+}
+
+.address-text {
+  margin-right: 5px;
+}
+
+.copy-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.copy-button:hover {
+  color: #007bff;
+}
+
+.copied-text {
+  margin-left: 10px;
+  font-size: 14px;
+  color: green;
+}

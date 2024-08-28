@@ -1,27 +1,29 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { Transaction } from './Transaction';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
-import { ActionBuy } from './../Mint/Transaction/ActionBuy';
+import { ActionBuy } from './Transaction/ActionBuy';
 import { useGetUserHasBuyed } from 'pages/Dashboard/widgets/MintGazAbi/hooks/useGetUserHasBuyed';
-import { useGetNftInformations } from './../Mint/Transaction/helpers/useGetNftInformation';
+import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import { formatAmount } from 'utils/sdkDappUtils';
 import toHex from 'helpers/toHex';
-import './../Mint/MintSFT.css';
-import { useGetIsLoggedIn } from 'hooks';
-import { MxLink } from 'components';
-import { RouteNamesEnum } from 'localConstants';
+import './MintSFT.css';
+import ShortenedAddress from 'helpers/shortenedAddress';
+import { useGetAccount } from 'hooks';
 
-export const Home = () => {
+export const Mint = () => {
   const mintable = useGetMintable();
+  const { hasBuyed, esdtAmount } = useGetUserHasBuyed();
+
   const nft_information = useGetNftInformations(
     mintable?.token_identifier,
     mintable?.nonce?.toFixed()
   );
+
   console.log(mintable);
+  console.log(hasBuyed, esdtAmount);
   console.log(nft_information);
-  const isLoggedIn = useGetIsLoggedIn();
   return (
-    <AuthRedirectWrapper requireAuth={false}>
+    <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
           <div className='mintGazTitle'>
@@ -32,6 +34,17 @@ export const Home = () => {
                */}
           <div className='dinocard'>
             <div className='sub-dinocard box-item'>
+              <div className='info-item'>
+                <span className='text-label'>Wallet:</span>{' '}
+                {formatAmount({
+                  input: esdtAmount.toFixed(),
+                  decimals: 18,
+                  digits: 2,
+                  showLastNonZeroDecimal: false,
+                  addCommas: true
+                })}{' '}
+                <span className='identifier'> Graou</span>
+              </div>
               <div className='info-item'>
                 <span className='text-label'>Price: </span>
                 {formatAmount({
@@ -133,12 +146,22 @@ export const Home = () => {
           <div
             style={{ width: '100%', justifyContent: 'center', display: 'grid' }}
           >
-            <MxLink
+            <div className='text-label' style={{ margin: 'auto' }}>
+              {mintable.amount.isGreaterThan(0) ? (
+                <ActionBuy
+                  price={mintable?.payment_price}
+                  hasBuyed={hasBuyed}
+                />
+              ) : (
+                <> SOLD GRAOUT</>
+              )}
+            </div>
+            {/* <MxLink
               className='dinoButton  rounded-lg px-3 py-2 text-center hover:no-underline my-0 bg-blue-600 '
               to={RouteNamesEnum.unlock}
             >
               Connect
-            </MxLink>
+            </MxLink> */}
           </div>{' '}
         </div>
       </PageWrapper>

@@ -1,3 +1,5 @@
+const { reverse } = require('dns');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -9,7 +11,7 @@ module.exports = {
     },
     backgroundImage: {
       // eslint-disable-next-line quotes
-      'mvx-white': "url('../multiversx-white.svg')"
+      'mvx-white': "url('../multiversx-white.webp')"
     }
   },
   plugins: []

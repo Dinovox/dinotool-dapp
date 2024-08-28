@@ -38,10 +38,10 @@ const WebWalletLoginButton = USE_WEB_WALLET_CROSS_WINDOW
 export const Unlock = () => {
   const navigate = useNavigate();
   const commonProps: CommonPropsType = {
-    callbackRoute: RouteNamesEnum.dashboard,
+    callbackRoute: RouteNamesEnum.mint,
     nativeAuth,
     onLoginRedirect: () => {
-      navigate(RouteNamesEnum.dashboard);
+      navigate(RouteNamesEnum.mint);
     }
   };
 
