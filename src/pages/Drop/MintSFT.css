@@ -126,3 +126,177 @@
 .dinoButton:hover {
   background-color: var(--my-yellow-hover);
 }
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input,
+select,
+textarea {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
+
+textarea {
+  resize: vertical;
+}
+.tooltip-inline {
+  position: relative;
+  display: inline-block;
+  margin-left: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tooltip-inline .tooltiptext-inline {
+  visibility: hidden;
+  width: 350px; /* Agrandir la tooltip à 350px */
+  max-width: 100vw; /* S'assurer que la tooltip ne dépasse pas la largeur de l'écran */
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Positionner la tooltip au-dessus de l'élément */
+  left: 50%;
+  transform: translateX(-50%); /* Centrer la tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+  word-wrap: break-word; /* Pour éviter que le texte dépasse */
+}
+
+.tooltip-inline .tooltiptext-inline::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip-inline:hover .tooltiptext-inline {
+  visibility: visible;
+  opacity: 1;
+}
+
+.address-info {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: 'Arial', sans-serif;
+  color: #333;
+}
+
+.address-info h3 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.address-info .highlight {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.address-info ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.address-info li {
+  background-color: #fff;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.address-info li:nth-child(even) {
+  background-color: #f1f1f1;
+}
+
+.address-info .amount {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.invalid-addresses-container {
+  background-color: #ffe6e6; /* Un fond légèrement rouge pour indiquer une erreur */
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.1); /* Une légère ombre rouge */
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: 'Arial', sans-serif;
+  color: #a94442; /* Rouge foncé pour le texte */
+  word-wrap: break-word; /* Forcer le retour à la ligne pour les longues chaînes */
+  overflow-wrap: break-word; /* Règle supplémentaire pour garantir la coupure */
+  word-break: break-all;
+}
+
+.invalid-addresses-container h3 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: #a94442; /* Même rouge pour le titre */
+}
+
+.highlight-error {
+  color: #d9534f; /* Rouge vif pour le nombre d'adresses invalides */
+  font-weight: bold;
+}
+
+.invalid-addresses-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.invalid-address-item {
+  background-color: #fbeaea;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(255, 0, 0, 0.1);
+}
+
+.invalid-address-item:nth-child(even) {
+  background-color: #f5dcdc;
+}
+
+.invalid-addresses-container .invalid-address-item {
+  font-weight: bold;
+  color: #a94442;
+}

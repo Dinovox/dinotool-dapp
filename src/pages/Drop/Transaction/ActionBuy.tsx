@@ -84,13 +84,10 @@ export const ActionBuy = ({
             textColor=''
             fontSize='32px'
             fontFamily='Bit Cell'
-            text={
-              submitted ? 'Submited' : 'Submit ' + batches.length + ' batchs'
-            }
-            // disabled={submitted ? true : false}
+            text={submitted ? 'Submited' : 'Submit '}
+            disabled={disabled || submitted ? true : false}
             onClick={sendFundTransaction}
             padding='20px'
-            disabled={disabled}
           />
         </>
       ) : (

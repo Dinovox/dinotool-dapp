@@ -62,12 +62,13 @@ export const Drop = () => {
       });
       setDecimals(new BigNumber(decimals));
     }
+    setSubmitted(false);
   };
 
   const handleAddressChange = (e: any) => {
-    // if (submitted) {
-    //   return;
-    // }
+    if (submitted) {
+      return;
+    }
     const input = e.target.value;
     setAddresses(input);
 
@@ -165,19 +166,28 @@ export const Drop = () => {
           style={{ textAlign: 'center' }}
         >
           {' '}
-          <div className='mx-auto '>
-            <span>Use with care</span>
+          <div className='mintGazTitle dinoTitle'>DROP (beta)</div>
+          <div className='mx-auto' style={{ margin: '10px' }}>
+            <span>Envoyer des tokens ou des sft à plusieurs adresses</span>
           </div>
-          <div className='mintGazTitle dinoTitle'>BETA DROP</div>
           <div className=''>
             <div className=''>
-              <div className=''>
+              <div className='form-container'>
                 {userNftBalance && (
                   <>
-                    <div>
-                      <label htmlFor='nft'>Select NFT/ESDT: </label>
-                      <br />
+                    {/* Section pour le select de NFT/ESDT */}
+                    <div className='form-group'>
+                      <label htmlFor='nftSelect'>
+                        Sélectionner SFT/ESDT{' '}
+                        <span className='tooltip-inline'>
+                          (ℹ)
+                          <span className='tooltiptext-inline'>
+                            Sélectionner le SFT ou l'ESDT à envoyer.
+                          </span>
+                        </span>{' '}
+                      </label>
                       <select
+                        id='nftSelect'
                         value={`${
                           selectedNFT.index
                         }|${selectedNFT?.identifier}|${
@@ -189,195 +199,280 @@ export const Drop = () => {
                         }`}
                         onChange={handleNFT}
                       >
-                        {/* Option par défaut */}
                         <option key={0} value=''>
                           Select
                         </option>
 
-                        {/* Boucle sur userNftBalance */}
-                        {userNftBalance &&
-                          userNftBalance?.map(
-                            (
-                              item: {
-                                identifier: string;
-                                collection: string;
-                                balance: BigNumber;
-                                nonce: string;
-                                decimals: BigNumber;
-                              },
-                              index: number
-                            ) => (
-                              <option
-                                key={`1${index}`}
-                                value={`1${index}|${item?.identifier}|${
-                                  item?.collection
-                                    ? item?.collection
-                                    : item?.identifier
-                                }|${item?.nonce}|${item?.balance}|${
-                                  item?.decimals ? item?.decimals : 0
-                                }`}
-                              >
-                                {item?.identifier}
-                              </option>
-                            )
-                          )}
+                        {/* Options from userNftBalance */}
+                        {userNftBalance?.map(
+                          (
+                            item: {
+                              identifier: string;
+                              collection: string;
+                              balance: BigNumber;
+                              nonce: string;
+                              decimals: BigNumber;
+                            },
+                            index: number
+                          ) => (
+                            <option
+                              key={`1${index}`}
+                              value={`1${index}|${item?.identifier}|${
+                                item?.collection
+                                  ? item?.collection
+                                  : item?.identifier
+                              }|${item?.nonce}|${item?.balance}|${
+                                item?.decimals ? item?.decimals : 0
+                              }`}
+                            >
+                              {item?.identifier}
+                            </option>
+                          )
+                        )}
 
-                        {/* Boucle sur userEsdtBalance */}
-                        {userEsdtBalance &&
-                          userEsdtBalance?.map(
-                            (
-                              item: {
-                                identifier: string;
-                                collection: string;
-                                balance: BigNumber;
-                                nonce: string;
-                                decimals: BigNumber;
-                              },
-                              index: number
-                            ) => (
-                              <option
-                                key={`2${index}`}
-                                value={`2${index}|${item?.identifier}|${
-                                  item?.collection
-                                    ? item?.collection
-                                    : item?.identifier
-                                }|${
-                                  item?.nonce ? item?.nonce : 0
-                                }|${item?.balance}|${
-                                  item?.decimals ? item?.decimals : 0
-                                }`}
-                              >
-                                {item?.identifier}
-                              </option>
-                            )
-                          )}
+                        {/* Options from userEsdtBalance */}
+                        {userEsdtBalance?.map(
+                          (
+                            item: {
+                              identifier: string;
+                              collection: string;
+                              balance: BigNumber;
+                              nonce: string;
+                              decimals: BigNumber;
+                            },
+                            index: number
+                          ) => (
+                            <option
+                              key={`2${index}`}
+                              value={`2${index}|${item?.identifier}|${
+                                item?.collection
+                                  ? item?.collection
+                                  : item?.identifier
+                              }|${
+                                item?.nonce ? item?.nonce : 0
+                              }|${item?.balance}|${
+                                item?.decimals ? item?.decimals : 0
+                              }`}
+                            >
+                              {item?.identifier}
+                            </option>
+                          )
+                        )}
                       </select>
-                      <div>
-                        <h3>Default qty:</h3>
-                        <input
-                          type='number'
-                          value={defaultQty.toString()}
-                          onChange={(e) =>
-                            setDefaultQty(new BigNumber(e.target.value))
-                          }
-                          min='1'
-                        />
-                      </div>
-                      {decimals.gt(0) && (
-                        <div>
-                          <h3>Decimals:</h3>
+                    </div>
+                    {selectedNFT.identifier && (
+                      <>
+                        <div className='form-group'>
+                          <label htmlFor='defaultQty'>
+                            Quantité par défaut{' '}
+                            <span className='tooltip-inline'>
+                              (ℹ)
+                              <span className='tooltiptext-inline'>
+                                La quantité par défaut pour chaque adresse.
+                                (Sauf si précisé dans la liste des adresses.)
+                              </span>
+                            </span>{' '}
+                          </label>
                           <input
                             type='number'
-                            value={decimals.toString()}
+                            id='defaultQty'
+                            value={defaultQty.toString()}
                             onChange={(e) =>
-                              setDecimals(new BigNumber(e.target.value))
+                              setDefaultQty(new BigNumber(e.target.value))
                             }
-                            disabled={true}
+                            disabled={submitted}
+                            min='1'
                           />
                         </div>
-                      )}
-                      {decimals.gt(0) && (
-                        <div>
-                          <h3>Convert Decimals:</h3>
-                          <input
-                            type='radio'
-                            name='useDecimals'
-                            value='true'
-                            checked={useDecimals}
-                            onChange={() => setUseDecimals(true)}
-                          />
-                          <label>Yes</label>
-                          <input
-                            type='radio'
-                            name='useDecimals'
-                            value='false'
-                            checked={!useDecimals}
-                            onChange={() => setUseDecimals(false)}
-                          />
-                          <label>No</label>
+                      </>
+                    )}
+
+                    {decimals.gt(0) && (
+                      <div className='form-group'>
+                        <label htmlFor='decimals'>
+                          Decimales{' '}
+                          <span className='tooltip-inline'>
+                            (ℹ)
+                            <span className='tooltiptext-inline'>
+                              Les ESDT sont divisibles jusqu'à 18 décimales.
+                              Cette valeur est définie par le créateur de
+                              l'ESDT.
+                            </span>
+                          </span>{' '}
+                        </label>
+                        <input
+                          type='number'
+                          id='decimals'
+                          value={decimals.toString()}
+                          onChange={(e) =>
+                            setDecimals(new BigNumber(e.target.value))
+                          }
+                          disabled
+                        />
+                      </div>
+                    )}
+                    {/* Convert Decimals (Yes/No), only shown if decimals > 0 */}
+                    {decimals.gt(0) && (
+                      <div className='form-group'>
+                        <label>
+                          Decimales (Oui/Non)
+                          <span className='tooltip-inline'>
+                            (ℹ)
+                            <span className='tooltiptext-inline'>
+                              Les quantités seront multipliées par le nombre de
+                              décimales de l'ESDT. Décochez cette case pour
+                              gérer les valeurs natives de l'ESDT.
+                            </span>
+                          </span>
+                        </label>{' '}
+                        <div className='radio-group'>
+                          <label>
+                            <input
+                              type='radio'
+                              name='useDecimals'
+                              value='true'
+                              checked={useDecimals}
+                              onChange={() => setUseDecimals(true)}
+                            />
+                            Yes
+                          </label>
+                          <label>
+                            <input
+                              type='radio'
+                              name='useDecimals'
+                              value='false'
+                              checked={!useDecimals}
+                              onChange={() => setUseDecimals(false)}
+                            />
+                            No
+                          </label>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </>
                 )}
+                {selectedNFT.identifier && (
+                  <>
+                    <div className='form-group'>
+                      <label htmlFor='addresses'>
+                        Liste des adresses et montants{' '}
+                        <span className='tooltip-inline'>
+                          (ℹ)
+                          <span className='tooltiptext-inline'>
+                            Coller la liste d'adresses auxquelles envoyer l'ESDT
+                            ou le SFT. Séparez chaque adresse par un retour à la
+                            ligne, une virgule ou un point-virgule. Vous pouvez
+                            définir montant spécfique pour chaque adresse en
+                            ajoutant un montant après l'adresse.
+                          </span>
+                        </span>
+                      </label>
+                      <textarea
+                        id='addresses'
+                        value={addresses}
+                        placeholder={
+                          'Collez les adresses ici :\n' +
+                          'erd17gzyp....lskyy74q036l6h \n' +
+                          'Vous pouvez définir une quantité pour chaque adresse :\n' +
+                          'erd1.... 10 \n' +
+                          'erd1.... 5'
+                        }
+                        onChange={(e) => setAddresses(e.target.value)}
+                        required
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          padding: '10px'
+                        }}
+                        disabled={submitted}
+                      />
+                    </div>
+                  </>
+                )}{' '}
               </div>
             </div>
             <br />
-            <div>
-              <textarea
-                id='addresses'
-                value={addresses}
-                placeholder={
-                  'Enter addresses separated by commas, semicolons, or newlines :\n' +
-                  'erd17gzypuhxvwa68dhwp3uzlrxxvja0gje9njmh92plh75slskyy74q036l6h \n' +
-                  'You may set qty for each address :\n' +
-                  'erd17gzypuhxvwa68dhwp3uzlrxxvja0gje9njmh92plh75slskyy74q036l6h 10'
-                }
-                // onChange={handleAddressChange}
-                onChange={(e) => setAddresses(e.target.value)}
-                required
-                disabled={false}
-                style={{ width: '100%', height: '200px', padding: '10px' }}
-              />
-            </div>
-            {invalidCount > 0 && (
-              <div style={{ overflow: 'hidden' }}>
-                <h3>Adresses Invalides : {invalidCount} </h3>
-                <ul>
-                  {invalidAddresses.map((line, index) => (
-                    <li key={index}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div>
-              <h3>
-                Adresses Valides : {validCount} <br />
-                Sending:{' '}
-                <FormatAmount
-                  value={totalQuantity.toFixed()}
-                  decimals={decimals.toNumber()}
-                  showLabel={false}
-                  showLastNonZeroDecimal={true}
-                />{' '}
-                of{' '}
-                <FormatAmount
-                  value={selectedNFT.balance.toFixed()}
-                  decimals={decimals.toNumber()}
-                  showLabel={false}
-                  showLastNonZeroDecimal={true}
-                />
-              </h3>
-              {/* <ul>
-                {validAddresses.map((entry: any, index) => (
-                  <li key={index}>
-                    {entry.address} (Quantité: {entry.quantity})
-                  </li>
-                ))}
-              </ul> */}
-            </div>
-          </div>
-          {selectedNFT &&
-            selectedNFT.balance &&
-            validCount > 0 &&
-            selectedNFT.balance.isGreaterThan(totalQuantity) && (
-              <div>
-                <div className='text-label' style={{ margin: 'auto' }}>
-                  <ActionBuy
-                    identifier={selectedNFT?.collection}
-                    nonce={selectedNFT?.nonce}
-                    batches={batches}
-                    submitted={submitted}
-                    onSubmit={handleSubmit}
-                    disabled={
-                      selectedNFT.balance.isLessThan(totalQuantity) ||
-                      !selectedNFT.identifier
-                    }
-                  />
+            {validCount || invalidCount ? (
+              <>
+                {' '}
+                <div className='address-info'>
+                  <h3>
+                    Adresses Valides :{' '}
+                    <span className='highlight'>{validCount}</span>
+                  </h3>{' '}
+                  {invalidCount > 0 && (
+                    <div className='invalid-addresses-container'>
+                      <h3>
+                        Adresses Invalides :{' '}
+                        <span className='highlight-error'>{invalidCount}</span>
+                      </h3>
+                      <ul className='invalid-addresses-list'>
+                        {invalidAddresses.map((line, index) => (
+                          <li key={index} className='invalid-address-item'>
+                            {line}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <br />
+                  <div
+                    style={{
+                      backgroundColor: selectedNFT.balance.lt(totalQuantity)
+                        ? '#ffcccc'
+                        : 'rgb(155 227 150)',
+                      padding: '10px',
+                      borderRadius: '5px'
+                    }}
+                  >
+                    Montant à envoyer:{' '}
+                    <FormatAmount
+                      value={totalQuantity.toFixed()}
+                      decimals={decimals.toNumber()}
+                      showLabel={false}
+                      showLastNonZeroDecimal={true}
+                    />{' '}
+                    <br />
+                    Balance:{' '}
+                    <FormatAmount
+                      value={selectedNFT.balance.toFixed()}
+                      decimals={decimals.toNumber()}
+                      showLabel={false}
+                      showLastNonZeroDecimal={true}
+                    />
+                    {selectedNFT &&
+                      selectedNFT.balance &&
+                      validCount > 0 &&
+                      invalidCount === 0 &&
+                      selectedNFT.balance.isGreaterThanOrEqualTo(
+                        totalQuantity
+                      ) && (
+                        <div>
+                          <div
+                            className='text-label'
+                            style={{ margin: 'auto' }}
+                          >
+                            <ActionBuy
+                              identifier={selectedNFT?.collection}
+                              nonce={selectedNFT?.nonce}
+                              batches={batches}
+                              submitted={submitted}
+                              onSubmit={handleSubmit}
+                              disabled={
+                                selectedNFT.balance.isLessThan(totalQuantity) ||
+                                !selectedNFT.identifier
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
+                  </div>
                 </div>
-              </div>
+              </>
+            ) : (
+              <div></div>
             )}
+          </div>
         </div>
       </PageWrapper>
     </AuthRedirectWrapper>
