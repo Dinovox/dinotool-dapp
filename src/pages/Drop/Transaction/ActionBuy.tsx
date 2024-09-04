@@ -33,12 +33,12 @@ export const ActionBuy = ({
     }
     const batchTx = [];
     for (const batch of batches) {
-      console.log(batch);
       let sub = '';
       for (const addr of batch.addresses) {
         const receiver = new Address(addr.address).toHex();
         sub = sub + '@' + receiver + '@' + bigToHex(BigInt(addr.quantity));
       }
+
       batchTx.push({
         value: 0,
         data:
@@ -49,12 +49,12 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(nonce)) +
           '@' +
-          bigToHex(BigInt(batch.totalQuantity)) +
+          bigToHex(BigInt(batch.totalQuantity.toFixed())) +
           '@' +
           Buffer.from('graou', 'utf8').toString('hex') +
           sub,
         receiver: address,
-        gasLimit: '14000000'
+        gasLimit: 2000000 + batch.addresses.length * 580000
       });
     }
 
