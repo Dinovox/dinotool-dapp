@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Bitcell';
+  src: url('/fonts/bitcell_memesbruh03.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @layer utilities {
   .group:hover .group-hover\:block {
     display: block;

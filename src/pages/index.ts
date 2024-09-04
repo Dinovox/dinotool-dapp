@@ -4,3 +4,4 @@ export * from './PageNotFound';
 export * from './Unlock';
 export * from './Disclaimer';
 export * from './Mint';
+export * from './Drop';

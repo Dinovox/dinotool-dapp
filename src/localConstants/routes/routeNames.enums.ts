@@ -3,5 +3,6 @@ export enum RouteNamesEnum {
   dashboard = '/dashboard',
   unlock = '/unlock',
   disclaimer = '/disclaimer',
-  mint = '/mint'
+  mint = '/mint',
+  drop = '/drop'
 }

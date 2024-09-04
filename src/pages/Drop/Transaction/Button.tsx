@@ -33,7 +33,7 @@ export const Button: FC<ButtonProps> = ({
   borderWidth = '1px',
   borderRadius = 5,
   fontSize = '14px',
-  fontFamily = 'BitCell',
+  fontFamily = '',
   textColor = 'white',
   hasBorder = false,
   grayscale = '50%',
@@ -53,8 +53,6 @@ export const Button: FC<ButtonProps> = ({
     return Array.isArray(value);
   };
 
-  // filter: disabled ? `grayscale(${grayscale})` : 'none',
-
   const buttonStyle: CSSProperties = {
     boxShadow: boxShadow,
 
@@ -62,16 +60,14 @@ export const Button: FC<ButtonProps> = ({
     justifyContent: 'center',
     filter: disabled ? `grayscale(${grayscale})` : 'none',
     alignItems: 'center',
-    background: disabled
-      ? '#F2F2F2'
-      : isGradient(background)
+    background: isGradient(background)
       ? `linear-gradient(${gradientDirection}, ${background[0]}, ${background[1]})`
       : background,
     borderStyle: 'none',
     borderRadius,
     width: '100%',
     height: '100%',
-    color: disabled ? '#D1CFCA' : textColor,
+    color: textColor,
     cursor: disabled ? 'not-allowed' : 'pointer',
     fontFamily,
     fontSize,
