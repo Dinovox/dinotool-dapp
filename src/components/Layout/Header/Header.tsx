@@ -1,13 +1,14 @@
 import { Button } from 'components/Button';
 import { MxLink } from 'components/MxLink';
-import { environment } from 'config';
 import { logout } from 'helpers';
-import { useGetAccount, useGetIsLoggedIn } from 'hooks';
+import { useGetAccount, useGetIsLoggedIn, useGetNetworkConfig } from 'hooks';
 import { RouteNamesEnum } from 'localConstants';
 import MultiversXLogo from '../../../assets/img/multiversx-logo.svg?react';
 import { useMatch } from 'react-router-dom';
 import dinovoxLogo from '/dinovox_logo.webp';
 import ShortenedAddress from 'helpers/shortenedAddress';
+import { EnvironmentsEnum } from 'types';
+import { environment } from 'config';
 
 const callbackUrl = `${window.location.origin}/unlock`;
 const onRedirect = undefined; // use this to redirect with useNavigate to a specific page after logout
@@ -30,7 +31,7 @@ const options = {
 export const Header = () => {
   const isLoggedIn = useGetIsLoggedIn();
   const isUnlockRoute = Boolean(useMatch(RouteNamesEnum.unlock));
-
+  const network = useGetNetworkConfig();
   const ConnectButton = isUnlockRoute ? null : (
     <MxLink to={RouteNamesEnum.unlock}>Connect</MxLink>
   );
@@ -54,7 +55,7 @@ export const Header = () => {
       <header className='flex flex-row align-center justify-between pl-6 pr-6 pt-6'>
         <MxLink
           className='flex items-center justify-between'
-          to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
+          to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
         >
           {/* <MultiversXLogo className='w-full h-6' /> */}
           <img src={dinovoxLogo} alt='Dinovox Logo' className='w-64 h-auto' />
@@ -69,29 +70,46 @@ export const Header = () => {
 
             {isLoggedIn ? (
               <>
-                <MxLink
-                  className=''
-                  to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
-                >
-                  <div
-                    style={{ width: '100%' }}
-                    className='mintGazTitle dinoTitle'
+                {environment === 'devnet' && (
+                  <MxLink
+                    className=''
+                    to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
                   >
-                    MINT
-                  </div>
-                </MxLink>
+                    <div
+                      style={{ width: '100%' }}
+                      className='mintGazTitle dinoTitle'
+                    >
+                      MINT
+                    </div>
+                  </MxLink>
+                )}
+                {environment === 'mainnet' && (
+                  <MxLink
+                    className=''
+                    to={isLoggedIn ? RouteNamesEnum.drop : RouteNamesEnum.home}
+                  >
+                    <div
+                      style={{ width: '100%' }}
+                      className='mintGazTitle dinoTitle'
+                    >
+                      DROP
+                    </div>
+                  </MxLink>
+                )}
+                {environment === 'mainnet' && (
+                  <MxLink
+                    className=''
+                    to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
+                  >
+                    <div
+                      style={{ width: '100%' }}
+                      className='mintGazTitle dinoTitle'
+                    >
+                      QUIZ
+                    </div>
+                  </MxLink>
+                )}
 
-                <MxLink
-                  className=''
-                  to={isLoggedIn ? RouteNamesEnum.drop : RouteNamesEnum.home}
-                >
-                  <div
-                    style={{ width: '100%' }}
-                    className='mintGazTitle dinoTitle'
-                  >
-                    DROP
-                  </div>
-                </MxLink>
                 <Button
                   onClick={handleLogout}
                   className='inline-block rounded-lg px-3 py-2 text-center hover:no-underline my-0 text-gray-600 hover:bg-slate-100 mx-0'

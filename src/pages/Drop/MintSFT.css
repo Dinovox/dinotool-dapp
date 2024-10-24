@@ -88,6 +88,13 @@
   border-radius: 10px;
 }
 
+.halloween-image {
+  /* Vox Xportal 2 1 */
+  width: 265px;
+  height: 265px;
+  left: 0px;
+  top: 176px;
+}
 .mint-button {
   background-color: #f7ea43;
   color: #7de9f2;
@@ -121,6 +128,9 @@
   display: grid;
   justify-content: center;
   align-content: center;
+  padding: 10px;
+  box-shadow: 0px 4px 32px rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
 }
 
 .dinoButton:hover {
@@ -299,4 +309,123 @@ textarea {
 .invalid-addresses-container .invalid-address-item {
   font-weight: bold;
   color: #a94442;
+}
+
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Espace entre les deux groupes */
+}
+
+.checkbox-label {
+  margin-left: 5px; /* Petit espace entre le label et la checkbox */
+}
+
+input[type='checkbox'] {
+  margin-right: -20px; /* Espace entre le label et la checkbox */
+}
+
+/* Styles pour la tooltip */
+.tooltip-inline {
+  position: relative;
+  display: inline-block;
+  margin-right: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tooltip-inline .tooltiptext-inline {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position au-dessus de l'élément */
+  left: 50%;
+  margin-right: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip-inline:hover .tooltiptext-inline {
+  visibility: visible;
+  opacity: 1;
+}
+
+.devine {
+  /* Question */
+
+  height: 72px;
+  left: 63px;
+  top: 64px;
+
+  font-family: 'Bit Cell';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 75px;
+  line-height: 72px;
+
+  color: #453922;
+}
+
+.hcontainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+
+.hblock {
+  /* background-color: #f4f4f4; */
+  /* border: 1px solid #ddd; */
+  padding: 20px;
+  text-align: center;
+  justify-content: center;
+  flex: 1;
+}
+
+/* Block 1 takes full width */
+.hblock-1 {
+  flex-basis: 100%;
+}
+
+/* Block 2 and 3 take half width on larger screens */
+.hblock-2,
+.hblock-3 {
+  flex-basis: 48%; /* Adjusting to account for gap */
+}
+
+/* On small screens, stack blocks vertically */
+@media (max-width: 768px) {
+  .hblock-2,
+  .hblock-3 {
+    flex-basis: 100%;
+  }
+}
+
+.greenGraou {
+  /* GRAOU !!! */
+  width: 903px;
+  height: 72px;
+  left: 64px;
+  top: 108px;
+
+  font-family: 'Bit Cell';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 75px;
+  line-height: 72px;
+
+  color: #0fa958;
 }

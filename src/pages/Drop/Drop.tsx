@@ -2,7 +2,6 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { Transaction } from './Transaction';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import { ActionBuy } from './Transaction/ActionBuy';
-import { useGetUserHasBuyed } from 'pages/Dashboard/widgets/MintGazAbi/hooks/useGetUserHasBuyed';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import { formatAmount } from 'utils/sdkDappUtils';
 import toHex from 'helpers/toHex';
@@ -15,8 +14,14 @@ import { useGetUserNFT } from 'helpers/useGetUserNft';
 import BigNumber from 'bignumber.js';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { FormatAmount } from 'components';
+import { useGetDinoHolders } from './Transaction/helpers/useGetDinoHolders';
+import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
 
 export const Drop = () => {
+  const dinobox_holder = useGetDinoHolders('DINOBOX-54d57b');
+  const dinovox_holder = useGetDinoHolders('DINOVOX-cb2297');
+  const dinovox_stakers = useGetDinoStakers();
+  // console.log('dinovox_stakers', dinovox_stakers);
   const [addresses, setAddresses] = useState('');
   const [validAddresses, setValidAddresses] = useState([]);
   const [invalidAddresses, setInvalidAddresses] = useState([]);
@@ -38,6 +43,9 @@ export const Drop = () => {
   const [defaultQty, setDefaultQty] = useState<BigNumber>(new BigNumber(1));
   const [decimals, setDecimals] = useState<BigNumber>(new BigNumber(0));
   const [useDecimals, setUseDecimals] = useState(true);
+  const [boxHolders, setBoxHolders] = useState(false);
+  const [voxHolders, setVoxHolders] = useState(false);
+  const [voxStakers, setVoxStakers] = useState(false);
 
   const userNftBalance = useGetUserNFT(address);
   const userEsdtBalance = useGetUserESDT();
@@ -49,11 +57,10 @@ export const Drop = () => {
     const value = event.target.value;
 
     if (value) {
-      const [index, identifier, collection, nonce, balance, decimals] =
+      const [identifier, collection, nonce, balance, decimals] =
         value.split('|');
 
       setSelectedNFT({
-        index,
         identifier,
         collection,
         nonce,
@@ -79,16 +86,14 @@ export const Drop = () => {
 
     const newValidAddresses: any = [];
     const newInvalidAddresses: any = [];
-    const seenAddresses = new Set(); // Pour vérifier les doublons
+    const seenAddresses = new Set();
 
     let validCountTemp = 0;
     let invalidCountTemp = 0;
     let totalQuantityTemp = new BigNumber(0);
 
     addressList.forEach((line: any) => {
-      //igngorer la ligne vide
       if (!line) return;
-      // Séparer l'adresse et la quantité
       const [address, quantity] = line.split(/\s+/);
 
       if (addressIsValid(address)) {
@@ -124,10 +129,12 @@ export const Drop = () => {
       for (let i = 0; i < newValidAddresses.length; i += chunkSize) {
         const chunk = newValidAddresses.slice(i, i + chunkSize);
 
-        let batchQuantity = chunk.reduce(
-          (sum: BigNumber, entry: any) =>
-            sum.plus(new BigNumber(entry.quantity)),
-          new BigNumber(0)
+        let batchQuantity = new BigNumber(
+          chunk.reduce(
+            (sum: BigNumber, entry: any) =>
+              sum.plus(new BigNumber(entry.quantity)),
+            new BigNumber(0)
+          )
         );
         chunks.push({
           addresses: chunk,
@@ -136,6 +143,7 @@ export const Drop = () => {
           totalQuantity: batchQuantity
         });
       }
+      // console.log(chunks);
       setBatches(chunks);
     });
 
@@ -149,6 +157,39 @@ export const Drop = () => {
   };
 
   useEffect(() => {
+    if (submitted) {
+      return;
+    }
+    const uniqueAddressesSet = new Set<string>();
+
+    // Ajouter les adresses de dinobox_holder si boxHolders est coché
+    if (boxHolders && dinobox_holder.length > 0) {
+      dinobox_holder
+        .map((holder: any) => holder.address)
+        .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
+        .forEach((address: any) => uniqueAddressesSet.add(address));
+    }
+
+    if (voxStakers && dinovox_stakers.length > 0) {
+      dinovox_stakers
+        .map((staker: any) => staker.address)
+        .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
+        .forEach((address: any) => uniqueAddressesSet.add(address));
+    }
+
+    // Ajouter les adresses de dinovox_holder si voxHolders est coché
+    if (voxHolders && dinovox_holder.length > 0) {
+      dinovox_holder
+        .map((holder: any) => holder.address)
+        .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
+        .forEach((address: any) => uniqueAddressesSet.add(address));
+    }
+
+    // Joindre les adresses uniques avec un retour à la ligne
+    const addressesString = Array.from(uniqueAddressesSet).join('\n');
+    if (addressesString) {
+      setAddresses(addressesString);
+    }
     const handler = setTimeout(() => {
       handleAddressChange({ target: { value: addresses } });
     }, 300); // Délai de 300ms
@@ -156,8 +197,17 @@ export const Drop = () => {
     return () => {
       clearTimeout(handler);
     };
-  }, [addresses, useDecimals, decimals, defaultQty]);
+  }, [
+    addresses,
+    useDecimals,
+    decimals,
+    defaultQty,
+    voxStakers,
+    boxHolders,
+    voxHolders
+  ]);
 
+  // console.log('userNftBalance', userNftBalance);
   return (
     <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
@@ -166,45 +216,46 @@ export const Drop = () => {
           style={{ textAlign: 'center' }}
         >
           {' '}
-          <div className='mintGazTitle dinoTitle'>DROP (beta)</div>
+          <div className='mintGazTitle dinoTitle'>DROP (alpha)</div>
           <div className='mx-auto' style={{ margin: '10px' }}>
-            <span>Envoyer des tokens ou des sft à plusieurs adresses</span>
+            <span>Envoyez des tokens ou des sft à plusieurs adresses</span>
           </div>
           <div className=''>
             <div className=''>
               <div className='form-container'>
                 {userNftBalance && (
                   <>
-                    {/* Section pour le select de NFT/ESDT */}
                     <div className='form-group'>
                       <label htmlFor='nftSelect'>
-                        Sélectionner SFT/ESDT{' '}
+                        SFT/ESDT{' '}
                         <span className='tooltip-inline'>
                           (ℹ)
                           <span className='tooltiptext-inline'>
-                            Sélectionner le SFT ou l'ESDT à envoyer.
+                            Sélectionnez le SFT ou l'ESDT à envoyer.
                           </span>
                         </span>{' '}
                       </label>
                       <select
                         id='nftSelect'
-                        value={`${
-                          selectedNFT.index
-                        }|${selectedNFT?.identifier}|${
+                        value={`${selectedNFT?.identifier}|${
                           selectedNFT?.collection
                             ? selectedNFT?.collection
                             : selectedNFT?.identifier
-                        }|${selectedNFT?.nonce}|${selectedNFT?.balance}|${
+                        }|${selectedNFT?.nonce}|${selectedNFT?.balance.toFixed()}|${
                           selectedNFT?.decimals ? selectedNFT?.decimals : 0
                         }`}
                         onChange={handleNFT}
                       >
                         <option key={0} value=''>
-                          Select
+                          Selectionnez
                         </option>
-
-                        {/* Options from userNftBalance */}
-                        {userNftBalance?.map(
+                        {[
+                          ...userNftBalance?.filter(
+                            (item: { type: string }) =>
+                              item.type != 'NonFungibleESDT'
+                          ),
+                          ...userEsdtBalance
+                        ].map(
                           (
                             item: {
                               identifier: string;
@@ -216,41 +267,22 @@ export const Drop = () => {
                             index: number
                           ) => (
                             <option
-                              key={`1${index}`}
-                              value={`1${index}|${item?.identifier}|${
+                              key={`${item?.identifier}|${
                                 item?.collection
                                   ? item?.collection
                                   : item?.identifier
-                              }|${item?.nonce}|${item?.balance}|${
+                              }|${item?.nonce}|${new BigNumber(
+                                item?.balance
+                              ).toFixed()}|${
                                 item?.decimals ? item?.decimals : 0
                               }`}
-                            >
-                              {item?.identifier}
-                            </option>
-                          )
-                        )}
-
-                        {/* Options from userEsdtBalance */}
-                        {userEsdtBalance?.map(
-                          (
-                            item: {
-                              identifier: string;
-                              collection: string;
-                              balance: BigNumber;
-                              nonce: string;
-                              decimals: BigNumber;
-                            },
-                            index: number
-                          ) => (
-                            <option
-                              key={`2${index}`}
-                              value={`2${index}|${item?.identifier}|${
+                              value={`${item?.identifier}|${
                                 item?.collection
                                   ? item?.collection
                                   : item?.identifier
-                              }|${
-                                item?.nonce ? item?.nonce : 0
-                              }|${item?.balance}|${
+                              }|${item?.nonce}|${new BigNumber(
+                                item?.balance
+                              ).toFixed()}|${
                                 item?.decimals ? item?.decimals : 0
                               }`}
                             >
@@ -333,6 +365,7 @@ export const Drop = () => {
                               value='true'
                               checked={useDecimals}
                               onChange={() => setUseDecimals(true)}
+                              disabled={submitted}
                             />
                             Yes
                           </label>
@@ -343,6 +376,7 @@ export const Drop = () => {
                               value='false'
                               checked={!useDecimals}
                               onChange={() => setUseDecimals(false)}
+                              disabled={submitted}
                             />
                             No
                           </label>
@@ -359,7 +393,7 @@ export const Drop = () => {
                         <span className='tooltip-inline'>
                           (ℹ)
                           <span className='tooltiptext-inline'>
-                            Coller la liste d'adresses auxquelles envoyer l'ESDT
+                            Collez la liste d'adresses auxquelles envoyer l'ESDT
                             ou le SFT. Séparez chaque adresse par un retour à la
                             ligne, une virgule ou un point-virgule. Vous pouvez
                             définir montant spécfique pour chaque adresse en
@@ -384,8 +418,70 @@ export const Drop = () => {
                           height: '200px',
                           padding: '10px'
                         }}
-                        disabled={submitted}
+                        disabled={submitted || voxHolders || boxHolders}
                       />
+                    </div>
+
+                    <div className='form-group'>
+                      <div className='checkbox-wrapper'>
+                        <input
+                          type='checkbox'
+                          id='voxStakers'
+                          checked={voxStakers}
+                          onChange={() => {
+                            setAddresses('');
+                            setVoxStakers(!voxStakers);
+                          }}
+                        />{' '}
+                        <label htmlFor='voxStakers' className='checkbox-label'>
+                          Dino Stakers{' '}
+                          <span className='tooltip-inline'>
+                            (ℹ)
+                            <span className='tooltiptext-inline'>
+                              Cochez cette case pour inclure les stakers de
+                              dino. (SC seulement)
+                            </span>
+                          </span>
+                        </label>
+                        <input
+                          type='checkbox'
+                          id='boxHolders'
+                          checked={boxHolders}
+                          onChange={() => {
+                            setAddresses('');
+                            setBoxHolders(!boxHolders);
+                          }}
+                        />{' '}
+                        <label htmlFor='boxHolders' className='checkbox-label'>
+                          Box Holders{' '}
+                          <span className='tooltip-inline'>
+                            (ℹ)
+                            <span className='tooltiptext-inline'>
+                              Cochez cette case pour inclure les détenteurs de
+                              la boîte. (wallet seulement)
+                            </span>
+                          </span>
+                        </label>
+                        <input
+                          type='checkbox'
+                          id='voxHolders'
+                          checked={voxHolders}
+                          onChange={() => {
+                            setAddresses('');
+                            setVoxHolders(!voxHolders);
+                          }}
+                        />{' '}
+                        <label htmlFor='voxHolders' className='checkbox-label'>
+                          Vox Holders{' '}
+                          <span className='tooltip-inline'>
+                            (ℹ)
+                            <span className='tooltiptext-inline'>
+                              Cochez cette case pour inclure les détenteurs
+                              dinovox. (wallet seulement)
+                            </span>
+                          </span>
+                        </label>
+                      </div>
                     </div>
                   </>
                 )}{' '}

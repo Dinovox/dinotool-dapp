@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 // import { network } from 'config';
 import { useGetNetworkConfig } from 'hooks';
-import toHex from 'helpers/toHex';
 
-export const useGetNftInformations = (identifier: string, nonce: string) => {
+export const useGetDinoHolders = (identifier: string) => {
   const { network } = useGetNetworkConfig();
   //const { network } = useGetNetworkConfig();
   const time = new Date();
-  const [esdtInfo, setEsdtInfo] = useState<any>({});
+  const [holders, setHolders] = useState<any>({});
 
   // {
   //   "identifier": "WORLD-dbf560-01",
@@ -49,57 +48,50 @@ export const useGetNftInformations = (identifier: string, nonce: string) => {
   //   "rarities": {}
   // }
 
-  const getEsdtInfo = async () => {
-    // console.log('getinfo', identifier, toHex(nonce));
+  const getDinoHolders = async () => {
     //using storage to reduce calls
     const expire_test = Number(
-      localStorage.getItem(
-        'esdt_' + identifier + '-' + toHex(nonce) + '_expire'
-      )
+      localStorage.getItem('holders_' + identifier + '_expire')
     );
     if (time.getTime() < expire_test) {
       //const storage = localStorage.getItem('esdt_' + identifier);
       const storage = JSON.parse(
-        localStorage.getItem(
-          'esdt_' + identifier + '-' + toHex(nonce)
-        ) as string
+        localStorage.getItem('holders_' + identifier) as string
       );
 
       //const esdt = JSON.parse(storage);
-      setEsdtInfo(storage);
+      setHolders(storage);
       return;
     }
 
-    if (identifier == '' || identifier == undefined || nonce == '') {
+    if (identifier == '' || identifier == undefined) {
       return;
     }
-    const url = '/nfts/' + identifier + '-' + toHex(nonce);
+
+    const url = '/collections/' + identifier + '/accounts?size=10000';
 
     try {
       const { data } = await axios.get<[]>(url, {
-        baseURL: network.apiAddress,
+        baseURL: 'https://api.multiversx.com',
         params: {}
       });
-      setEsdtInfo(data);
+      setHolders(data);
       //storage of 1000 minutes
       const expire = time.getTime() + 1000 * 60 * 1000;
+      localStorage.setItem('holders_' + identifier, JSON.stringify(data));
       localStorage.setItem(
-        'esdt_' + identifier + '-' + toHex(nonce),
-        JSON.stringify(data)
-      );
-      localStorage.setItem(
-        'esdt_' + identifier + '-' + toHex(nonce) + '_expire',
+        'holders_' + identifier + '_expire',
         expire.toString()
       );
     } catch (err) {
-      console.error('Unable to fetch Tokens');
-      setEsdtInfo([]);
+      console.error('Unable to fetch Holdders');
+      setHolders([]);
     }
   };
 
   useEffect(() => {
-    getEsdtInfo();
-  }, [identifier, nonce]);
+    getDinoHolders();
+  }, [identifier]);
 
-  return esdtInfo;
+  return holders;
 };

@@ -71,7 +71,7 @@ export const useGetUserHasBuyed = () => {
       //wallet with no esdt return a 404
       // https://devnet-api.multiversx.com/accounts/erd1s2tstpvulqzhppydk876ydf6zce8svfznpe460plqnj0je5qx83qew5k2l/tokens/CACAT-672714
       // {"statusCode":404,"message":"Token for given account not found"}
-      console.error('Unable to call usercacat', err);
+      console.error('Unable to call usergraou', err);
     }
   };
   useEffect(() => {

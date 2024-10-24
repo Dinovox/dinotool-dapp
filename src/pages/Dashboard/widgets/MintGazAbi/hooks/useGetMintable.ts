@@ -5,6 +5,7 @@ import { ContractFunction, ResultsParser, ProxyNetworkProvider } from 'utils';
 import { mintContract } from 'utils/smartContract';
 import { BigNumber } from 'bignumber.js';
 import { graou_identifier } from 'config';
+import { start } from 'repl';
 
 const resultsParser = new ResultsParser();
 
@@ -15,7 +16,10 @@ export const useGetMintable = () => {
     amount: new BigNumber(0),
     nonce: new BigNumber(0),
     payment_token: graou_identifier,
-    payment_price: new BigNumber(0)
+    payment_price: new BigNumber(0),
+    start_time: new Date(),
+    end_time: new Date(),
+    paused: false
   });
 
   const proxy = new ProxyNetworkProvider(network.apiAddress);
@@ -35,7 +39,7 @@ export const useGetMintable = () => {
       );
 
       const tab = position?.valueOf();
-      console.log('tab', tab);
+      // console.log('tab', tab);
       if (tab) {
         setMintable(tab);
       }

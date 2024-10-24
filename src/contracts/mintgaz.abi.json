@@ -16,36 +16,91 @@
       "version": "0.47.8"
     }
   },
-  "docs": [
-    "An empty contract. To be used as a template when starting a new contract from scratch."
-  ],
   "name": "Mintgaz",
   "constructor": {
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "wallet",
+        "type": "Address"
+      }
+    ],
     "outputs": []
   },
   "endpoints": [
     {
       "name": "upgrade",
       "mutability": "mutable",
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "wallet",
+          "type": "Address"
+        }
+      ],
       "outputs": []
     },
     {
       "name": "fund",
-      "onlyOwner": true,
       "mutability": "mutable",
       "payableInTokens": ["*"],
       "inputs": [
         {
           "name": "payment_token",
-          "type": "TokenIdentifier"
+          "type": "EgldOrEsdtTokenIdentifier"
         },
         {
           "name": "payment_price",
           "type": "BigUint"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
         }
       ],
+      "outputs": []
+    },
+    {
+      "name": "edit",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "payment_token",
+          "type": "EgldOrEsdtTokenIdentifier"
+        },
+        {
+          "name": "payment_price",
+          "type": "BigUint"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "end_time",
+          "type": "u64"
+        },
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "burn",
+      "mutability": "mutable",
+      "inputs": [],
       "outputs": []
     },
     {
@@ -53,6 +108,18 @@
       "mutability": "mutable",
       "payableInTokens": ["*"],
       "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "claim",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "opt_esdt",
+          "type": "optional<TokenIdentifier>",
+          "multi_arg": true
+        }
+      ],
       "outputs": []
     },
     {
@@ -79,6 +146,80 @@
           "type": "bool"
         }
       ]
+    },
+    {
+      "name": "isPaused",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "unpause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "isAdmin",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "addAdmin",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeAdmin",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getAdmins",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<Address>",
+          "multi_result": true
+        }
+      ]
     }
   ],
   "esdtAttributes": [],
@@ -101,11 +242,23 @@
         },
         {
           "name": "payment_token",
-          "type": "TokenIdentifier"
+          "type": "EgldOrEsdtTokenIdentifier"
         },
         {
           "name": "payment_price",
           "type": "BigUint"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "end_time",
+          "type": "u64"
+        },
+        {
+          "name": "paused",
+          "type": "bool"
         }
       ]
     }

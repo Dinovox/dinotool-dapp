@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { graou_identifier, mintcontractAddress } from 'config';
+import { mintcontractAddress } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
 
-export const ActionBuy = ({ price, hasBuyed }: any) => {
+export const ActionBuy = ({ price, hasBuyed, payment_token }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
@@ -21,19 +21,28 @@ export const ActionBuy = ({ price, hasBuyed }: any) => {
   const { address } = useGetAccountInfo();
 
   const sendFundTransaction = async () => {
-    const fundTransaction = {
-      value: 0,
-      data:
-        'ESDTTransfer@' +
-        Buffer.from(graou_identifier, 'utf8').toString('hex') +
-        '@' +
-        bigToHex(BigInt(price)) +
-        '@' +
-        Buffer.from('buy', 'utf8').toString('hex'),
-
-      receiver: addressTobech32,
-      gasLimit: '14000000'
-    };
+    let fundTransaction;
+    if (payment_token == 'EGLD') {
+      fundTransaction = {
+        value: price,
+        data: 'buy',
+        receiver: addressTobech32,
+        gasLimit: '14000000'
+      };
+    } else {
+      fundTransaction = {
+        value: 0,
+        data:
+          'ESDTTransfer@' +
+          Buffer.from(payment_token, 'utf8').toString('hex') +
+          '@' +
+          bigToHex(BigInt(price)) +
+          '@' +
+          Buffer.from('buy', 'utf8').toString('hex'),
+        receiver: addressTobech32,
+        gasLimit: '14000000'
+      };
+    }
     await refreshAccount();
 
     const { sessionId /*, error*/ } = await sendTransactions({

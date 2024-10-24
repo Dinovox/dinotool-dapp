@@ -73,7 +73,7 @@ export const DualLoginButton = ({
             />
           </svg>
         </button>
-        <div
+        {/* <div
           style={{
             position: 'absolute',
             inset: '0px auto auto 0px',
@@ -100,7 +100,7 @@ export const DualLoginButton = ({
               </a>
             </li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </div>
   );

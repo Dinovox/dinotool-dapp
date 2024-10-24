@@ -4,5 +4,6 @@ export enum RouteNamesEnum {
   unlock = '/unlock',
   disclaimer = '/disclaimer',
   mint = '/mint',
-  drop = '/drop'
+  drop = '/drop',
+  quiz = '/quiz'
 }

@@ -8,8 +8,8 @@ import { graou_identifier, mintcontractAddress, dropContract } from 'config';
 import { Address } from '@multiversx/sdk-core/out';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import { Button } from './Button';
-import bigToHex from 'helpers/bigToHex';
-
+import { BigNumber } from 'bignumber.js';
+import bigNumToHex from 'helpers/bigNumToHex';
 export const ActionBuy = ({
   identifier,
   nonce,
@@ -36,9 +36,16 @@ export const ActionBuy = ({
       let sub = '';
       for (const addr of batch.addresses) {
         const receiver = new Address(addr.address).toHex();
-        sub = sub + '@' + receiver + '@' + bigToHex(BigInt(addr.quantity));
+        sub = sub + '@' + receiver + '@' + bigNumToHex(addr.quantity);
       }
 
+      console.log(
+        'sub',
+        batch.totalQuantity,
+        batch.totalQuantity.toString(16),
+        batch.totalQuantity.toFixed(),
+        bigNumToHex(batch.totalQuantity)
+      );
       batchTx.push({
         value: 0,
         data:
@@ -47,16 +54,17 @@ export const ActionBuy = ({
           '@01@' +
           Buffer.from(identifier, 'utf8').toString('hex') +
           '@' +
-          bigToHex(BigInt(nonce)) +
+          bigNumToHex(nonce > 0 ? nonce : new BigNumber(0)) +
           '@' +
-          bigToHex(BigInt(batch.totalQuantity.toFixed())) +
+          bigNumToHex(batch.totalQuantity) +
           '@' +
           Buffer.from('graou', 'utf8').toString('hex') +
           sub,
         receiver: address,
-        gasLimit: 2000000 + batch.addresses.length * 580000
+        gasLimit: 3000000 + batch.addresses.length * 580000
       });
     }
+    console.log('batchTx', batchTx);
 
     await refreshAccount();
 
