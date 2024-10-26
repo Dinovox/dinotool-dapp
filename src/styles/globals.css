@@ -11,6 +11,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'halloween';
+  src: url('/fonts/Scary_Halloween_Font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @layer utilities {
   .group:hover .group-hover\:block {
     display: block;

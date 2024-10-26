@@ -94,6 +94,7 @@
   height: 265px;
   left: 0px;
   top: 176px;
+  margin: 0 auto;
 }
 .mint-button {
   background-color: #f7ea43;
@@ -389,7 +390,7 @@ input[type='checkbox'] {
 .hblock {
   /* background-color: #f4f4f4; */
   /* border: 1px solid #ddd; */
-  padding: 20px;
+  align-content: center;
   text-align: center;
   justify-content: center;
   flex: 1;
@@ -401,31 +402,23 @@ input[type='checkbox'] {
 }
 
 /* Block 2 and 3 take half width on larger screens */
-.hblock-2,
-.hblock-3 {
+.hblock-2 {
   flex-basis: 48%; /* Adjusting to account for gap */
 }
 
 /* On small screens, stack blocks vertically */
 @media (max-width: 768px) {
-  .hblock-2,
-  .hblock-3 {
+  .hblock-2 {
     flex-basis: 100%;
   }
 }
 
 .greenGraou {
-  /* GRAOU !!! */
-  width: 903px;
-  height: 72px;
-  left: 64px;
-  top: 108px;
-
-  font-family: 'Bit Cell';
+  font-family: 'halloween';
   font-style: normal;
   font-weight: 400;
-  font-size: 75px;
+  font-size: 40px;
   line-height: 72px;
 
-  color: #0fa958;
+  color: #ff8c3a;
 }
