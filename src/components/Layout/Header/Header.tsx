@@ -55,7 +55,7 @@ export const Header = () => {
       <header className='flex flex-row align-center justify-between pl-6 pr-6 pt-6'>
         <MxLink
           className='flex items-center justify-between'
-          to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
+          to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
         >
           {/* <MultiversXLogo className='w-full h-6' /> */}
           <img src={dinovoxLogo} alt='Dinovox Logo' className='w-64 h-auto' />
@@ -70,10 +70,10 @@ export const Header = () => {
 
             {isLoggedIn ? (
               <>
-                {environment === 'devnet' && (
+                {environment === 'mainnet' && (
                   <MxLink
                     className=''
-                    to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
+                    to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
                   >
                     <div
                       style={{ width: '100%' }}
@@ -96,7 +96,7 @@ export const Header = () => {
                     </div>
                   </MxLink>
                 )}
-                {environment === 'mainnet' && (
+                {environment === 'devnet' && (
                   <MxLink
                     className=''
                     to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}

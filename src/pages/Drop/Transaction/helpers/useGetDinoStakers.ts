@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks/account/useGetLoginInfo';
 
 export const useGetDinoStakers = () => {
-  console.log('useGetDinoStakers');
+  // console.log('useGetDinoStakers');
   const time = new Date();
   const [holders, setHolders] = useState<any>({});
   const { tokenLogin, isLoggedIn } = useGetLoginInfo();

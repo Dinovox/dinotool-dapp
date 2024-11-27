@@ -14,7 +14,7 @@ export const AuthRedirectWrapper = ({
   const isLoggedIn = useGetIsLoggedIn();
 
   if (isLoggedIn && !requireAuth) {
-    return <Navigate to={RouteNamesEnum.quiz} />;
+    return <Navigate to={RouteNamesEnum.mint} />;
   }
 
   if (!isLoggedIn && requireAuth) {

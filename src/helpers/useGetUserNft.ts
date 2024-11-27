@@ -12,7 +12,7 @@ export const useGetUserNFT = (address: string) => {
   // const address = useGetAccountInfo().address;
   const { hasPendingTransactions } = useGetPendingTransactions();
 
-  const url = '/accounts/' + address + '/nfts?from=0&size=100';
+  const url = '/accounts/' + address + '/nfts?from=0&size=1000';
   const getUserNFT = async () => {
     if (hasPendingTransactions == true || address == '') {
       return;

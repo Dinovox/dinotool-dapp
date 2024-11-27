@@ -54,7 +54,7 @@ export const Home = () => {
     return () => clearInterval(interval); // Nettoyage de l'intervalle
   }, [mintable]);
   return (
-    <AuthRedirectWrapper requireAuth={true}>
+    <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
           <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
@@ -65,7 +65,7 @@ export const Home = () => {
               <>
                 <div className='sub-dinocard box-item'>
                   <div className='info-item'>
-                    <span className='text-label'>Prix: </span>
+                    <span className='text-label'>Price: </span>
                     {formatAmount({
                       input: mintable?.payment_price?.toFixed(),
                       decimals: 18,
@@ -79,7 +79,7 @@ export const Home = () => {
                     </span>
                   </div>
                   <div className='info-item'>
-                    <span className='text-label'>Mint restants: </span>{' '}
+                    <span className='text-label'>Mint left: </span>{' '}
                     {formatAmount({
                       input: mintable.amount.toFixed(),
                       decimals: 0,
@@ -108,8 +108,13 @@ export const Home = () => {
                   </div>
 
                   <div className='info-item'>
-                    <span className='text-label'>Heure: </span>{' '}
+                    <span className='text-label'>Start: </span>{' '}
                     {blockToTime(mintable?.start_time)}{' '}
+                  </div>
+
+                  <div className='info-item'>
+                    <span className='text-label'>End: </span>{' '}
+                    {blockToTime(mintable?.end_time)}{' '}
                   </div>
                 </div>
                 <div className='sub-dinocard'>

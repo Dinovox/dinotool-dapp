@@ -14,7 +14,8 @@ import BigNumber from 'bignumber.js';
 import sold_graout from 'assets/img/sold_graout.jpg';
 
 export const Mint = () => {
-  const [timeLeft, setTimeLeft] = useState(60 * 60);
+  const [timeStart, setTimeStart] = useState(60 * 60);
+  const [timeEnd, setTimeEnd] = useState(60 * 60);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -65,8 +66,12 @@ export const Mint = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime = Date.now() / 1000;
-      const newTimeLeft = mintable?.start_time - currentTime;
-      setTimeLeft(newTimeLeft > 0 ? Math.floor(newTimeLeft) : 0); // Empêche le temps restant d'aller en dessous de 0
+      const newTimeStart = mintable?.start_time - currentTime;
+      setTimeStart(newTimeStart > 0 ? Math.floor(newTimeStart) : 0);
+      const newTimeEnd = mintable?.end_time - currentTime;
+      setTimeEnd(newTimeEnd > 0 ? Math.floor(newTimeEnd) : 0);
+
+      // Empêche le temps restant d'aller en dessous de 0
     }, 1000);
 
     return () => clearInterval(interval); // Nettoyage de l'intervalle
@@ -82,7 +87,7 @@ export const Mint = () => {
             Mint DINOGAZETTE
           </div>{' '}
           <div className='dinocard'>
-            {mintable && mintable.token_identifier && timeLeft <= 60 * 30 ? (
+            {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
               <>
                 <div className='sub-dinocard box-item'>
                   <div className='info-item'>
@@ -114,7 +119,7 @@ export const Mint = () => {
                     </span>
                   </div>
                   <div className='info-item'>
-                    <span className='text-label'>Prix: </span>
+                    <span className='text-label'>Price: </span>
                     {formatAmount({
                       input: mintable?.payment_price?.toFixed(),
                       decimals: 18,
@@ -128,7 +133,7 @@ export const Mint = () => {
                     </span>
                   </div>
                   <div className='info-item'>
-                    <span className='text-label'>Mint restants: </span>{' '}
+                    <span className='text-label'>Mint left: </span>{' '}
                     {formatAmount({
                       input: mintable.amount.toFixed(),
                       decimals: 0,
@@ -157,8 +162,13 @@ export const Mint = () => {
                   </div>
 
                   <div className='info-item'>
-                    <span className='text-label'>Heure: </span>{' '}
+                    <span className='text-label'>Start: </span>{' '}
                     {blockToTime(mintable?.start_time)}{' '}
+                  </div>
+
+                  <div className='info-item'>
+                    <span className='text-label'>End: </span>{' '}
+                    {blockToTime(mintable?.end_time)}{' '}
                   </div>
                 </div>
                 <div className='sub-dinocard'>
@@ -189,14 +199,23 @@ export const Mint = () => {
             <div className='text-label' style={{ margin: 'auto' }}>
               {mintable.amount.isGreaterThan(0) ? (
                 <>
-                  {timeLeft > 0 ? (
-                    <div>Ouverture dans : {formatTime(timeLeft)}</div>
+                  {timeStart > 0 ? (
+                    <div>Open in : {formatTime(timeStart)}</div>
                   ) : (
-                    <ActionBuy
-                      price={mintable?.payment_price}
-                      hasBuyed={hasBuyed}
-                      payment_token={mintable.payment_token}
-                    />
+                    <>
+                      {timeEnd > 0 ? (
+                        <>
+                          <ActionBuy
+                            price={mintable?.payment_price}
+                            hasBuyed={hasBuyed}
+                            payment_token={mintable.payment_token}
+                          />
+                          <div>End in : {formatTime(timeEnd)}</div>
+                        </>
+                      ) : (
+                        <>Sale ended</>
+                      )}
+                    </>
                   )}
                 </>
               ) : (

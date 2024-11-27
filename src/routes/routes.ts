@@ -10,7 +10,7 @@ export const routes: RouteWithTitleType[] = [
   {
     path: RouteNamesEnum.home,
     title: 'Home',
-    component: Quiz
+    component: Home
   },
   {
     path: RouteNamesEnum.dashboard,

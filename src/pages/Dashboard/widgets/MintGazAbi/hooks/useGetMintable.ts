@@ -39,7 +39,7 @@ export const useGetMintable = () => {
       );
 
       const tab = position?.valueOf();
-      // console.log('tab', tab);
+      console.log('tab', tab);
       if (tab) {
         setMintable(tab);
       }

@@ -36,7 +36,7 @@ export const Drop = () => {
   const [selectedNFT, setSelectedNFT] = useState<any>({
     identifier: '',
     collection: '',
-    nonce: 0,
+    nonce: new BigNumber(0),
     balance: new BigNumber(0),
     decimals: new BigNumber(0)
   });
@@ -63,7 +63,7 @@ export const Drop = () => {
       setSelectedNFT({
         identifier,
         collection,
-        nonce,
+        nonce: new BigNumber(nonce),
         balance: new BigNumber(balance),
         decimals: new BigNumber(decimals)
       });
