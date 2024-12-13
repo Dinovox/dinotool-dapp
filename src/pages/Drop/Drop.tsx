@@ -81,7 +81,7 @@ export const Drop = () => {
 
     // Divise l'entrée en lignes séparées par des retours à la ligne
     const addressList = input
-      .split(/\s*[,;\n]+\s*/)
+      .split(/\s*[;\n]+\s*/)
       .map((line: any) => line.trim());
 
     const newValidAddresses: any = [];
@@ -105,7 +105,9 @@ export const Drop = () => {
           newInvalidAddresses.push(`${line} (Doublon)`);
         } else {
           validCountTemp++;
-          let qty = quantity ? new BigNumber(quantity) : defaultQty;
+          let qty = quantity
+            ? new BigNumber(quantity.replace(',', '.'))
+            : defaultQty;
 
           if (useDecimals && decimals.gt(0)) {
             qty = qty.multipliedBy(10 ** decimals.toNumber());
@@ -395,9 +397,9 @@ export const Drop = () => {
                           <span className='tooltiptext-inline'>
                             Collez la liste d'adresses auxquelles envoyer l'ESDT
                             ou le SFT. Séparez chaque adresse par un retour à la
-                            ligne, une virgule ou un point-virgule. Vous pouvez
-                            définir montant spécfique pour chaque adresse en
-                            ajoutant un montant après l'adresse.
+                            ligne ou un point-virgule. Vous pouvez définir
+                            montant spécfique pour chaque adresse en ajoutant un
+                            montant après l'adresse.
                           </span>
                         </span>
                       </label>

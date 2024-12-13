@@ -24,4 +24,3 @@ export { DappProvider } from '@multiversx/sdk-dapp/wrappers/DappProvider/DappPro
 export { TransactionRow } from '@multiversx/sdk-dapp/UI/TransactionsTable/components/TransactionRow';
 export { ACCOUNTS_ENDPOINT } from '@multiversx/sdk-dapp/apiCalls/endpoints';
 export { ExplorerLink } from '@multiversx/sdk-dapp/UI/ExplorerLink';
-export { MetamaskProxyButton } from '@multiversx/sdk-dapp/UI/metamaskProxy/MetamaskProxyLoginButton/MetamaskProxyButton';
