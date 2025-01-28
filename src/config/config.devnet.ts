@@ -7,7 +7,7 @@ export const contractAddress =
 export const mintcontractAddress =
   'erd1qqqqqqqqqqqqqpgqe40zc2wv37s48ts04wgsld3p0svfxfsech9sufy67x';
 export const dropContract =
-  'erd1qqqqqqqqqqqqqpgqhc8uwawel9treyrc2ltp3r7qqj3520j0ch9sqswc2v';
+  'erd1qqqqqqqqqqqqqpgqsanaaapjectuqvnaranam56xxr0dzlxcch9stpew4e';
 
 export const graou_identifier = 'GRAOU-c9dd53';
 export const API_URL = 'https://devnet-api.multiversx.com';

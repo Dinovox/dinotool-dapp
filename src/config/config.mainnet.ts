@@ -11,7 +11,7 @@ export const mintcontractAddress =
   'erd1qqqqqqqqqqqqqpgqt434nktxkn8grnvfr9rjx0743sdv05maytsq92c48x';
 //DROP CONTRACT MAINNET OK
 export const dropContract =
-  'erd1qqqqqqqqqqqqqpgqtmj6zwec4llv8m9fnvyjytcy9gmht78l5gcsev3xm2';
+  'erd1qqqqqqqqqqqqqpgqhdcj8wk8vx8xlslc84wvn5ktar367sxcav4q35f5mq';
 export const API_URL = 'https://api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];
 export const metamaskSnapWalletAddress = 'https://snap-wallet.multiversx.com';

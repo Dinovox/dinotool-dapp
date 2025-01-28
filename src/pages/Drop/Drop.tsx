@@ -38,10 +38,10 @@ export const Drop = () => {
     collection: '',
     nonce: new BigNumber(0),
     balance: new BigNumber(0),
-    decimals: new BigNumber(0)
+    decimals: new BigNumber(18)
   });
   const [defaultQty, setDefaultQty] = useState<BigNumber>(new BigNumber(1));
-  const [decimals, setDecimals] = useState<BigNumber>(new BigNumber(0));
+  const [decimals, setDecimals] = useState<BigNumber>(new BigNumber(18));
   const [useDecimals, setUseDecimals] = useState(true);
   const [boxHolders, setBoxHolders] = useState(false);
   const [voxHolders, setVoxHolders] = useState(false);
@@ -65,9 +65,9 @@ export const Drop = () => {
         collection,
         nonce: new BigNumber(nonce),
         balance: new BigNumber(balance),
-        decimals: new BigNumber(decimals)
+        decimals: new BigNumber(18)
       });
-      setDecimals(new BigNumber(decimals));
+      setDecimals(new BigNumber(18));
     }
     setSubmitted(false);
   };
@@ -541,10 +541,7 @@ export const Drop = () => {
                     {selectedNFT &&
                       selectedNFT.balance &&
                       validCount > 0 &&
-                      invalidCount === 0 &&
-                      selectedNFT.balance.isGreaterThanOrEqualTo(
-                        totalQuantity
-                      ) && (
+                      invalidCount === 0 && (
                         <div>
                           <div
                             className='text-label'
@@ -556,10 +553,7 @@ export const Drop = () => {
                               batches={batches}
                               submitted={submitted}
                               onSubmit={handleSubmit}
-                              disabled={
-                                selectedNFT.balance.isLessThan(totalQuantity) ||
-                                !selectedNFT.identifier
-                              }
+                              disabled={!selectedNFT.identifier}
                             />
                           </div>
                         </div>

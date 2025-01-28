@@ -24,7 +24,7 @@ export const ActionBuy = ({
       string | null
     >(null);
 
-  const addressTobech32 = new Address(dropContract);
+  const dropTobech32 = new Address(dropContract);
   const { address } = useGetAccountInfo();
 
   const sendFundTransaction = async () => {
@@ -48,19 +48,8 @@ export const ActionBuy = ({
       // );
       batchTx.push({
         value: 0,
-        data:
-          'MultiESDTNFTTransfer@' +
-          addressTobech32.toHex() +
-          '@01@' +
-          Buffer.from(identifier, 'utf8').toString('hex') +
-          '@' +
-          bigNumToHex(nonce > 0 ? nonce : new BigNumber(0)) +
-          '@' +
-          bigNumToHex(batch.totalQuantity) +
-          '@' +
-          Buffer.from('graou', 'utf8').toString('hex') +
-          sub,
-        receiver: address,
+        data: 'addDrop' + sub,
+        receiver: dropTobech32,
         gasLimit: 3000000 + batch.addresses.length * 580000
       });
     }
@@ -93,7 +82,7 @@ export const ActionBuy = ({
             fontSize='32px'
             fontFamily='Bit Cell'
             text={submitted ? 'Submited' : 'Submit '}
-            disabled={disabled || submitted ? true : false}
+            disabled={disabled}
             onClick={sendFundTransaction}
             padding='20px'
           />
