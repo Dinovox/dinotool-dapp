@@ -207,6 +207,7 @@ export const Mint = () => {
                         <>
                           <ActionBuy
                             price={mintable?.payment_price}
+                            balance={new BigNumber(balance)}
                             hasBuyed={hasBuyed}
                             payment_token={mintable.payment_token}
                           />
