@@ -15,10 +15,17 @@ const ShortenedAddress = ({ address }: any) => {
     setTimeout(() => setCopied(false), 2000); // Réinitialiser le statut après 2 secondes
   };
 
+  if (!address) {
+    return <></>;
+  }
   return (
     <div className='shortened-address'>
       <span className='address-text'>
-        <a href={network.explorerAddress + '/accounts/' + address}>
+        <a
+          href={network.explorerAddress + '/accounts/' + address}
+          target='_blank'
+          rel='noreferrer'
+        >
           {shortenedAddress}
         </a>
       </span>

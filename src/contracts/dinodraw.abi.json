@@ -1,0 +1,336 @@
+{
+  "buildInfo": {
+    "rustc": {
+      "version": "1.83.0",
+      "commitHash": "90b35a6239c3d8bdabc530a6a0816f7ff89a0aaf",
+      "commitDate": "2024-11-26",
+      "channel": "Stable",
+      "short": "rustc 1.83.0 (90b35a623 2024-11-26)"
+    },
+    "contractCrate": {
+      "name": "dinodraw",
+      "version": "0.0.0"
+    },
+    "framework": {
+      "name": "multiversx-sc",
+      "version": "0.54.6"
+    }
+  },
+  "name": "Dinodraw",
+  "constructor": {
+    "inputs": [
+      {
+        "name": "main_token",
+        "type": "TokenIdentifier"
+      },
+      {
+        "name": "main_token_amount",
+        "type": "BigUint"
+      },
+      {
+        "name": "fee_collector",
+        "type": "Address"
+      }
+    ],
+    "outputs": []
+  },
+  "upgradeConstructor": {
+    "inputs": [],
+    "outputs": []
+  },
+  "endpoints": [
+    {
+      "name": "create",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "price_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "price_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "price_amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "max_tickets",
+          "type": "u64"
+        },
+        {
+          "name": "max_per_wallet",
+          "type": "u64"
+        },
+        {
+          "name": "start_time",
+          "type": "u64"
+        },
+        {
+          "name": "end_time",
+          "type": "u64"
+        },
+        {
+          "name": "fee_percentage",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "buy",
+      "mutability": "mutable",
+      "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "draw",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "delete",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getLottery",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "LotteryInfo"
+        }
+      ]
+    },
+    {
+      "name": "getNextLotteryId",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "getRunningLottery",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<u64>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getEndedLottery",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<u64>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getMainToken",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "TokenIdentifier"
+        }
+      ]
+    },
+    {
+      "name": "getMainTokenAmount",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "getLotteryParticipants",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<u32>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getFeeCollector",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
+      "name": "getUserTickets",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        },
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "getLotteryDetails",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "tuple<LotteryInfo,Address,Address>"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "identifier": "lotteryCreated",
+      "inputs": [
+        {
+          "name": "creator",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "lottery_id",
+          "type": "u64",
+          "indexed": true
+        }
+      ]
+    }
+  ],
+  "esdtAttributes": [],
+  "hasCallback": false,
+  "types": {
+    "LotteryInfo": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "owner_id",
+          "type": "u32"
+        },
+        {
+          "name": "winner_id",
+          "type": "u32"
+        },
+        {
+          "name": "start",
+          "type": "u64"
+        },
+        {
+          "name": "end",
+          "type": "u64"
+        },
+        {
+          "name": "prize_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "prize_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "prize_amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "price_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "price_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "price_amount",
+          "type": "BigUint"
+        },
+        {
+          "name": "max_tickets",
+          "type": "u64"
+        },
+        {
+          "name": "max_per_wallet",
+          "type": "u64"
+        },
+        {
+          "name": "tickets_sold",
+          "type": "u64"
+        },
+        {
+          "name": "fee_percentage",
+          "type": "u64"
+        }
+      ]
+    }
+  }
+}

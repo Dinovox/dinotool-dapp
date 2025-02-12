@@ -71,6 +71,7 @@
   display: grid;
   align-content: space-evenly;
 }
+
 @media screen and (max-width: 800px) {
   .dinocard-wrapper {
     max-width: 361px; /* Par exemple, prendre 100% de la largeur de l'écran */

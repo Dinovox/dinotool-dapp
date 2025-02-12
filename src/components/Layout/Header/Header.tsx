@@ -67,7 +67,21 @@ export const Header = () => {
               <div className='w-2 h-2 rounded-full bg-green-500' />
               <p className='text-gray-600'>{environment}</p>
             </div>
-
+            {environment === 'devnet' && (
+              <MxLink
+                className=''
+                to={
+                  isLoggedIn ? RouteNamesEnum.lottery : RouteNamesEnum.lottery
+                }
+              >
+                <div
+                  style={{ width: '100%' }}
+                  className='mintGazTitle dinoTitle'
+                >
+                  LOTTERY
+                </div>
+              </MxLink>
+            )}
             {isLoggedIn ? (
               <>
                 {environment === 'mainnet' && (
@@ -96,7 +110,7 @@ export const Header = () => {
                     </div>
                   </MxLink>
                 )}
-                {environment === 'devnet' && (
+                {environment === 'testnet' && (
                   <MxLink
                     className=''
                     to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
@@ -108,8 +122,7 @@ export const Header = () => {
                       QUIZ
                     </div>
                   </MxLink>
-                )}
-
+                )}{' '}
                 <Button
                   onClick={handleLogout}
                   className='inline-block rounded-lg px-3 py-2 text-center hover:no-underline my-0 text-gray-600 hover:bg-slate-100 mx-0'

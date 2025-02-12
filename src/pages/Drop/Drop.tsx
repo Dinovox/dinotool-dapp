@@ -16,6 +16,7 @@ import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { FormatAmount } from 'components';
 import { useGetDinoHolders } from './Transaction/helpers/useGetDinoHolders';
 import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
+import { cp } from 'fs';
 
 export const Drop = () => {
   const dinobox_holder = useGetDinoHolders('DINOBOX-54d57b');

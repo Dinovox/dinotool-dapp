@@ -11,9 +11,7 @@ import {
   OperaWalletLoginButton,
   WalletConnectLoginButton,
   WebWalletLoginButton as WebWalletUrlLoginButton,
-  XaliasCrossWindowLoginButton,
-  CrossWindowLoginButton,
-  MetamaskProxyButton
+  CrossWindowLoginButton
 } from 'components/sdkDappComponents';
 import { nativeAuth } from 'config';
 import { RouteNamesEnum } from 'localConstants';
@@ -37,11 +35,13 @@ const WebWalletLoginButton = USE_WEB_WALLET_CROSS_WINDOW
 
 export const Unlock = () => {
   const navigate = useNavigate();
+  const previousPage =
+    sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.mint;
   const commonProps: CommonPropsType = {
     callbackRoute: RouteNamesEnum.mint,
     nativeAuth,
     onLoginRedirect: () => {
-      navigate(RouteNamesEnum.mint);
+      navigate(previousPage);
     }
   };
 

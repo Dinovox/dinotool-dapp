@@ -9,3 +9,4 @@ export const sampleAuthenticatedDomains = [API_URL];
 export const environment = EnvironmentsEnum.testnet;
 export const metamaskSnapWalletAddress =
   'https://testnet-snap-wallet.multiversx.com';
+export const lotteryContract = 'erd1qqqqqqqqqqqqqpgq';

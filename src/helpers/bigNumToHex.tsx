@@ -1,17 +1,13 @@
 import BigNumber from 'bignumber.js';
 
-const bigToHex = (bn: BigNumber) => {
+const bigNumToHex = (bn: BigNumber) => {
   const base = 16;
 
-  // Convertir BigNumber en chaîne hexadécimale
+  // Convertir en chaîne hexadécimale
   let hex = bn.toString(base);
 
   // Si la longueur est impaire, ajouter un zéro devant
-  if (hex.length % 2 !== 0) {
-    hex = '0' + hex;
-  }
-
-  return hex;
+  return hex.length % 2 !== 0 ? '0' + hex : hex;
 };
 
-export default bigToHex;
+export default bigNumToHex;
