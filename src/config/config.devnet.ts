@@ -18,3 +18,5 @@ export const sampleAuthenticatedDomains = [API_URL];
 export const environment: EnvironmentsEnum = EnvironmentsEnum.devnet;
 export const metamaskSnapWalletAddress =
   'https://devnet-snap-wallet.multiversx.com';
+
+export const xgraou_identifier = 'GRAOU-c9dd53';

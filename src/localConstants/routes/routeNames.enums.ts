@@ -6,5 +6,5 @@ export enum RouteNamesEnum {
   mint = '/mint',
   drop = '/drop',
   quiz = '/quiz',
-  lottery = '/lottery'
+  lotteries = '/lotteries'
 }

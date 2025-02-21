@@ -21,6 +21,10 @@ import CreateLotteryModal from './Create';
 import { useGetRunningLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetRunningLottery';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { ActionCancel } from './Transaction/ActionCancel';
+import LotteryList from './LotteryList';
+import freeChest from 'assets/img/freeChest.png';
+import FileDisplay from './FileDisplay';
 
 export const Lottery = () => {
   const [timeStart, setTimeStart] = useState(60 * 60);
@@ -33,6 +37,8 @@ export const Lottery = () => {
   useEffect(() => {
     if (id) {
       setLotteryID(Number(id));
+    } else {
+      setLotteryID(0);
     }
   }, [id]);
 
@@ -71,10 +77,11 @@ export const Lottery = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const runningLottery = useGetRunningLottery();
+  const runningLottery = useGetRunningLottery().sort((a, b) => a - b);
   // console.log('runningLottery', runningLottery.toString());
 
-  const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
+  // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
+  const lottery = useGetLottery(lotteryID);
 
   const { buyed, esdtAmount } = useGetUserTickets(lotteryID);
   const { balance } = useGetAccount();
@@ -109,282 +116,279 @@ export const Lottery = () => {
     return () => clearInterval(interval); // Nettoyage de l'intervalle
   }, [lottery]);
 
+  // console.log('lottery', lottery.end.toFixed());
   return (
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-          <CreateLotteryModal />
-          {runningLottery && runningLottery.length > 0 && (
-            <div className='running-lottery'>
-              <h2>Running Lotteries</h2>
-              <ul>
-                {runningLottery.map((lottery) => (
-                  <span
-                    key={lottery}
-                    onClick={() => {
-                      setLotteryID(lottery);
-                      navigate(`/lottery/${lottery}`, { replace: true });
-                      // window.history.pushState({}, '', `/lottery/${lottery}`);
-                    }}
-                    style={{
-                      display: 'inline-block',
-                      width: '20px',
-                      height: '20px',
-                      backgroundColor: '#f0f0f0',
-                      border: '1px solid #ccc',
-                      textAlign: 'center',
-                      lineHeight: '20px',
-                      margin: '2px',
-                      cursor: 'pointer'
-                    }}
-                    className='pagination-square'
-                  >
-                    {lottery}
-                  </span>
-                ))}
-              </ul>
-            </div>
+          {!lottery.id ? (
+            <>
+              <div
+                className='mintGazTitle dinoTitle'
+                style={{ width: '340px' }}
+              >
+                Lotteries
+              </div>{' '}
+              <LotteryList runningLottery={runningLottery} />
+              <CreateLotteryModal />
+            </>
+          ) : (
+            <></>
           )}
-          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-            Lottery #{lottery?.id.toFixed()}
-          </div>{' '}
-          <div className='dinocard'>
-            <div className='sub-dinocard box-item'>
-              {lottery && (
-                <>
-                  <div className='info-item'>
-                    <span className='text-label'>Owner: </span>
-                    {lottery.owner && (
-                      <>
-                        <ShortenedAddress address={lottery.owner} />
-                      </>
-                    )}
-                  </div>
-                  <div className='info-item'>
-                    <span className='text-label'>Tickets: </span>{' '}
-                    {lottery?.tickets_sold.toFixed()} /{' '}
-                    {lottery?.max_tickets.toFixed()}
-                  </div>{' '}
-                  {lottery.max_per_wallet > 0 && (
-                    <div className='info-item'>
-                      <span className='text-label'>MAX / wallet: </span>{' '}
-                      {lottery?.max_per_wallet.toFixed()}{' '}
-                    </div>
-                  )}
-                  <div className='info-item'>
-                    <span className='text-label'>Start: </span>{' '}
-                    {blockToTime(lottery?.start)}{' '}
-                  </div>
-                  <div className='info-item'>
-                    <span className='text-label'>End: </span>{' '}
-                    {blockToTime(lottery?.end)}{' '}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-          <div className='dinocard'>
-            {lottery && lottery.prize_identifier && timeStart <= 60 * 30 ? (
-              <>
-                <div className='sub-dinocard box-item'>
-                  <span className='text-label'>Entry Cost </span>
-
-                  {lottery.price_nonce > 0 ? (
-                    <NftDisplay
-                      nftInfo={price_nft_information}
-                      amount={lottery.price_amount}
-                    />
-                  ) : (
-                    <>
-                      {' '}
-                      <EsdtDisplay
-                        esdtInfo={price_esdt_information}
-                        amount={lottery.price_amount}
-                      />
-                    </>
-                  )}
-
-                  {/* <div className='info-item'>
-                    <span className='text-label'>Wallet:</span>{' '}
-                    {lottery.payment_token == 'EGLD' ? (
-                      <>
-                        {formatAmount({
-                          input: balance,
-                          decimals: 18,
-                          digits: 2,
-                          showLastNonZeroDecimal: false,
-                          addCommas: true
-                        })}
-                      </>
-                    ) : (
-                      <>
-                        {formatAmount({
-                          input: esdtAmount.toFixed(),
-                          decimals: 18,
-                          digits: 2,
-                          showLastNonZeroDecimal: false,
-                          addCommas: true
-                        })}
-                      </>
-                    )}{' '}
-                    <span className='identifier'>
-                      {' '}
-                      {lottery.price_identifier}
-                    </span>
-                  </div> */}
-                  {/* <div className='info-item'>
-                    <span className='text-label'>Price: </span>
-                    {formatAmount({
-                      input: lottery?.price_amount?.toFixed(),
-                      decimals: 18,
-                      digits: 2,
-                      showLastNonZeroDecimal: false,
-                      addCommas: true
-                    })}{' '}
-                    <span className='identifier'>
-                      {' '}
-                      {lottery?.price_identifier}
-                    </span>
-                  </div> */}
-
-                  {/* {lottery.prize_amount && lottery.prize_amount > 1 && (
-                    <div className='info-item'>
-                      <span className='text-label'>Amount: </span>{' '}
-                      {formatAmount({
-                        input: lottery.prize_amount.toFixed(),
-                        digits: 0,
-                        decimals: prize_esdt_information?.decimals,
-                        showLastNonZeroDecimal: false,
-                        addCommas: true
-                      })}
-                    </div>
-                  )} */}
-                  {/* <div className='info-item'>
-                    <span className='text-label'>SFT: </span>{' '}
-                    {lottery?.prize_identifier}-
-                    {toHex(lottery?.prize_nonce.toFixed())}
-                  </div> */}
-
-                  {/* {lottery?.fee_percentage > 0 && (
-                    <div className='info-item'>
-                      <span className='text-label'>Fees: </span>{' '}
-                      {lottery?.fee_percentage / 100} %
-                    </div>
-                  )} */}
-                </div>
-                <div className='sub-dinocard'>
-                  <span className='text-label'>Winning Prize </span>
-                  {lottery.prize_nonce > 0 ? (
-                    <NftDisplay
-                      nftInfo={prize_nft_information}
-                      amount={lottery.prize_amount}
-                    />
-                  ) : (
-                    <>
-                      {' '}
-                      <EsdtDisplay
-                        esdtInfo={prize_esdt_information}
-                        amount={lottery.prize_amount}
-                      />
-                    </>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className='sub-dinocard'>{displayText}</div>
-            )}
-          </div>
-          {lottery &&
-            (lottery.tickets_sold >= lottery.max_tickets ||
-              timeEnd > lottery.end) && (
+          {lottery.id > 0 && (
+            <>
+              <div
+                className='mintGazTitle dinoTitle'
+                style={{ width: '340px' }}
+              >
+                Lottery #{lottery?.id.toFixed()}
+              </div>{' '}
               <div className='dinocard'>
-                <div className='sub-dinocard'>
-                  <div className='info-item'>
-                    {lottery.winner &&
-                    lottery.winner !=
-                      'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' ? (
-                      <>
-                        <span className='text-label'>Winner: </span>
-
-                        <ShortenedAddress address={lottery.winner} />
-                      </>
-                    ) : (
-                      <>
-                        {lottery.owner != address ? (
-                          <>Waiting for the owner to draw the winner</>
-                        ) : (
+                <div className='sub-dinocard box-item'>
+                  {lottery && (
+                    <>
+                      <div className='info-item'>
+                        <span className='text-label'>Owner: </span>
+                        {lottery.owner && (
                           <>
-                            <ActionDraw lottery_id={lotteryID} />
+                            <ShortenedAddress address={lottery.owner} />
                           </>
                         )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          <div
-            style={{ width: '100%', justifyContent: 'center', display: 'grid' }}
-          >
-            <div className='text-label' style={{ margin: 'auto' }}>
-              {lottery && lottery.max_tickets > lottery.tickets_sold ? (
-                <>
-                  {timeStart > 0 ? (
-                    <div>Open in : {formatTime(timeStart)}</div>
-                  ) : (
-                    <>
-                      {timeEnd > 0 ? (
-                        <>
-                          {lottery.owner != address ? (
-                            <ActionBuy
-                              lottery_id={lotteryID}
-                              price_identifier={lottery?.price_identifier}
-                              price_nonce={lottery.price_nonce}
-                              price_amount={lottery.price_amount}
-                              balance={new BigNumber(balance)}
-                              buyed={
-                                lottery.max_per_wallet > 0 &&
-                                buyed >= lottery.max_per_wallet
-                                  ? true
-                                  : false
-                              }
-                            />
-                          ) : (
-                            <>Owner can't buy ticket</>
-                          )}
-
-                          {buyed > 0 && <>You have {buyed.toFixed()} tickets</>}
-                          <div>End in : {formatTime(timeEnd)}</div>
-                        </>
-                      ) : (
-                        <>Sale ended waiting for final draw</>
+                      </div>
+                      <div className='info-item'>
+                        <span className='text-label'>Tickets: </span>{' '}
+                        {lottery?.tickets_sold.toFixed()} /{' '}
+                        {lottery?.max_tickets.toFixed()}
+                      </div>{' '}
+                      {lottery.max_per_wallet > 0 && (
+                        <div className='info-item'>
+                          <span className='text-label'>MAX / wallet: </span>{' '}
+                          {lottery?.max_per_wallet.toFixed()}{' '}
+                        </div>
+                      )}
+                      <div className='info-item'>
+                        <span className='text-label'>Start: </span>{' '}
+                        {blockToTime(lottery?.start)}{' '}
+                      </div>
+                      {lottery.end > 0 && (
+                        <div className='info-item'>
+                          <span className='text-label'>End: </span>{' '}
+                          {blockToTime(lottery?.end)}{' '}
+                        </div>
                       )}
                     </>
                   )}
-                </>
-              ) : (
+                </div>
+              </div>
+              <div className='dinocard'>
+                {lottery && lottery.prize_identifier && (
+                  <>
+                    <div className='sub-dinocard box-item'>
+                      <span className='text-label'>Entry Cost </span>
+
+                      {lottery.price_nonce > 0 ? (
+                        <NftDisplay
+                          nftInfo={price_nft_information}
+                          amount={lottery.price_amount}
+                        />
+                      ) : (
+                        <>
+                          {' '}
+                          {lottery.price_identifier == 'FREE-000000' ? (
+                            <div
+                              className='mint-image'
+                              style={{ margin: 'auto', width: '200px' }}
+                            >
+                              <FileDisplay
+                                source={freeChest}
+                                fileType={
+                                  prize_nft_information?.media?.length
+                                    ? prize_nft_information?.media[0]?.fileType
+                                    : ''
+                                }
+                                width='200px'
+                                height='200px'
+                              />
+                              <p>Free</p>
+                            </div>
+                          ) : (
+                            <EsdtDisplay
+                              esdtInfo={price_esdt_information}
+                              amount={lottery.price_amount}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <div className='sub-dinocard'>
+                      <span className='text-label'>Winning Prize </span>
+                      {lottery.prize_nonce > 0 ? (
+                        <NftDisplay
+                          nftInfo={prize_nft_information}
+                          amount={lottery.prize_amount}
+                        />
+                      ) : (
+                        <>
+                          {' '}
+                          <EsdtDisplay
+                            esdtInfo={prize_esdt_information}
+                            amount={lottery.prize_amount}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+                {/* {timeStart >= 60 * 30 && (
+                  <div className='sub-dinocard'>{displayText}</div>
+                )}{' '} */}
+              </div>
+              {lottery.winner !=
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
                 <>
-                  <span>
-                    {buyed && buyed > 0 && (
-                      <>
-                        You have {buyed.toFixed()} tickets
-                        <br />
-                      </>
-                    )}
-                    SOLD GRAOUT
-                  </span>{' '}
+                  <div className='dinocard'>
+                    <div className='sub-dinocard'>
+                      <div className='info-item'></div>
+                      <span className='text-label'>Winner: </span>
+
+                      <ShortenedAddress address={lottery.winner} />
+                    </div>
+                  </div>
                 </>
               )}
-              <div></div>
-            </div>
-            {/* <MxLink
-              className='dinoButton  rounded-lg px-3 py-2 text-center hover:no-underline my-0 bg-blue-600 '
-              to={RouteNamesEnum.unlock}
-            >
-              Connect
-            </MxLink> */}
-          </div>{' '}
-        </div>
+              {lottery.owner != address ? (
+                <>
+                  {lottery.tickets_sold >= lottery.max_tickets && (
+                    <> Waiting for the owner to draw the winner</>
+                  )}
+                </>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  {lottery.winner ==
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
+                    <ActionDraw
+                      lottery_id={lotteryID}
+                      disabled={lottery.tickets_sold == 0}
+                    />
+                  )}
+                  {lottery.winner ==
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
+                    <ActionCancel lottery_id={lotteryID} />
+                  )}
+                </div>
+              )}
+              {/* {lottery &&
+                (lottery.tickets_sold >= lottery.max_tickets ||
+                  (lottery.end < Date.now() && lottery.end > 0)) ? (
+
+                       <></>
+                        ) : (
+                          <>
+                           
+                          </>
+                        )}
+                )}{' '} */}
+              <div
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  display: 'grid'
+                }}
+              >
+                <div className='text-label' style={{ margin: 'auto' }}>
+                  {lottery && lottery.max_tickets > lottery.tickets_sold ? (
+                    <>
+                      {timeStart > 0 ? (
+                        <div>Open in : {formatTime(timeStart)}</div>
+                      ) : (
+                        <>
+                          {timeEnd > 0 || lottery.end == 0 ? (
+                            <>
+                              {lottery.owner != address ? (
+                                <ActionBuy
+                                  lottery_id={lotteryID}
+                                  price_identifier={lottery?.price_identifier}
+                                  price_nonce={lottery.price_nonce}
+                                  price_amount={lottery.price_amount}
+                                  balance={new BigNumber(balance)}
+                                  buyed={
+                                    lottery.max_per_wallet > 0 &&
+                                    buyed >= lottery.max_per_wallet
+                                      ? true
+                                      : false
+                                  }
+                                />
+                              ) : (
+                                <>Owner can't buy ticket</>
+                              )}
+
+                              {buyed > 0 && (
+                                <>You have {buyed.toFixed()} tickets</>
+                              )}
+                              {lottery.end > 0 && (
+                                <div>End in : {formatTime(timeEnd)}</div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {lottery.winner ==
+                                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' &&
+                                lottery.tickets_sold > 0 && (
+                                  <>Sale ended waiting for final draw</>
+                                )}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span>
+                        {buyed && buyed > 0 && (
+                          <>
+                            You have {buyed.toFixed()} tickets
+                            <br />
+                          </>
+                        )}
+                        SOLD GRAOUT
+                      </span>{' '}
+                    </>
+                  )}
+                  <div></div>
+                </div>
+              </div>{' '}
+            </>
+          )}
+
+          <div className='running-lottery'>
+            <h2>Running Lotteries</h2>
+            <ul>
+              {runningLottery.map((lottery) => (
+                <span
+                  key={lottery}
+                  onClick={() => {
+                    setLotteryID(lottery);
+                    navigate(`/lotteries/${lottery}`, { replace: true });
+                  }}
+                  style={{
+                    display: 'inline-block',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#f0f0f0',
+                    border: '1px solid #ccc',
+                    textAlign: 'center',
+                    lineHeight: '20px',
+                    margin: '2px',
+                    cursor: 'pointer'
+                  }}
+                  className='pagination-square'
+                >
+                  {lottery}
+                </span>
+              ))}
+            </ul>
+          </div>
+        </div>{' '}
       </PageWrapper>
     </AuthRedirectWrapper>
   );

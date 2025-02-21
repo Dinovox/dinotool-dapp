@@ -13,7 +13,13 @@ export const useGetDinoStakers = () => {
     //using storage to reduce calls
     const expire_test = Number(localStorage.getItem('stakers_expire'));
     if (time.getTime() < expire_test) {
-      const storage = JSON.parse(localStorage.getItem('stakers') as string);
+      const storage = localStorage.getItem('stakers');
+      console.log('storage', storage);
+      if (storage) {
+        setHolders(JSON.parse(storage));
+      } else {
+        setHolders({});
+      }
       setHolders(storage);
       return;
     }
@@ -28,7 +34,10 @@ export const useGetDinoStakers = () => {
             Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
           }
         });
-        setHolders(data.wallets);
+        if (!data.wallets) {
+          setHolders(data.wallets);
+          return;
+        }
         //storage of 1000 minutes
         const expire = time.getTime() + 1000 * 60 * 1000;
         localStorage.setItem('stakers', JSON.stringify(data.wallets));

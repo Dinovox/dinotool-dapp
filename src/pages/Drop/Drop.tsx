@@ -166,14 +166,14 @@ export const Drop = () => {
     const uniqueAddressesSet = new Set<string>();
 
     // Ajouter les adresses de dinobox_holder si boxHolders est coché
-    if (boxHolders && dinobox_holder.length > 0) {
+    if (boxHolders && dinobox_holder && dinobox_holder.length > 0) {
       dinobox_holder
         .map((holder: any) => holder.address)
         .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
         .forEach((address: any) => uniqueAddressesSet.add(address));
     }
 
-    if (voxStakers && dinovox_stakers.length > 0) {
+    if (voxStakers && dinovox_stakers && dinovox_stakers.length > 0) {
       dinovox_stakers
         .map((staker: any) => staker.address)
         .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
@@ -181,7 +181,7 @@ export const Drop = () => {
     }
 
     // Ajouter les adresses de dinovox_holder si voxHolders est coché
-    if (voxHolders && dinovox_holder.length > 0) {
+    if (voxHolders && dinovox_holder && dinovox_holder.length > 0) {
       dinovox_holder
         .map((holder: any) => holder.address)
         .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC

@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --my-yellow: rgba(245, 237, 67, 1); /* Déclaration de la variable HSL */
+  --my-yellow-hover: rgba(245, 237, 67, 0.6);
+  --primary-foreground: rgba(86, 71, 44, 1);
+  --primary-disabled: rgba(200, 200, 200, 1);
+}
+
 @font-face {
   font-family: 'Bitcell';
   src: url('/fonts/bitcell_memesbruh03.ttf') format('truetype');
@@ -43,7 +50,7 @@
 }
 
 .dinocard-wrapper {
-  width: 768px;
+  width: 800px;
   margin-bottom: 30px;
 }
 .mintGazTitle img {
@@ -72,9 +79,9 @@
   align-content: space-evenly;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 767px) {
   .dinocard-wrapper {
-    max-width: 361px; /* Par exemple, prendre 100% de la largeur de l'écran */
+    max-width: 376px; /* Par exemple, prendre 100% de la largeur de l'écran */
   }
   .mintGazTitle img {
     width: 306px;
@@ -100,7 +107,63 @@
   justify-content: center;
 } */
 
-:root {
-  --my-yellow: rgba(245, 237, 67, 1); /* Déclaration de la variable HSL */
-  --my-yellow-hover: rgba(245, 237, 67, 0.6);
+.entry-free {
+  background: linear-gradient(45deg, #ffcc00, #ff8800);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0px 4px 8px rgba(255, 136, 0, 0.4);
+  text-transform: uppercase;
+}
+
+.dinoButton {
+  background-color: var(--my-yellow);
+  font-family: Bit Cell;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  padding-right: 1.5rem;
+  padding-left: 1.5rem;
+  border-radius: 12px;
+  height: 2.5rem;
+  color: var(--primary-foreground);
+}
+
+.smallDinoButton {
+  /* Rarity */
+  font-family: BitCell;
+  font-size: 1rem;
+
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 8px;
+  gap: 10px;
+
+  width: 80px;
+  height: 22px;
+
+  background: #f7ea43;
+  color: black;
+  border-radius: 4px;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.dinoButton:hover,
+.smallDinoButton:hover {
+  background-color: var(--my-yellow-hover);
+}
+
+.dinoButton:disabled,
+.smallDinoButton:disabled {
+  background-color: var(--primary-disabled);
+  color: #000;
+  cursor: not-allowed;
 }

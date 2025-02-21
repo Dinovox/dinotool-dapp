@@ -36,10 +36,30 @@ export const useGetLottery = (lottery_id: any) => {
   const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getMintable = async () => {
-    if (hasPendingTransactions || !lottery_id) {
+    if (hasPendingTransactions) {
       return;
     }
-
+    if (!lottery_id || lottery_id === 0) {
+      setMintable({
+        id: 0,
+        owner_id: 0,
+        start: 0,
+        end: 0,
+        prize_identifier: '',
+        prize_nonce: 0,
+        prize_amount: new BigNumber(0),
+        price_identifier: '',
+        price_nonce: 0,
+        price_amount: new BigNumber(0),
+        max_tickets: 0,
+        max_per_wallet: 0,
+        tickets_sold: 0,
+        fee_percentage: 0,
+        owner: '',
+        winner: ''
+      });
+      return;
+    }
     try {
       const query = lotteryContract.createQuery({
         func: new ContractFunction('getLotteryDetails'),

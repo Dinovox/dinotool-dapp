@@ -38,13 +38,13 @@ export const routes: RouteWithTitleType[] = [
     component: Quiz
   },
   {
-    path: RouteNamesEnum.lottery,
-    title: 'Lottery',
+    path: RouteNamesEnum.lotteries,
+    title: 'Lotteries',
     component: Lottery
   },
   {
-    path: `${RouteNamesEnum.lottery}/:id`,
-    title: 'Lottery Detail',
+    path: `${RouteNamesEnum.lotteries}/:id`,
+    title: 'Lottery',
     component: Lottery
   }
 ];

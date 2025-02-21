@@ -68,17 +68,12 @@ export const Header = () => {
               <p className='text-gray-600'>{environment}</p>
             </div>
             {environment === 'devnet' && (
-              <MxLink
-                className=''
-                to={
-                  isLoggedIn ? RouteNamesEnum.lottery : RouteNamesEnum.lottery
-                }
-              >
+              <MxLink className='' to={RouteNamesEnum.lotteries}>
                 <div
                   style={{ width: '100%' }}
                   className='mintGazTitle dinoTitle'
                 >
-                  LOTTERY
+                  LOTTERIES
                 </div>
               </MxLink>
             )}

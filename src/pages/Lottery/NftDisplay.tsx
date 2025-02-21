@@ -31,7 +31,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({ nftInfo, amount }: any) => {
               <img src={nftInfo?.media[0]?.url} alt='SFT' />
             )
           )}
-          {amount.toFixed()}{' '}
+          {amount > 0 && amount.toFixed()}{' '}
           <span className='identifier'> {nftInfo?.identifier}</span>
         </div>
       </div>

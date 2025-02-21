@@ -4,7 +4,11 @@ import axios from 'axios';
 import { useGetNetworkConfig } from 'hooks';
 import toHex from 'helpers/toHex';
 
-export const useGetNftInformations = (identifier: string, nonce: string) => {
+export const useGetNftInformations = (
+  identifier: string,
+  nonce: string,
+  type?: string
+) => {
   const { network } = useGetNetworkConfig();
   //const { network } = useGetNetworkConfig();
   const time = new Date();
@@ -70,7 +74,13 @@ export const useGetNftInformations = (identifier: string, nonce: string) => {
       return;
     }
 
-    if (identifier == '' || identifier == undefined || nonce == '') {
+    if (
+      identifier == '' ||
+      identifier == undefined ||
+      nonce == '' ||
+      identifier == 'EGLD-000000' ||
+      type == 'ESDT'
+    ) {
       return;
     }
     const url = '/nfts/' + identifier + '-' + toHex(nonce);

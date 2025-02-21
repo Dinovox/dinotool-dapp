@@ -11,6 +11,7 @@ import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
+// import './../../Mint/MintSFT.css';
 
 export const ActionBuy = ({
   lottery_id,
@@ -39,6 +40,13 @@ export const ActionBuy = ({
     if (price_identifier == 'EGLD-000000') {
       fundTransaction = {
         value: price_amount,
+        data: 'buy@' + bigToHex(BigInt(lottery_id)),
+        receiver: addressTobech32,
+        gasLimit: '14000000'
+      };
+    } else if (price_identifier == 'FREE-000000') {
+      fundTransaction = {
+        value: 0,
         data: 'buy@' + bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
         gasLimit: '14000000'
@@ -100,19 +108,7 @@ export const ActionBuy = ({
     <>
       {!hasPendingTransactions ? (
         <>
-          <Button
-            buttonWidth='100%'
-            borderRadius={10}
-            background={'rgba(245, 237, 67, 1)'}
-            textColor=''
-            fontSize='32px'
-            text={
-              balance.isLessThan(new BigNumber(price_amount).plus(fees))
-                ? 'balance too low'
-                : buyed
-                ? 'One mint per wallet'
-                : 'Buy ticket'
-            }
+          <button
             disabled={
               buyed ||
               balance.isLessThan(new BigNumber(price_amount).plus(fees))
@@ -120,22 +116,20 @@ export const ActionBuy = ({
                 : false
             }
             onClick={sendFundTransaction}
-            padding='20px'
-          />
+            className={'dinoButton'}
+          >
+            {balance.isLessThan(new BigNumber(price_amount).plus(fees))
+              ? 'balance too low'
+              : buyed
+              ? 'One mint per wallet'
+              : 'Buy ticket'}
+          </button>
         </>
       ) : (
         <>
-          <Button
-            buttonWidth='100%'
-            borderRadius={40}
-            background={'#f7ea43'}
-            textColor='rgb(255 119 75)'
-            borderColor={'black'}
-            text='Processing'
-            fontSize='32px'
-            disabled={true}
-            padding='20px'
-          />
+          <button className='dinoButton' disabled={true}>
+            Processing
+          </button>
         </>
       )}
     </>

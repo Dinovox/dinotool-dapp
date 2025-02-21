@@ -1,6 +1,7 @@
 import React, { FC, CSSProperties, MouseEventHandler, ReactNode } from 'react';
 
 interface ButtonProps {
+  className?: string;
   text?: React.ReactNode;
   fontSize?: string;
   fontFamily?: string;
@@ -25,6 +26,7 @@ interface ButtonProps {
 }
 
 export const Button: FC<ButtonProps> = ({
+  className = '',
   background = 'blue',
   buttonWidth = '120px',
   disabled = false,
@@ -57,7 +59,6 @@ export const Button: FC<ButtonProps> = ({
 
   const buttonStyle: CSSProperties = {
     boxShadow: boxShadow,
-
     display: 'flex',
     justifyContent: 'center',
     filter: disabled ? `grayscale(${grayscale})` : 'none',
@@ -117,7 +118,12 @@ export const Button: FC<ButtonProps> = ({
 
   return (
     <div style={wrapperStyle}>
-      <button disabled={disabled} style={buttonStyle} onClick={onClick}>
+      <button
+        disabled={disabled}
+        style={buttonStyle}
+        onClick={onClick}
+        className={'dinoButton'}
+      >
         <div style={HtmlLeftSvgStyle}>{LeftHtml}</div>
         {text}
         <div style={HtmlRightSvgStyle}>{rightHtml}</div>

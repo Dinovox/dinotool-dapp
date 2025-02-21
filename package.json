@@ -6,9 +6,12 @@
   "license": "GPL-3.0-or-later",
   "repository": "@multiversx/mx-template-dapp",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fortawesome/fontawesome-svg-core": "6.5.1",
     "@fortawesome/free-solid-svg-icons": "6.5.1",
     "@fortawesome/react-fontawesome": "0.2.0",
+    "@mui/material": "^6.4.4",
     "@multiversx/sdk-core": "13.15.0",
     "@multiversx/sdk-dapp": "3.1.2",
     "@multiversx/sdk-network-providers": "2.9.3",

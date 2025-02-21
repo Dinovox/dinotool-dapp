@@ -18,5 +18,6 @@ export const lotteryContract = 'erd1qqqqqqqqqqqqqpgq';
 export const API_URL = 'https://api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];
 export const metamaskSnapWalletAddress = 'https://snap-wallet.multiversx.com';
-//PAS MAINNET
-export const graou_identifier = 'GRAOU-c9dd53';
+
+//xGRAOU n'est pas transférable et doit être desactivé dans les formulaires
+export const xgraou_identifier = 'XGRAOU-a7441a';

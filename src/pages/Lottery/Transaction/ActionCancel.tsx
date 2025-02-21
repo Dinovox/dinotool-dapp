@@ -12,7 +12,7 @@ import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
 
-export const ActionDraw = ({ lottery_id, disabled }: any) => {
+export const ActionCancel = ({ lottery_id }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const fees = new BigNumber(140669180000000);
@@ -24,10 +24,13 @@ export const ActionDraw = ({ lottery_id, disabled }: any) => {
   const addressTobech32 = new Address(lotteryContractAddress);
   const { address } = useGetAccountInfo();
 
+  // console.log('price_identifier', price_identifier);
+  // console.log('price_nonce', price_nonce.toFixed());
+  // console.log('price_amount', price_amount.toFixed());
   const sendFundTransaction = async () => {
     const fundTransaction = {
       value: 0,
-      data: 'draw@' + bigToHex(BigInt(lottery_id)),
+      data: 'cancel@' + bigToHex(BigInt(lottery_id)),
       receiver: addressTobech32,
       gasLimit: '14000000'
     };
@@ -37,9 +40,9 @@ export const ActionDraw = ({ lottery_id, disabled }: any) => {
     const { sessionId /*, error*/ } = await sendTransactions({
       transactions: fundTransaction,
       transactionsDisplayInfo: {
-        processingMessage: 'Processing draw transaction',
-        errorMessage: 'An error has occured draw',
-        successMessage: 'Draw transaction successful'
+        processingMessage: 'Processing Cancel transaction',
+        errorMessage: 'An error has occured cancel',
+        successMessage: 'Cancel transaction successful'
       },
       redirectAfterSign: false
     });
@@ -47,16 +50,15 @@ export const ActionDraw = ({ lottery_id, disabled }: any) => {
       setTransactionSessionId(sessionId);
     }
   };
+  if (!address) {
+    return null;
+  }
   return (
     <>
       {!hasPendingTransactions ? (
         <>
-          <button
-            className='dinoButton'
-            onClick={sendFundTransaction}
-            disabled={disabled}
-          >
-            Draw lottery
+          <button className='dinoButton' onClick={sendFundTransaction}>
+            Cancel lottery
           </button>
         </>
       ) : (

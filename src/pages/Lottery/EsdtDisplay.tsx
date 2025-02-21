@@ -19,7 +19,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
     <div>
       <div className='info-item'>
         <span className='text-label'></span>{' '}
-        {esdtInfo.identifier == 'EGLD-000000' ? (
+        {esdtInfo && esdtInfo.identifier == 'EGLD-000000' ? (
           <>
             <div className='mint-image' style={{ margin: 'auto' }}>
               <img
@@ -33,7 +33,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
                 {' '}
                 {formatAmount({
                   input: amount.toFixed(),
-                  decimals: esdtInfo.decimals,
+                  decimals: esdtInfo?.decimals ? esdtInfo?.decimals : 0,
                   digits: 2,
                   showLastNonZeroDecimal: true,
                   addCommas: true
@@ -56,7 +56,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
                 {' '}
                 {formatAmount({
                   input: amount.toFixed(),
-                  decimals: esdtInfo.decimals,
+                  decimals: esdtInfo?.decimals ? esdtInfo?.decimals : 0,
                   digits: 2,
                   showLastNonZeroDecimal: true,
                   addCommas: true

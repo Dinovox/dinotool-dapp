@@ -7,7 +7,6 @@ import { mintcontractAddress } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 
@@ -65,41 +64,27 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
     <>
       {!hasPendingTransactions ? (
         <>
-          <Button
-            buttonWidth='100%'
-            borderRadius={10}
-            background={'rgba(245, 237, 67, 1)'}
-            textColor=''
-            fontSize='32px'
-            text={
-              balance.isLessThan(new BigNumber(price).plus(fees))
-                ? 'balance too low'
-                : hasBuyed
-                ? 'One mint per wallet'
-                : 'Mint'
-            }
+          <button
+            className='dinoButton'
+            onClick={sendFundTransaction}
             disabled={
               hasBuyed || balance.isLessThan(new BigNumber(price).plus(fees))
                 ? true
                 : false
             }
-            onClick={sendFundTransaction}
-            padding='20px'
-          />
+          >
+            {balance.isLessThan(new BigNumber(price).plus(fees))
+              ? 'balance too low'
+              : hasBuyed
+              ? 'One mint per wallet'
+              : 'Mint'}
+          </button>
         </>
       ) : (
         <>
-          <Button
-            buttonWidth='100%'
-            borderRadius={40}
-            background={'#f7ea43'}
-            textColor='rgb(255 119 75)'
-            borderColor={'black'}
-            text='Processing'
-            fontSize='32px'
-            disabled={true}
-            padding='20px'
-          />
+          <button className='dinoButton' disabled>
+            Processing
+          </button>
         </>
       )}
     </>
