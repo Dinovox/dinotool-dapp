@@ -84,3 +84,7 @@
 .shake {
   animation: shake 0.1s linear infinite;
 }
+
+.blured {
+  filter: blur(5px);
+}

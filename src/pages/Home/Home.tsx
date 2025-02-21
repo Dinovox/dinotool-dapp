@@ -2,10 +2,12 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './NavigationCards.css';
-import lotterie from '../../assets/img/lotterie.webp';
+import hello from '../../assets/img/hello.webp';
 import navMain from '../../assets/img/navMain.webp';
 import dinogazette from '../../assets/img/sold_graout.jpg';
 import drop from '../../assets/img/drop.png';
+import { environment } from 'config';
+
 export const Home = () => {
   const [displayText, setDisplayText] = useState('🦖');
   const [isShaking, setIsShaking] = useState(false);
@@ -34,7 +36,8 @@ export const Home = () => {
     {
       title: 'Lotteries',
       link: '/lotteries',
-      image: lotterie
+      image: hello,
+      blured: environment === 'mainnet'
     },
     {
       title: 'Drop',
@@ -65,6 +68,7 @@ export const Home = () => {
 
     const interval = setInterval(() => {
       if (index < characters.length) {
+        randomizeImage();
         setDisplayText(characters.slice(0, index + 1).join(''));
         index++;
       } else {
@@ -82,6 +86,28 @@ export const Home = () => {
     return () => clearInterval(interval);
   }, [fullText]);
 
+  const getRandomFilter = () => {
+    const brightness = (Math.random() * 0.6 + 0.7).toFixed(2); // 0.7 à 1.3
+    const contrast = (Math.random() * 0.6 + 0.7).toFixed(2);
+    const hueRotate = Math.floor(Math.random() * 360); // Rotation des couleurs
+    const blur = Math.random() > 0.8 ? '2px' : '0px'; // 20% de chances d'ajouter un flou
+    return `brightness(${brightness}) contrast(${contrast}) hue-rotate(${hueRotate}deg) blur(${blur})`;
+  };
+
+  const getRandomTransform = () => {
+    const rotate = Math.random() * 20 - 10; // Rotation entre -10 et 10 degrés
+    const scale = (Math.random() * 0.3 + 0.85).toFixed(2); // Zoom entre 0.85 et 1.15
+    return `rotate(${rotate}deg) scale(${scale})`;
+  };
+
+  const [filter, setFilter] = useState(getRandomFilter());
+  const [transform, setTransform] = useState(getRandomTransform());
+
+  const randomizeImage = () => {
+    setFilter(getRandomFilter());
+    setTransform(getRandomTransform());
+  };
+
   return (
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
@@ -98,9 +124,12 @@ export const Home = () => {
             </a>
           </div>
 
-          <div className='navigation-cards'>
+          <div className='navigation-cards '>
             {navItems.map((item, index) => (
-              <div className='nav-card' key={index}>
+              <div
+                className={`nav-card ${item.blured ? 'blured' : ''}`}
+                key={index}
+              >
                 {item.external ? (
                   <a href={item.link} target='_blank' rel='noopener noreferrer'>
                     <div className='nav-card-content'>
@@ -109,10 +138,30 @@ export const Home = () => {
                     </div>
                   </a>
                 ) : (
-                  <Link to={item.link}>
+                  <Link
+                    onClick={item.blured ? randomizeImage : undefined}
+                    to={item.blured ? '' : item.link}
+                  >
                     <div className='nav-card-content'>
-                      <img src={item.image} alt={item.title} />
-                      <h3>{item.title}</h3>
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        style={{
+                          transition: item?.blured
+                            ? '0.5s ease-in-out'
+                            : 'none',
+                          filter: item.blured ? filter : 'none',
+                          transform: item.blured ? transform : 'none'
+                        }}
+                      />
+                      <h3>
+                        {item.blured
+                          ? item.title
+                              .split('')
+                              .sort(() => 0.5 - Math.random())
+                              .join('')
+                          : item.title}
+                      </h3>
                     </div>
                   </Link>
                 )}

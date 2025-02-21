@@ -19,8 +19,8 @@ import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
 import { cp } from 'fs';
 
 export const Drop = () => {
-  const dinobox_holder = useGetDinoHolders('DINOBOX-54d57b');
-  const dinovox_holder = useGetDinoHolders('DINOVOX-cb2297');
+  const dinobox_holders = useGetDinoHolders('DINOBOX-54d57b');
+  const dinovox_holders = useGetDinoHolders('DINOVOX-cb2297');
   const dinovox_stakers = useGetDinoStakers();
   // console.log('dinovox_stakers', dinovox_stakers);
   const [addresses, setAddresses] = useState('');
@@ -166,8 +166,8 @@ export const Drop = () => {
     const uniqueAddressesSet = new Set<string>();
 
     // Ajouter les adresses de dinobox_holder si boxHolders est coché
-    if (boxHolders && dinobox_holder && dinobox_holder.length > 0) {
-      dinobox_holder
+    if (boxHolders && dinobox_holders && dinobox_holders.length > 0) {
+      dinobox_holders
         .map((holder: any) => holder.address)
         .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
         .forEach((address: any) => uniqueAddressesSet.add(address));
@@ -181,8 +181,8 @@ export const Drop = () => {
     }
 
     // Ajouter les adresses de dinovox_holder si voxHolders est coché
-    if (voxHolders && dinovox_holder && dinovox_holder.length > 0) {
-      dinovox_holder
+    if (voxHolders && dinovox_holders && dinovox_holders.length > 0) {
+      dinovox_holders
         .map((holder: any) => holder.address)
         .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
         .forEach((address: any) => uniqueAddressesSet.add(address));

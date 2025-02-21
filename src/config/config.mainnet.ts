@@ -13,7 +13,8 @@ export const mintcontractAddress =
 export const dropContract =
   'erd1qqqqqqqqqqqqqpgqtmj6zwec4llv8m9fnvyjytcy9gmht78l5gcsev3xm2';
 
-export const lotteryContract = 'erd1qqqqqqqqqqqqqpgq';
+export const lotteryContractAddress =
+  'erd1qqqqqqqqqqqqqpgqyfrc02kk63ln5a83w0w55lme4u2d3c94ch9s3u5lmj';
 
 export const API_URL = 'https://api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];
@@ -21,3 +22,4 @@ export const metamaskSnapWalletAddress = 'https://snap-wallet.multiversx.com';
 
 //xGRAOU n'est pas transférable et doit être desactivé dans les formulaires
 export const xgraou_identifier = 'XGRAOU-a7441a';
+export const graou_identifier = xgraou_identifier;

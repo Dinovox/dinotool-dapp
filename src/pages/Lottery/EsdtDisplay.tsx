@@ -61,7 +61,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
                   showLastNonZeroDecimal: true,
                   addCommas: true
                 })}{' '}
-                {esdtInfo.identifier}
+                {esdtInfo?.identifier}
               </span>
             </div>
           </>

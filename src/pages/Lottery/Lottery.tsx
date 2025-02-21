@@ -132,7 +132,6 @@ export const Lottery = () => {
       sft.nonce == lottery?.price_nonce
   )?.balance;
 
-  console.log('lottery', lottery);
   return (
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
