@@ -54,7 +54,7 @@ export const Mint = () => {
 
   const mintable = useGetMintable();
   const { hasBuyed, esdtAmount } = useGetUserHasBuyed();
-  const { balance } = useGetAccount();
+  const { balance, address } = useGetAccount();
 
   // console.log('egld:', balance);
 
@@ -80,7 +80,7 @@ export const Mint = () => {
   // console.log(hasBuyed, esdtAmount);
   // console.log(nft_information);
   return (
-    <AuthRedirectWrapper requireAuth={true}>
+    <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
           <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
@@ -90,34 +90,36 @@ export const Mint = () => {
             {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
               <>
                 <div className='sub-dinocard box-item'>
-                  <div className='info-item'>
-                    <span className='text-label'>Wallet:</span>{' '}
-                    {mintable.payment_token == 'EGLD' ? (
-                      <>
-                        {formatAmount({
-                          input: balance,
-                          decimals: 18,
-                          digits: 2,
-                          showLastNonZeroDecimal: false,
-                          addCommas: true
-                        })}
-                      </>
-                    ) : (
-                      <>
-                        {formatAmount({
-                          input: esdtAmount.toFixed(),
-                          decimals: 18,
-                          digits: 2,
-                          showLastNonZeroDecimal: false,
-                          addCommas: true
-                        })}
-                      </>
-                    )}{' '}
-                    <span className='identifier'>
-                      {' '}
-                      {mintable.payment_token}
-                    </span>
-                  </div>
+                  {address && (
+                    <div className='info-item'>
+                      <span className='text-label'>Wallet:</span>{' '}
+                      {mintable && mintable.payment_token == 'EGLD' ? (
+                        <>
+                          {formatAmount({
+                            input: balance,
+                            decimals: 18,
+                            digits: 2,
+                            showLastNonZeroDecimal: false,
+                            addCommas: true
+                          })}
+                        </>
+                      ) : (
+                        <>
+                          {formatAmount({
+                            input: esdtAmount.toFixed(),
+                            decimals: 18,
+                            digits: 2,
+                            showLastNonZeroDecimal: false,
+                            addCommas: true
+                          })}
+                        </>
+                      )}{' '}
+                      <span className='identifier'>
+                        {' '}
+                        {mintable.payment_token}
+                      </span>
+                    </div>
+                  )}
                   <div className='info-item'>
                     <span className='text-label'>Price: </span>
                     {formatAmount({
@@ -207,7 +209,7 @@ export const Mint = () => {
                         <>
                           <ActionBuy
                             price={mintable?.payment_price}
-                            balance={new BigNumber(balance)}
+                            balance={new BigNumber(balance ? balance : 0)}
                             hasBuyed={hasBuyed}
                             payment_token={mintable.payment_token}
                           />

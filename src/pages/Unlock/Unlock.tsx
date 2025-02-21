@@ -36,9 +36,9 @@ const WebWalletLoginButton = USE_WEB_WALLET_CROSS_WINDOW
 export const Unlock = () => {
   const navigate = useNavigate();
   const previousPage =
-    sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.mint;
+    sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.home;
   const commonProps: CommonPropsType = {
-    callbackRoute: RouteNamesEnum.mint,
+    callbackRoute: RouteNamesEnum.home,
     nativeAuth,
     onLoginRedirect: () => {
       navigate(previousPage);

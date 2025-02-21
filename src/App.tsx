@@ -35,7 +35,7 @@ const AppContent = () => {
       }}
       dappConfig={{
         shouldUseWebViewProvider: true,
-        logoutRoute: RouteNamesEnum.unlock
+        logoutRoute: RouteNamesEnum.home
       }}
       customComponents={{
         transactionTracker: {

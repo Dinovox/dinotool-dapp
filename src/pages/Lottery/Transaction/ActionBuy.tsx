@@ -19,7 +19,9 @@ export const ActionBuy = ({
   price_nonce,
   price_amount,
   buyed,
-  balance
+  balance,
+  esdt_balance,
+  sft_balance
 }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
@@ -111,14 +113,28 @@ export const ActionBuy = ({
           <button
             disabled={
               buyed ||
-              balance.isLessThan(new BigNumber(price_amount).plus(fees))
+              (price_identifier == 'EGLD-000000' &&
+                balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
+              (price_identifier != 'EGLD-000000' &&
+                price_nonce == 0 &&
+                esdt_balance.isLessThan(new BigNumber(price_amount))) ||
+              (price_identifier != 'EGLD-000000' &&
+                price_nonce != 0 &&
+                sft_balance.isLessThan(new BigNumber(price_amount)))
                 ? true
                 : false
             }
             onClick={sendFundTransaction}
             className={'dinoButton'}
           >
-            {balance.isLessThan(new BigNumber(price_amount).plus(fees))
+            {(price_identifier == 'EGLD-000000' &&
+              balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
+            (price_identifier != 'EGLD-000000' &&
+              price_nonce == 0 &&
+              esdt_balance.isLessThan(new BigNumber(price_amount))) ||
+            (price_identifier != 'EGLD-000000' &&
+              price_nonce != 0 &&
+              sft_balance.isLessThan(new BigNumber(price_amount)))
               ? 'balance too low'
               : buyed
               ? 'One mint per wallet'

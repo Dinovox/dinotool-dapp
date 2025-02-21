@@ -15,11 +15,12 @@ export const AuthRedirectWrapper = ({
   const navigate = useNavigate();
   const location = useLocation(); // Permet d'obtenir la page actuelle
   const isUnlockPage = location.pathname === RouteNamesEnum.unlock;
+  const isHomePage = location.pathname === RouteNamesEnum.home;
 
   useEffect(() => {
     //Pas co et pas sur la page de déverrouillage
     //on garde la page actuelle avant la redirection
-    if (!isLoggedIn && !isUnlockPage) {
+    if (!isLoggedIn && !isUnlockPage && !isHomePage) {
       sessionStorage.setItem('redirectAfterLogin', location.pathname);
       // console.log('redirectAfterLogin', location.pathname);
     }
@@ -36,7 +37,7 @@ export const AuthRedirectWrapper = ({
     if (isLoggedIn && isUnlockPage) {
       // Récupérer la page stockée et rediriger l'utilisateur
       const previousPage =
-        sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.mint;
+        sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.home;
       navigate(previousPage);
     }
   }, [isLoggedIn, location]);

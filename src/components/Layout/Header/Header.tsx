@@ -10,7 +10,7 @@ import ShortenedAddress from 'helpers/shortenedAddress';
 import { EnvironmentsEnum } from 'types';
 import { environment } from 'config';
 
-const callbackUrl = `${window.location.origin}/unlock`;
+const callbackUrl = `${window.location.origin}/`;
 const onRedirect = undefined; // use this to redirect with useNavigate to a specific page after logout
 const shouldAttemptReLogin = false; // use for special cases where you want to re-login after logout
 const options = {
@@ -55,7 +55,7 @@ export const Header = () => {
       <header className='flex flex-row align-center justify-between pl-6 pr-6 pt-6'>
         <MxLink
           className='flex items-center justify-between'
-          to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
+          to={isLoggedIn ? RouteNamesEnum.home : RouteNamesEnum.home}
         >
           {/* <MultiversXLogo className='w-full h-6' /> */}
           <img src={dinovoxLogo} alt='Dinovox Logo' className='w-64 h-auto' />
@@ -67,7 +67,7 @@ export const Header = () => {
               <div className='w-2 h-2 rounded-full bg-green-500' />
               <p className='text-gray-600'>{environment}</p>
             </div>
-            {environment === 'devnet' && (
+            {/* {environment === 'devnet' && (
               <MxLink className='' to={RouteNamesEnum.lotteries}>
                 <div
                   style={{ width: '100%' }}
@@ -76,10 +76,10 @@ export const Header = () => {
                   LOTTERIES
                 </div>
               </MxLink>
-            )}
+            )} */}
             {isLoggedIn ? (
               <>
-                {environment === 'mainnet' && (
+                {/* {['devnet', 'mainnet'].includes(environment) && (
                   <MxLink
                     className=''
                     to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
@@ -88,11 +88,11 @@ export const Header = () => {
                       style={{ width: '100%' }}
                       className='mintGazTitle dinoTitle'
                     >
-                      MINT
+                      GAZETTE
                     </div>
                   </MxLink>
                 )}
-                {environment === 'mainnet' && (
+                {['devnet', 'mainnet'].includes(environment) && (
                   <MxLink
                     className=''
                     to={isLoggedIn ? RouteNamesEnum.drop : RouteNamesEnum.home}
@@ -104,7 +104,7 @@ export const Header = () => {
                       DROP
                     </div>
                   </MxLink>
-                )}
+                )} */}
                 {environment === 'testnet' && (
                   <MxLink
                     className=''
@@ -118,12 +118,9 @@ export const Header = () => {
                     </div>
                   </MxLink>
                 )}{' '}
-                <Button
-                  onClick={handleLogout}
-                  className='inline-block rounded-lg px-3 py-2 text-center hover:no-underline my-0 text-gray-600 hover:bg-slate-100 mx-0'
-                >
+                <button onClick={handleLogout} className='dinoButton reverse'>
                   Close
-                </Button>
+                </button>
               </>
             ) : (
               ConnectButton

@@ -57,7 +57,7 @@ export const ActionCancel = ({ lottery_id }: any) => {
     <>
       {!hasPendingTransactions ? (
         <>
-          <button className='dinoButton' onClick={sendFundTransaction}>
+          <button className='dinoButton reverse' onClick={sendFundTransaction}>
             Cancel lottery
           </button>
         </>

@@ -17,7 +17,7 @@ import { graou_identifier } from 'config';
 
 const resultsParser = new ResultsParser();
 
-export const useGetRunningLottery = () => {
+export const useGetEndedLottery = () => {
   const [scData, setScData] = useState([]);
   const { network } = useGetNetworkConfig();
 
@@ -28,20 +28,19 @@ export const useGetRunningLottery = () => {
   const getScData = async () => {
     try {
       const query = lotteryContract.createQuery({
-        func: new ContractFunction('getRunningLottery')
+        func: new ContractFunction('getEndedLottery')
       });
       //         args: [new U64Value(lottery_id), new AddressValue(new Address(address))]
 
       const queryResponse = await proxy.queryContract(query);
-      const endpointDefinition =
-        lotteryContract.getEndpoint('getRunningLottery');
+      const endpointDefinition = lotteryContract.getEndpoint('getEndedLottery');
       const { firstValue: position } = resultsParser.parseQueryResponse(
         queryResponse,
         endpointDefinition
       );
       setScData(position?.valueOf().toString(10).split(','));
     } catch (err) {
-      console.error('Unable to call getRunningLottery', err);
+      console.error('Unable to call getEndedLottery', err);
     }
   };
 

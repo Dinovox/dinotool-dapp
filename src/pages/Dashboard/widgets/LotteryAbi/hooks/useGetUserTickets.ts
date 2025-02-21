@@ -28,7 +28,7 @@ export const useGetUserTickets = (lottery_id: any) => {
   const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getHasBuyed = async () => {
-    if (!address || hasPendingTransactions) {
+    if (!address || hasPendingTransactions || !lottery_id) {
       return;
     }
 
@@ -50,35 +50,35 @@ export const useGetUserTickets = (lottery_id: any) => {
     }
   };
 
-  const getEsdtAmount = async () => {
-    if (!address || hasPendingTransactions) {
-      return;
-    }
-    try {
-      const balance = await axios.get(
-        network.apiAddress +
-          '/accounts/' +
-          address +
-          '/tokens/' +
-          graou_identifier
-      );
+  // const getEsdtAmount = async () => {
+  //   if (!address || hasPendingTransactions) {
+  //     return;
+  //   }
+  //   try {
+  //     const balance = await axios.get(
+  //       network.apiAddress +
+  //         '/accounts/' +
+  //         address +
+  //         '/tokens/' +
+  //         graou_identifier
+  //     );
 
-      if (balance?.data?.balance) {
-        setEsdtAmount(new BigNumber(balance?.data?.balance));
-      } else {
-        setEsdtAmount(new BigNumber(0));
-      }
-    } catch (err: any) {
-      //wallet with no esdt return a 404
-      // https://devnet-api.multiversx.com/accounts/erd1s2tstpvulqzhppydk876ydf6zce8svfznpe460plqnj0je5qx83qew5k2l/tokens/CACAT-672714
-      // {"statusCode":404,"message":"Token for given account not found"}
-      console.error('Unable to call usergraou', err);
-    }
-  };
+  //     if (balance?.data?.balance) {
+  //       setEsdtAmount(new BigNumber(balance?.data?.balance));
+  //     } else {
+  //       setEsdtAmount(new BigNumber(0));
+  //     }
+  //   } catch (err: any) {
+  //     //wallet with no esdt return a 404
+  //     // https://devnet-api.multiversx.com/accounts/erd1s2tstpvulqzhppydk876ydf6zce8svfznpe460plqnj0je5qx83qew5k2l/tokens/CACAT-672714
+  //     // {"statusCode":404,"message":"Token for given account not found"}
+  //     console.error('Unable to call usergraou', err);
+  //   }
+  // };
   useEffect(() => {
     getHasBuyed();
-    getEsdtAmount();
-  }, [address, hasPendingTransactions]);
+    // getEsdtAmount();
+  }, [lottery_id, address, hasPendingTransactions]);
 
-  return { buyed, esdtAmount };
+  return { buyed };
 };

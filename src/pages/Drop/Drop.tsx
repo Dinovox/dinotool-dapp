@@ -221,7 +221,7 @@ export const Drop = () => {
           {' '}
           <div className='mintGazTitle dinoTitle'>DROP (alpha)</div>
           <div className='mx-auto' style={{ margin: '10px' }}>
-            <span>Envoyez des tokens ou des sft à plusieurs adresses</span>
+            <span>Send tokens or SFTs to multiple addresses</span>
           </div>
           <div className=''>
             <div className=''>
@@ -234,7 +234,7 @@ export const Drop = () => {
                         <span className='tooltip-inline'>
                           (ℹ)
                           <span className='tooltiptext-inline'>
-                            Sélectionnez le SFT ou l'ESDT à envoyer.
+                            Select the SFT or ESDT to send.
                           </span>
                         </span>{' '}
                       </label>
@@ -250,7 +250,7 @@ export const Drop = () => {
                         onChange={handleNFT}
                       >
                         <option key={0} value=''>
-                          Selectionnez
+                          Select
                         </option>
                         {[
                           ...userNftBalance?.filter(
@@ -299,12 +299,12 @@ export const Drop = () => {
                       <>
                         <div className='form-group'>
                           <label htmlFor='defaultQty'>
-                            Quantité par défaut{' '}
+                            Default quantity{' '}
                             <span className='tooltip-inline'>
                               (ℹ)
                               <span className='tooltiptext-inline'>
-                                La quantité par défaut pour chaque adresse.
-                                (Sauf si précisé dans la liste des adresses.)
+                                The default quantity for each address. (Unless
+                                specified in the address list.)
                               </span>
                             </span>{' '}
                           </label>
@@ -325,13 +325,12 @@ export const Drop = () => {
                     {decimals.gt(0) && (
                       <div className='form-group'>
                         <label htmlFor='decimals'>
-                          Decimales{' '}
+                          Decimals{' '}
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Les ESDT sont divisibles jusqu'à 18 décimales.
-                              Cette valeur est définie par le créateur de
-                              l'ESDT.
+                              ESDTs are divisible up to 18 decimal places. This
+                              value is defined by the creator of the ESDT.
                             </span>
                           </span>{' '}
                         </label>
@@ -350,13 +349,13 @@ export const Drop = () => {
                     {decimals.gt(0) && (
                       <div className='form-group'>
                         <label>
-                          Decimales (Oui/Non)
+                          Decimals (Yes/No)
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Les quantités seront multipliées par le nombre de
-                              décimales de l'ESDT. Décochez cette case pour
-                              gérer les valeurs natives de l'ESDT.
+                              Quantities will be automatically adjusted based on
+                              the ESDT’s decimal precision. Uncheck this box to
+                              manually enter amounts with decimal values.
                             </span>
                           </span>
                         </label>{' '}
@@ -392,15 +391,14 @@ export const Drop = () => {
                   <>
                     <div className='form-group'>
                       <label htmlFor='addresses'>
-                        Liste des adresses et montants{' '}
+                        List of addresses and amounts{' '}
                         <span className='tooltip-inline'>
                           (ℹ)
                           <span className='tooltiptext-inline'>
-                            Collez la liste d'adresses auxquelles envoyer l'ESDT
-                            ou le SFT. Séparez chaque adresse par un retour à la
-                            ligne ou un point-virgule. Vous pouvez définir
-                            montant spécfique pour chaque adresse en ajoutant un
-                            montant après l'adresse.
+                            Paste the list of addresses to send the ESDT or SFT
+                            to. Separate each address with a newline or
+                            semicolon. You can set a specific amount for each
+                            address by adding an amount after the address.
                           </span>
                         </span>
                       </label>
@@ -441,8 +439,7 @@ export const Drop = () => {
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Cochez cette case pour inclure les stakers de
-                              dino. (SC seulement)
+                              Check this box to include dino stakers. (SC only)
                             </span>
                           </span>
                         </label>
@@ -460,8 +457,8 @@ export const Drop = () => {
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Cochez cette case pour inclure les détenteurs de
-                              la boîte. (wallet seulement)
+                              Check this box to include holders of the box.
+                              (wallet only)
                             </span>
                           </span>
                         </label>
@@ -479,8 +476,8 @@ export const Drop = () => {
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Cochez cette case pour inclure les détenteurs
-                              dinovox. (wallet seulement)
+                              Check this box to include dinovox holders. (wallet
+                              only)
                             </span>
                           </span>
                         </label>
@@ -496,13 +493,13 @@ export const Drop = () => {
                 {' '}
                 <div className='address-info'>
                   <h3>
-                    Adresses Valides :{' '}
+                    Valid Addresses :{' '}
                     <span className='highlight'>{validCount}</span>
                   </h3>{' '}
                   {invalidCount > 0 && (
                     <div className='invalid-addresses-container'>
                       <h3>
-                        Adresses Invalides :{' '}
+                        Invalid Addresses :{' '}
                         <span className='highlight-error'>{invalidCount}</span>
                       </h3>
                       <ul className='invalid-addresses-list'>
@@ -524,7 +521,7 @@ export const Drop = () => {
                       borderRadius: '5px'
                     }}
                   >
-                    Montant à envoyer:{' '}
+                    Amount to send:{' '}
                     <FormatAmount
                       value={totalQuantity.toFixed()}
                       decimals={decimals.toNumber()}

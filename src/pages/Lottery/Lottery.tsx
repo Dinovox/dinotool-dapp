@@ -25,6 +25,9 @@ import { ActionCancel } from './Transaction/ActionCancel';
 import LotteryList from './LotteryList';
 import freeChest from 'assets/img/freeChest.png';
 import FileDisplay from './FileDisplay';
+import { useGetUserESDT } from 'helpers/useGetUserEsdt';
+import { useGetUserNFT } from 'helpers/useGetUserNft';
+import { useGetEndedLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetEndedLottery';
 
 export const Lottery = () => {
   const [timeStart, setTimeStart] = useState(60 * 60);
@@ -78,13 +81,17 @@ export const Lottery = () => {
   }, []);
 
   const runningLottery = useGetRunningLottery().sort((a, b) => a - b);
+  const endedLottery = useGetEndedLottery().sort((a, b) => a - b);
   // console.log('runningLottery', runningLottery.toString());
 
   // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
   const lottery = useGetLottery(lotteryID);
 
-  const { buyed, esdtAmount } = useGetUserTickets(lotteryID);
+  const { buyed } = useGetUserTickets(lotteryID);
+
   const { balance } = useGetAccount();
+  const user_esdt = useGetUserESDT();
+  const user_sft = useGetUserNFT(address);
 
   const prize_nft_information = useGetNftInformations(
     lottery?.prize_nonce > 0 ? lottery?.prize_identifier : '',
@@ -116,7 +123,16 @@ export const Lottery = () => {
     return () => clearInterval(interval); // Nettoyage de l'intervalle
   }, [lottery]);
 
-  // console.log('lottery', lottery.end.toFixed());
+  const userEsdtBalance = user_esdt.find(
+    (esdt: any) => esdt.identifier === lottery?.price_identifier
+  )?.balance;
+  const userSftBalance = user_sft.find(
+    (sft: any) =>
+      sft.collection == lottery?.price_identifier &&
+      sft.nonce == lottery?.price_nonce
+  )?.balance;
+
+  console.log('lottery', lottery);
   return (
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
@@ -133,7 +149,16 @@ export const Lottery = () => {
               <CreateLotteryModal />
             </>
           ) : (
-            <></>
+            <div
+              style={{
+                float: 'right',
+                marginTop: '20px',
+                marginRight: '20px'
+              }}
+            >
+              {' '}
+              <button onClick={() => navigate('/lotteries')}>Return</button>
+            </div>
           )}
           {lottery.id > 0 && (
             <>
@@ -201,11 +226,7 @@ export const Lottery = () => {
                             >
                               <FileDisplay
                                 source={freeChest}
-                                fileType={
-                                  prize_nft_information?.media?.length
-                                    ? prize_nft_information?.media[0]?.fileType
-                                    : ''
-                                }
+                                fileType={''}
                                 width='200px'
                                 height='200px'
                               />
@@ -244,7 +265,7 @@ export const Lottery = () => {
                 )}{' '} */}
               </div>
               {lottery.winner !=
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
+              'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' ? (
                 <>
                   <div className='dinocard'>
                     <div className='sub-dinocard'>
@@ -255,14 +276,14 @@ export const Lottery = () => {
                     </div>
                   </div>
                 </>
-              )}
-              {lottery.owner != address ? (
+              ) : (
                 <>
                   {lottery.tickets_sold >= lottery.max_tickets && (
                     <> Waiting for the owner to draw the winner</>
                   )}
                 </>
-              ) : (
+              )}
+              {lottery.owner == address && (
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   {lottery.winner ==
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
@@ -311,6 +332,16 @@ export const Lottery = () => {
                                   price_nonce={lottery.price_nonce}
                                   price_amount={lottery.price_amount}
                                   balance={new BigNumber(balance)}
+                                  esdt_balance={
+                                    new BigNumber(
+                                      userEsdtBalance ? userEsdtBalance : 0
+                                    )
+                                  }
+                                  sft_balance={
+                                    new BigNumber(
+                                      userSftBalance ? userSftBalance : 0
+                                    )
+                                  }
                                   buyed={
                                     lottery.max_per_wallet > 0 &&
                                     buyed >= lottery.max_per_wallet
@@ -321,10 +352,10 @@ export const Lottery = () => {
                               ) : (
                                 <>Owner can't buy ticket</>
                               )}
-
                               {buyed > 0 && (
-                                <>You have {buyed.toFixed()} tickets</>
+                                <p>You have {buyed.toFixed()} tickets</p>
                               )}
+
                               {lottery.end > 0 && (
                                 <div>End in : {formatTime(timeEnd)}</div>
                               )}
@@ -336,6 +367,11 @@ export const Lottery = () => {
                                 lottery.tickets_sold > 0 && (
                                   <>Sale ended waiting for final draw</>
                                 )}
+                              {lottery.end > 0 && timeEnd == 0 && (
+                                <div>
+                                  The lottery has ended as the deadline expired.
+                                </div>
+                              )}
                             </>
                           )}
                         </>
@@ -350,7 +386,6 @@ export const Lottery = () => {
                             <br />
                           </>
                         )}
-                        SOLD GRAOUT
                       </span>{' '}
                     </>
                   )}
@@ -364,6 +399,34 @@ export const Lottery = () => {
             <h2>Running Lotteries</h2>
             <ul>
               {runningLottery.map((lottery) => (
+                <span
+                  key={lottery}
+                  onClick={() => {
+                    setLotteryID(lottery);
+                    navigate(`/lotteries/${lottery}`, { replace: true });
+                  }}
+                  style={{
+                    display: 'inline-block',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#f0f0f0',
+                    border: '1px solid #ccc',
+                    textAlign: 'center',
+                    lineHeight: '20px',
+                    margin: '2px',
+                    cursor: 'pointer'
+                  }}
+                  className='pagination-square'
+                >
+                  {lottery}
+                </span>
+              ))}
+            </ul>
+          </div>
+          <div className='ended-lottery'>
+            <h2>Ended Lotteries</h2>
+            <ul>
+              {endedLottery.map((lottery) => (
                 <span
                   key={lottery}
                   onClick={() => {

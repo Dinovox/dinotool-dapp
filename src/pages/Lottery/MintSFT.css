@@ -87,4 +87,13 @@
   position: relative;
   left: 12px;
   top: 85px;
+  float: left;
+}
+
+.ended-lottery {
+  position: relative;
+  left: 12px;
+  top: 85px;
+  float: left;
+  margin-left: 10px;
 }
