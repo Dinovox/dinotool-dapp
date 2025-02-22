@@ -133,7 +133,8 @@
   margin-right: 3px;
 }
 
-.smallDinoButton {
+.smallDinoButton,
+.ant-btn {
   /* Rarity */
   font-family: BitCell;
   font-size: 1rem;
@@ -188,4 +189,29 @@
 .d-nav-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.ant-picker-panel-container .ant-picker-presets {
+  min-height: 25rem !important;
+}
+
+@media (max-width: 800px) {
+  .ant-picker-panel-container {
+    overflow: scroll !important;
+    height: 400px;
+  }
+
+  .ant-picker-panel-container .ant-picker-panel-layout {
+    flex-direction: column !important;
+  }
+
+  .ant-picker-panel-container .ant-picker-presets {
+    max-width: 100% !important;
+    min-height: 10rem !important;
+  }
+
+  .ant-picker-panel-container .ant-picker-panels,
+  .ant-picker-panel-container .ant-picker-datetime-panel {
+    flex-direction: column !important;
+  }
 }

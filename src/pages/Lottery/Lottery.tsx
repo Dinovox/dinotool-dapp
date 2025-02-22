@@ -144,7 +144,10 @@ export const Lottery = () => {
               >
                 Lotteries
               </div>{' '}
-              <LotteryList runningLottery={runningLottery} />
+              <LotteryList
+                runningLottery={runningLottery}
+                endedLottery={endedLottery}
+              />
               <CreateLotteryModal />
             </>
           ) : (

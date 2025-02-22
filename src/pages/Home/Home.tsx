@@ -2,9 +2,11 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './NavigationCards.css';
-import hello from '../../assets/img/hello.webp';
+import lotterie from '../../assets/img/lotterie.webp';
 import navMain from '../../assets/img/navMain.webp';
 import dinogazette from '../../assets/img/sold_graout.jpg';
+import random from '../../assets/img/random.png';
+import chest from '../../assets/img/chest.png';
 import drop from '../../assets/img/drop.png';
 import { environment } from 'config';
 
@@ -36,13 +38,19 @@ export const Home = () => {
     {
       title: 'Lotteries',
       link: '/lotteries',
-      image: hello,
+      image: environment === 'mainnet' ? random : lotterie,
       blured: environment === 'mainnet'
     },
     {
       title: 'Drop',
       link: '/drop',
       image: drop
+    },
+    {
+      title: 'GRAOUCHEST',
+      link: '/chests',
+      image: environment === 'mainnet' ? random : chest,
+      blured: true
     }
   ];
 

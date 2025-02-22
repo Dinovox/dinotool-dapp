@@ -35,6 +35,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
       {lottery.id > 0 && (
         <div
           className='cardMesNFT relative bg-white border-gray-200 d-nav-card '
+          style={{ cursor: 'pointer' }}
           onClick={() => {
             navigate(`/lotteries/${lottery.id}`, { replace: false });
           }}
@@ -110,12 +111,16 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   );
 };
 
-const LotteryList = ({ runningLottery }: any) => {
+const LotteryList = ({ runningLottery, endedLottery }: any) => {
   runningLottery = runningLottery.slice(-4).reverse();
+  endedLottery = endedLottery.slice(-4).reverse();
   return (
     <div className='bg-[#fefaf5] pt-6 flex justify-center pb-6 mb-6 '>
       <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
         {runningLottery.map((lottery_id: any) => (
+          <LotteryCard key={lottery_id} lottery_id={lottery_id} />
+        ))}{' '}
+        {endedLottery.map((lottery_id: any) => (
           <LotteryCard key={lottery_id} lottery_id={lottery_id} />
         ))}
       </div>

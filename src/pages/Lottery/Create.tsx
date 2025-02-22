@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Checkbox } from 'antd';
 import dayjs from 'dayjs';
-import { Modal, Form, Input, DatePicker, Radio, Select, Divider } from 'antd';
+import { Modal, Form, Input, Radio, Select, Divider, DatePicker } from 'antd';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import { useGetAccountInfo } from 'hooks';
 import { ActionCreate } from './Transaction/ActionCreate';
 import BigNumber from 'bignumber.js';
-import { xgraou_identifier } from 'config';
+import { graou_identifier, xgraou_identifier } from 'config';
 import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
+// import { DatePicker } from 'antd-mobile';
 
 const CreateLotteryModal: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -90,16 +91,14 @@ const CreateLotteryModal: React.FC = () => {
       setPriceIdentifier('EGLD-000000');
       setPriceTicker('EGLD-000000');
       setPriceDecimals(18);
-      setMaxPerWallet(0);
     } else if (e.target.value === 'FREE') {
       setPriceType('FREE');
-      setMaxPerWallet(1);
+      setMaxPerWallet(maxPerWallet == 0 ? 1 : maxPerWallet);
       setPriceIdentifier('FREE-000000');
       setPriceTicker('FREE-000000');
     } else {
       setPriceType(e.target.value);
       setPriceTicker('');
-      setMaxPerWallet(0);
       setPriceIdentifier('');
     }
     setPriceNonce(0);
@@ -168,7 +167,6 @@ const CreateLotteryModal: React.FC = () => {
     }
 
     setPrizeDisplay(rawValue); // Affichage naturel à l'utilisateur
-
     // Conversion en BigNumber avec les décimales
     let convertedValue = new BigNumber(rawValue).multipliedBy(
       10 ** prizeDecimals
@@ -227,6 +225,45 @@ const CreateLotteryModal: React.FC = () => {
 
     setPriceAmount(convertedValue); // Stocke la valeur en BigNumber
   };
+
+  //hack antd to disable keyboard on mobile
+  const [keyboardEnabled, setKeyboardEnabled] = useState(false);
+  const handleDropdownChange = () => {
+    setTimeout(() => {
+      const inputs = document.querySelectorAll(
+        '.select-token .ant-select-selection-search-input'
+      ) as NodeListOf<HTMLInputElement>;
+
+      inputs.forEach((input) => {
+        input.setAttribute('inputmode', keyboardEnabled ? 'text' : 'none');
+      });
+    }, 500);
+  };
+  const enableKeyboard = () => {
+    setKeyboardEnabled(true);
+    setTimeout(() => {
+      const input = document.querySelector(
+        '.ant-select-selection-search-input'
+      ) as HTMLInputElement | null;
+      if (input) {
+        input.setAttribute('inputmode', 'text'); // ✅ Active le clavier
+        input.focus(); // ✅ Forcer le focus (plus d'erreur)
+      }
+    }, 300);
+  };
+  const disableKeyboard = () => {
+    setKeyboardEnabled(false);
+    setTimeout(() => {
+      const input = document.querySelector(
+        '.ant-select-selection-search-input'
+      ) as HTMLInputElement | null;
+      if (input) {
+        input.setAttribute('inputmode', 'none'); // ✅ Active le clavier
+        input.blur(); // ✅ Forcer le focus (plus d'erreur)
+      }
+    }, 300);
+  };
+
   if (!address) {
     return null;
   }
@@ -271,7 +308,8 @@ const CreateLotteryModal: React.FC = () => {
                 <Radio value='SFT'>SFT</Radio>
                 <Radio value='NFT'>NFT</Radio>
               </Radio.Group>
-            </Form.Item>
+            </Form.Item>{' '}
+            {/* Selection du PRIZE */}
             {['ESDT', 'SFT', 'NFT'].includes(prizeType) && (
               <Form.Item
                 name={'prizeIdentifier' + prizeType}
@@ -285,8 +323,11 @@ const CreateLotteryModal: React.FC = () => {
               >
                 {' '}
                 <Select
+                  className='select-token'
                   disabled={acceptConditions}
+                  onDropdownVisibleChange={handleDropdownChange}
                   onChange={(value, datas: any) => {
+                    disableKeyboard();
                     setPrizeIdentifier(value);
                     setPrizeTicker(
                       datas?.datas?.ticker ? datas?.datas?.ticker : ''
@@ -299,8 +340,9 @@ const CreateLotteryModal: React.FC = () => {
                     );
                     setPrizeBalance(new BigNumber(datas?.datas?.balance));
                     setPrizeAmount(new BigNumber(prizeType === 'NFT' ? 1 : 0));
+                    setPrizeDisplay(prizeType === 'NFT' ? '1' : '');
                   }}
-                  showSearch
+                  showSearch={true}
                   placeholder='Select a token or enter manually'
                   optionFilterProp='children'
                   filterOption={(input, option) =>
@@ -310,35 +352,46 @@ const CreateLotteryModal: React.FC = () => {
                   }
                   dropdownRender={(menu) => (
                     <>
+                      {' '}
+                      {keyboardEnabled ? (
+                        <button onClick={disableKeyboard}>
+                          Disable keyboard
+                        </button>
+                      ) : (
+                        <button onClick={enableKeyboard}>
+                          Enable keyboard
+                        </button>
+                      )}
                       {menu}
                       <Divider style={{ margin: '8px 0' }} />
                       <Input
                         disabled={acceptConditions}
-                        value={priceIdentifier}
+                        value={prizeIdentifier}
                         style={{ padding: '8px' }}
-                        onChange={
-                          (e) => {
-                            const value = (e.target as HTMLInputElement).value;
-                            setPriceIdentifier(value);
-                            setPriceNonce(0);
-                            setPriceDecimals(0);
-                          }
-                          //   const value = (e.target as HTMLInputElement).value;
-                          //   if (value) {
-                          //   }
-                        }
+                        onChange={(e) => {
+                          const value = (e.target as HTMLInputElement).value;
+                          setPrizeIdentifier(value);
+                          setPrizeNonce(0);
+                          setPrizeDecimals(0);
+                        }}
                       />
                     </>
                   )}
                 >
-                  {''}
+                  {' '}
                   {prizeType === 'ESDT' &&
                     user_esdt.map((token: any) => (
                       <Select.Option
+                        onFocus={(e: any) => e.target.blur()}
+                        inputMode='none'
+                        readOnly={true}
                         key={token.identifier}
                         value={token.identifier}
                         datas={token}
-                        disabled={token.identifier === xgraou_identifier}
+                        disabled={[
+                          xgraou_identifier,
+                          graou_identifier
+                        ].includes(token.identifier)}
                       >
                         {token.identifier}
                       </Select.Option>
@@ -346,6 +399,9 @@ const CreateLotteryModal: React.FC = () => {
                   {prizeType === 'SFT' &&
                     prize_options_sft.map((token: any) => (
                       <Select.Option
+                        onFocus={(e: any) => e.target.blur()}
+                        inputMode='none'
+                        readOnly={true}
                         key={token.identifier}
                         value={token.identifier}
                         datas={token}
@@ -356,6 +412,9 @@ const CreateLotteryModal: React.FC = () => {
                   {prizeType === 'NFT' &&
                     prize_options_nft.map((token: any) => (
                       <Select.Option
+                        onFocus={(e: any) => e.target.blur()}
+                        inputMode='none'
+                        readOnly={true}
                         key={token.identifier}
                         value={token.identifier}
                         datas={token}
@@ -366,22 +425,11 @@ const CreateLotteryModal: React.FC = () => {
                 </Select>
               </Form.Item>
             )}
-            {/* {['SFT', 'NFT'].includes(prizeType) && (
-              <Form.Item name='prizeNonce' label='Nonce'>
-                {' '}
-                <Input type='text' value={prizeNonce} disabled />
-              </Form.Item>
-            )} */}
-            {/* debug */}
-            {/* {(prizeType == 'ESDT' || prizeType == 'EGLD') && (
-              <Form.Item name='prizeDecimals' label='Decimals'>
-                {' '}
-                <Input type='text' value={prizeDecimals} disabled />
-              </Form.Item>
-            )} */}
+            {/* Photo du PRIZE */}
             {prizeIdentifier && ['NFT', 'SFT'].includes(prizeType) && (
               <NftDisplay nftInfo={prize_nft_information} amount={0} />
-            )}
+            )}{' '}
+            {/* Montant du PRIZE */}{' '}
             {['ESDT', 'SFT', 'EGLD'].includes(prizeType) && (
               <Form.Item
                 name='prizeAmount'
@@ -414,6 +462,7 @@ const CreateLotteryModal: React.FC = () => {
           >
             {prizeIdentifier && prizeAmount.isGreaterThan(0) && (
               <>
+                {/* Selection type de PRICE */}
                 <Form.Item
                   name='tokenPriceType'
                   label='Token Type'
@@ -428,6 +477,7 @@ const CreateLotteryModal: React.FC = () => {
                   <Radio.Group
                     onChange={handlePriceType}
                     disabled={acceptConditions}
+                    defaultValue={priceType}
                   >
                     <Radio value='ESDT'>ESDT</Radio>
                     <Radio value='EGLD'>EGLD</Radio>
@@ -444,6 +494,7 @@ const CreateLotteryModal: React.FC = () => {
                   )}
                 </Form.Item>
 
+                {/* Selection du PRICE */}
                 {['ESDT', 'SFT'].includes(priceType) && (
                   <Form.Item
                     name={'priceIdentifier' + priceType}
@@ -457,12 +508,13 @@ const CreateLotteryModal: React.FC = () => {
                   >
                     {' '}
                     <Select
+                      defaultValue={priceIdentifier}
+                      className='select-token'
                       disabled={acceptConditions}
+                      onDropdownVisibleChange={handleDropdownChange}
                       onChange={(value, datas: any) => {
+                        disableKeyboard();
                         setPriceIdentifier(value);
-                        setPriceTicker(
-                          datas?.datas?.ticker ? datas?.datas?.ticker : ''
-                        );
                         setPriceTicker(
                           datas?.datas?.ticker ? datas?.datas?.ticker : ''
                         );
@@ -472,8 +524,10 @@ const CreateLotteryModal: React.FC = () => {
                         setPriceDecimals(
                           datas?.datas?.decimals ? datas?.datas?.decimals : 0
                         );
+                        setPriceAmount(new BigNumber(0));
+                        setPriceDisplay('');
                       }}
-                      showSearch
+                      showSearch={true}
                       placeholder='Select a token or enter manually'
                       optionFilterProp='children'
                       filterOption={(input, option) =>
@@ -483,24 +537,28 @@ const CreateLotteryModal: React.FC = () => {
                       }
                       dropdownRender={(menu) => (
                         <>
+                          {keyboardEnabled ? (
+                            <button onClick={disableKeyboard}>
+                              Disable keyboard
+                            </button>
+                          ) : (
+                            <button onClick={enableKeyboard}>
+                              Enable keyboard
+                            </button>
+                          )}
                           {menu}
                           <Divider style={{ margin: '8px 0' }} />
                           <Input
                             disabled={acceptConditions}
                             value={priceIdentifier}
                             style={{ padding: '8px' }}
-                            onChange={
-                              (e) => {
-                                const value = (e.target as HTMLInputElement)
-                                  .value;
-                                setPriceIdentifier(value);
-                                setPriceNonce(0);
-                                setPriceDecimals(0);
-                              }
-                              //   const value = (e.target as HTMLInputElement).value;
-                              //   if (value) {
-                              //   }
-                            }
+                            onChange={(e) => {
+                              const value = (e.target as HTMLInputElement)
+                                .value;
+                              setPriceIdentifier(value);
+                              setPriceNonce(0);
+                              setPriceDecimals(0);
+                            }}
                           />
                         </>
                       )}
@@ -508,10 +566,16 @@ const CreateLotteryModal: React.FC = () => {
                       {''}
                       {price_options.map((token: any) => (
                         <Select.Option
+                          onFocus={(e: any) => e.target.blur()}
+                          inputMode='none'
+                          readOnly={true}
                           key={token.identifier}
                           value={token.identifier}
                           datas={token}
-                          disabled={token.identifier === xgraou_identifier}
+                          disabled={[
+                            xgraou_identifier,
+                            graou_identifier
+                          ].includes(token.identifier)}
                         >
                           {token.identifier}
                         </Select.Option>
@@ -519,6 +583,7 @@ const CreateLotteryModal: React.FC = () => {
                     </Select>
                   </Form.Item>
                 )}
+                {/* Tout condensé dans price option */}
                 {/* {priceType == 'SFT' && (
                   <Form.Item name='priceNonce' label='Nonce'>
                     {' '}
@@ -535,6 +600,7 @@ const CreateLotteryModal: React.FC = () => {
                 {priceIdentifier && ['SFT'].includes(priceType) && (
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
                 )}
+                {/* Montant du PRICE */}
                 {['ESDT', 'SFT', 'EGLD'].includes(priceType) && (
                   <Form.Item
                     name='priceAmount'
@@ -581,172 +647,205 @@ const CreateLotteryModal: React.FC = () => {
               padding: '10px'
             }}
           >
-            {((priceIdentifier && priceAmount.isGreaterThan(0)) ||
+            {prizeIdentifier &&
+              prizeAmount.isGreaterThan(0) &&
+              ((priceIdentifier && priceAmount.isGreaterThan(0)) ||
+                priceType == 'FREE') && (
+                <>
+                  <Form.Item
+                    name='maxTickets'
+                    label='Total Tickets'
+                    help='Minimum 4 and maximum 100'
+                    tooltip='The maximum number of tickets that can be sold.'
+                    rules={[
+                      {
+                        required: false,
+                        message: 'Please input the maximum number of tickets!'
+                      }
+                    ]}
+                    initialValue={20}
+                  >
+                    {' '}
+                    <Input
+                      type='number'
+                      disabled={acceptConditions}
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                      value={maxTickets}
+                      onChange={(e) => {
+                        const value: any = (e.target as HTMLInputElement).value;
+                        if (!/^\d*\.?\d*$/.test(value)) {
+                          return; // Ignore les caractères invalides
+                        } else if (value > 100) {
+                          setMaxTickets(100);
+                        } else if (value < 4) {
+                          setMaxTickets(4);
+                        } else {
+                          setMaxTickets(value);
+                        }
+
+                        setMaxPerWallet((prevMaxPerWallet = 0) => {
+                          return prevMaxPerWallet > maxTickets / 4
+                            ? Math.floor(maxTickets / 4)
+                            : prevMaxPerWallet;
+                        });
+                      }}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    name='maxPerWallet'
+                    label='Max Per Wallet'
+                    tooltip='Leave 0 for unlimited'
+                    rules={[
+                      {
+                        required: false,
+                        message:
+                          'Please input the maximum number of tickets per wallet!'
+                      }
+                    ]}
+                    initialValue={0}
+                  >
+                    {' '}
+                    <Input
+                      type='number'
+                      disabled={acceptConditions}
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                      value={maxPerWallet}
+                      onChange={(e) => {
+                        const value: any = (e.target as HTMLInputElement).value;
+                        if (!/^\d*\.?\d*$/.test(value)) {
+                          return; // Ignore les caractères invalides
+                        } else if (value > maxTickets / 4) {
+                          setMaxPerWallet(Math.floor(maxTickets / 4));
+                        } else if (value < 0) {
+                          setMaxPerWallet(0);
+                        } else {
+                          setMaxPerWallet(value);
+                        }
+                      }}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name='startTime'
+                    label='Start'
+                    tooltip='Leave empty for immediate start'
+                    rules={[
+                      {
+                        required: false,
+                        message: 'Please select the start time!'
+                      }
+                    ]}
+                  >
+                    <DatePicker
+                      showTime
+                      onChange={handleStart}
+                      popupClassName='custom-datepicker'
+                      onFocus={(e) => e.target.blur()}
+                      inputMode='none'
+                      readOnly={true}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name='endTime'
+                    label='End'
+                    tooltip='Leave empty for no end'
+                    rules={[
+                      {
+                        required: false,
+                        message: 'Please select the end time!'
+                      }
+                    ]}
+                  >
+                    <DatePicker
+                      showTime
+                      onChange={handleEnd}
+                      popupClassName='custom-datepicker'
+                      onFocus={(e) => e.target.blur()}
+                      inputMode='none'
+                      readOnly={true}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name='feePercentage'
+                    label='Fee Percentage'
+                    tooltip='Fees will be deducted from the creator’s pool to support the development of the platform.'
+                    help='Minimum 0.1% and maximum 10%'
+                    rules={[
+                      {
+                        required: false,
+                        message: 'Please input the fee percentage!'
+                      }
+                    ]}
+                  >
+                    {' '}
+                    <Input
+                      type='number'
+                      value={feePercentage}
+                      disabled
+                      onChange={(e) => {
+                        const value: any = (e.target as HTMLInputElement).value;
+                        if (value > 10) {
+                          setFeePercentage(10);
+                        } else if (value < 0.1) {
+                          setFeePercentage(0.1);
+                        } else {
+                          setFeePercentage(value);
+                        }
+                      }}
+                    />
+                  </Form.Item>
+                </>
+              )}
+          </div>
+          {prizeIdentifier &&
+            prizeAmount.isGreaterThan(0) &&
+            ((priceIdentifier && priceAmount.isGreaterThan(0)) ||
               priceType == 'FREE') && (
               <>
                 <Form.Item
-                  name='maxTickets'
-                  label='Total Tickets'
-                  help='Minimum 4 and maximum 100'
-                  tooltip='The maximum number of tickets that can be sold.'
+                  name='acceptConditions'
+                  valuePropName='checked'
                   rules={[
                     {
-                      required: false,
-                      message: 'Please input the maximum number of tickets!'
-                    }
-                  ]}
-                  initialValue={20}
-                >
-                  {' '}
-                  <Input
-                    type='number'
-                    disabled={acceptConditions}
-                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                    value={maxTickets}
-                    onChange={(e) => {
-                      const value: any = (e.target as HTMLInputElement).value;
-                      if (value > 100) {
-                        setMaxTickets(100);
-                      } else if (value < 4) {
-                        setMaxTickets(4);
-                      } else {
-                        setMaxTickets(value);
-                      }
-                    }}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name='maxPerWallet'
-                  label='Max Per Wallet'
-                  tooltip='Leave 0 for unlimited'
-                  rules={[
-                    {
-                      required: false,
-                      message:
-                        'Please input the maximum number of tickets per wallet!'
-                    }
-                  ]}
-                  initialValue={0}
-                >
-                  {' '}
-                  <Input
-                    type='number'
-                    disabled={acceptConditions}
-                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                    value={maxPerWallet}
-                    onChange={(e) => {
-                      const value: any = (e.target as HTMLInputElement).value;
-                      if (value > maxTickets / 4) {
-                        setMaxPerWallet(maxTickets / 4);
-                      } else if (value < 0) {
-                        setMaxPerWallet(0);
-                      } else {
-                        setMaxPerWallet(value);
-                      }
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name='startTime'
-                  label='Start'
-                  tooltip='Leave empty for immediate start'
-                  rules={[
-                    {
-                      required: false,
-                      message: 'Please select the start time!'
+                      validator: (_, value) =>
+                        value
+                          ? Promise.resolve()
+                          : Promise.reject(
+                              new Error('Lock form before submit!')
+                            )
                     }
                   ]}
                 >
-                  <DatePicker showTime onChange={handleStart} />
+                  <Checkbox
+                    onChange={() => setAcceptConditions(!acceptConditions)}
+                  >
+                    Lock configuration and pay 10 GRAOU to start the lottery
+                  </Checkbox>
                 </Form.Item>
-                <Form.Item
-                  name='endTime'
-                  label='End'
-                  tooltip='Leave empty for no end'
-                  rules={[
-                    { required: false, message: 'Please select the end time!' }
-                  ]}
-                >
-                  <DatePicker showTime onChange={handleEnd} />
-                </Form.Item>
-                <Form.Item
-                  name='feePercentage'
-                  label='Fee Percentage'
-                  tooltip='Fees will be deducted from the creator’s pool to support the development of the platform.'
-                  help='Minimum 0.1% and maximum 10%'
-                  rules={[
-                    {
-                      required: false,
-                      message: 'Please input the fee percentage!'
-                    }
-                  ]}
-                >
-                  {' '}
-                  <Input
-                    type='number'
-                    value={feePercentage}
-                    disabled
-                    onChange={(e) => {
-                      const value: any = (e.target as HTMLInputElement).value;
-                      if (value > 10) {
-                        setFeePercentage(10);
-                      } else if (value < 0.1) {
-                        setFeePercentage(0.1);
-                      } else {
-                        setFeePercentage(value);
-                      }
-                    }}
+                <Form.Item>
+                  <ActionCreate
+                    prize_identifier={prizeTicker}
+                    prize_nonce={prizeNonce}
+                    prize_decimals={prizeDecimals}
+                    prize_amount={prizeAmount}
+                    //
+                    price_identifier={priceTicker}
+                    price_nonce={priceNonce}
+                    price_decimals={priceDecimals}
+                    price_amount={priceAmount}
+                    //
+                    max_tickets={maxTickets}
+                    max_per_wallet={maxPerWallet}
+                    start_time={startTime}
+                    end_time={endTime}
+                    fee_percentage={Math.ceil(feePercentage * 100)}
+                    acceptConditions={acceptConditions}
+                    setAcceptConditions={setAcceptConditions}
+                    disabled={!acceptConditions}
                   />
                 </Form.Item>
               </>
             )}
-          </div>
-          {((priceIdentifier && priceAmount.isGreaterThan(0)) ||
-            priceType === 'FREE') && (
-            <>
-              <Form.Item
-                name='acceptConditions'
-                valuePropName='checked'
-                rules={[
-                  {
-                    validator: (_, value) =>
-                      value
-                        ? Promise.resolve()
-                        : Promise.reject(new Error('Lock form before submit!'))
-                  }
-                ]}
-              >
-                <Checkbox
-                  onChange={() => setAcceptConditions(!acceptConditions)}
-                >
-                  Lock configuration and pay 10 GRAOU to start the lottery
-                </Checkbox>
-              </Form.Item>
-              <Form.Item>
-                <ActionCreate
-                  prize_identifier={prizeTicker}
-                  prize_nonce={prizeNonce}
-                  prize_decimals={prizeDecimals}
-                  prize_amount={prizeAmount}
-                  //
-                  price_identifier={priceTicker}
-                  price_nonce={priceNonce}
-                  price_decimals={priceDecimals}
-                  price_amount={priceAmount}
-                  //
-                  max_tickets={maxTickets}
-                  max_per_wallet={maxPerWallet}
-                  start_time={startTime}
-                  end_time={endTime}
-                  fee_percentage={Math.ceil(feePercentage * 100)}
-                  acceptConditions={acceptConditions}
-                  setAcceptConditions={setAcceptConditions}
-                  disabled={!acceptConditions}
-                />
-              </Form.Item>
-            </>
-          )}
         </Form>
       </Modal>
     </div>
