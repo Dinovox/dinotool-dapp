@@ -34,6 +34,8 @@ export const Lottery = () => {
   const [timeEnd, setTimeEnd] = useState(60 * 60);
   const { address } = useGetAccount();
   const [lotteryID, setLotteryID] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const [filter, setFilter] = useState<string>('ongoing');
   const navigate = useNavigate();
 
   const { id } = useParams<{ id: string }>();
@@ -80,19 +82,16 @@ export const Lottery = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const runningLottery = useGetRunningLottery().sort((a, b) => a - b);
-  const endedLottery = useGetEndedLottery().sort((a, b) => a - b);
+  const runningLottery = useGetRunningLottery().sort((a, b) => b - a);
+  const endedLottery = useGetEndedLottery().sort((a, b) => b - a);
   // console.log('runningLottery', runningLottery.toString());
 
   // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
   const lottery = useGetLottery(lotteryID);
-
   const { buyed } = useGetUserTickets(lotteryID);
-
   const { balance } = useGetAccount();
   const user_esdt = useGetUserESDT();
   const user_sft = useGetUserNFT(address);
-
   const prize_nft_information = useGetNftInformations(
     lottery?.prize_nonce > 0 ? lottery?.prize_identifier : '',
     lottery?.prize_nonce > 0 ? lottery?.prize_nonce : ''
@@ -131,6 +130,12 @@ export const Lottery = () => {
       sft.collection == lottery?.price_identifier &&
       sft.nonce == lottery?.price_nonce
   )?.balance;
+  const lotteriesDisplay =
+    filter === 'owned'
+      ? [lotteryID]
+      : filter === 'ongoing'
+      ? runningLottery
+      : endedLottery;
 
   return (
     <AuthRedirectWrapper requireAuth={false}>
@@ -144,10 +149,89 @@ export const Lottery = () => {
               >
                 Lotteries
               </div>{' '}
+              <div className='filter-options' style={{ margin: '3px' }}>
+                <label style={{ margin: '3px' }}>
+                  <input
+                    type='radio'
+                    name='filter'
+                    value='ongoing'
+                    checked={filter === 'ongoing'}
+                    onChange={() => (setFilter('ongoing'), setPage(1))}
+                  />
+                  Ongoing
+                </label>
+                <label style={{ margin: '3px' }}>
+                  <input
+                    type='radio'
+                    name='filter'
+                    value='ended'
+                    checked={filter === 'ended'}
+                    onChange={() => (setFilter('ended'), setPage(1))}
+                  />
+                  Ended
+                </label>
+                <label style={{ margin: '3px' }}>
+                  <input
+                    type='radio'
+                    name='filter'
+                    value='owned'
+                    checked={filter === 'owned'}
+                    onChange={() => (setFilter('owned'), setPage(1))}
+                  />
+                  Owned
+                </label>
+              </div>
               <LotteryList
-                runningLottery={runningLottery}
-                endedLottery={endedLottery}
+                runningLottery={lotteriesDisplay.slice(4 * page - 4, 4 * page)}
               />
+              <div className='pagination'>
+                <button
+                  onClick={() => {
+                    if (page > 1) {
+                      setPage(page - 1);
+                    }
+                  }}
+                  disabled={page <= 1}
+                >
+                  Previous
+                </button>
+
+                {lotteriesDisplay
+                  .slice(4 * page - 4, 4 * page)
+                  .map((lottery) => (
+                    <span
+                      key={lottery}
+                      onClick={() => {
+                        setLotteryID(lottery);
+                        navigate(`/lotteries/${lottery}`, { replace: true });
+                      }}
+                      style={{
+                        display: 'inline-block',
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: '#f0f0f0',
+                        border: '1px solid #ccc',
+                        textAlign: 'center',
+                        lineHeight: '20px',
+                        margin: '2px',
+                        cursor: 'pointer'
+                      }}
+                      className='pagination-square'
+                    >
+                      {lottery}
+                    </span>
+                  ))}
+                <button
+                  disabled={lotteriesDisplay.length <= page * 4}
+                  onClick={() => {
+                    if (lotteriesDisplay.length > page * 4) {
+                      setPage(page + 1);
+                    }
+                  }}
+                >
+                  Next
+                </button>
+              </div>
               <CreateLotteryModal />
             </>
           ) : (
@@ -396,63 +480,6 @@ export const Lottery = () => {
               </div>{' '}
             </>
           )}
-
-          <div className='running-lottery'>
-            <h2>Running Lotteries</h2>
-            <ul>
-              {runningLottery.map((lottery) => (
-                <span
-                  key={lottery}
-                  onClick={() => {
-                    setLotteryID(lottery);
-                    navigate(`/lotteries/${lottery}`, { replace: true });
-                  }}
-                  style={{
-                    display: 'inline-block',
-                    width: '20px',
-                    height: '20px',
-                    backgroundColor: '#f0f0f0',
-                    border: '1px solid #ccc',
-                    textAlign: 'center',
-                    lineHeight: '20px',
-                    margin: '2px',
-                    cursor: 'pointer'
-                  }}
-                  className='pagination-square'
-                >
-                  {lottery}
-                </span>
-              ))}
-            </ul>
-          </div>
-          <div className='ended-lottery'>
-            <h2>Ended Lotteries</h2>
-            <ul>
-              {endedLottery.map((lottery) => (
-                <span
-                  key={lottery}
-                  onClick={() => {
-                    setLotteryID(lottery);
-                    navigate(`/lotteries/${lottery}`, { replace: true });
-                  }}
-                  style={{
-                    display: 'inline-block',
-                    width: '20px',
-                    height: '20px',
-                    backgroundColor: '#f0f0f0',
-                    border: '1px solid #ccc',
-                    textAlign: 'center',
-                    lineHeight: '20px',
-                    margin: '2px',
-                    cursor: 'pointer'
-                  }}
-                  className='pagination-square'
-                >
-                  {lottery}
-                </span>
-              ))}
-            </ul>
-          </div>
         </div>{' '}
       </PageWrapper>
     </AuthRedirectWrapper>

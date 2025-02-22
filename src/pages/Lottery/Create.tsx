@@ -10,6 +10,7 @@ import BigNumber from 'bignumber.js';
 import { graou_identifier, xgraou_identifier } from 'config';
 import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
+import { max } from 'moment';
 // import { DatePicker } from 'antd-mobile';
 
 const CreateLotteryModal: React.FC = () => {
@@ -668,7 +669,7 @@ const CreateLotteryModal: React.FC = () => {
                     {' '}
                     <Input
                       type='number'
-                      disabled={acceptConditions}
+                      disabled={true}
                       onWheel={(e) => (e.target as HTMLInputElement).blur()}
                       value={maxTickets}
                       onChange={(e) => {
@@ -690,12 +691,25 @@ const CreateLotteryModal: React.FC = () => {
                         });
                       }}
                     />
+                    <Input
+                      type='range'
+                      min={4}
+                      max={100}
+                      value={maxTickets}
+                      defaultValue={maxTickets}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        setMaxTickets(value);
+                      }}
+                      disabled={acceptConditions}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name='maxPerWallet'
                     label='Max Per Wallet'
                     tooltip='Leave 0 for unlimited'
+                    help='Minimum 0 and maximum 25% of total tickets'
                     rules={[
                       {
                         required: false,
@@ -708,7 +722,7 @@ const CreateLotteryModal: React.FC = () => {
                     {' '}
                     <Input
                       type='number'
-                      disabled={acceptConditions}
+                      disabled={true}
                       onWheel={(e) => (e.target as HTMLInputElement).blur()}
                       value={maxPerWallet}
                       onChange={(e) => {
@@ -723,6 +737,17 @@ const CreateLotteryModal: React.FC = () => {
                           setMaxPerWallet(value);
                         }
                       }}
+                    />
+                    <Input
+                      type='range'
+                      min={0}
+                      max={Math.floor(maxTickets / 4)}
+                      value={maxPerWallet}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        setMaxPerWallet(value);
+                      }}
+                      disabled={acceptConditions}
                     />
                   </Form.Item>
                   <Form.Item
