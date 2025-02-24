@@ -28,6 +28,9 @@ import FileDisplay from './FileDisplay';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import { useGetEndedLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetEndedLottery';
+import { useGetLotteries } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
+import { graou_identifier, lottery_cost } from 'config';
+import { ActionDelete } from './Transaction/ActionDelete';
 
 export const Lottery = () => {
   const [timeStart, setTimeStart] = useState(60 * 60);
@@ -82,12 +85,14 @@ export const Lottery = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const runningLottery = useGetRunningLottery().sort((a, b) => b - a);
-  const endedLottery = useGetEndedLottery().sort((a, b) => b - a);
+  const lotteries = useGetLotteries();
+  const runningLottery = lotteries.running;
+  const endedLottery = lotteries.endend;
   // console.log('runningLottery', runningLottery.toString());
 
   // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
   const lottery = useGetLottery(lotteryID);
+
   const { buyed } = useGetUserTickets(lotteryID);
   const { balance } = useGetAccount();
   const user_esdt = useGetUserESDT();
@@ -122,17 +127,27 @@ export const Lottery = () => {
     return () => clearInterval(interval); // Nettoyage de l'intervalle
   }, [lottery]);
 
-  const userEsdtBalance = user_esdt.find(
-    (esdt: any) => esdt.identifier === lottery?.price_identifier
-  )?.balance;
-  const userSftBalance = user_sft.find(
-    (sft: any) =>
-      sft.collection == lottery?.price_identifier &&
-      sft.nonce == lottery?.price_nonce
-  )?.balance;
+  const userEsdtBalance = new BigNumber(
+    user_esdt.find((esdt: any) => esdt.identifier === lottery?.price_identifier)
+      ?.balance
+  );
+  const userSftBalance = new BigNumber(
+    user_sft.find(
+      (sft: any) =>
+        sft.collection == lottery?.price_identifier &&
+        sft.nonce == lottery?.price_nonce
+    )?.balance
+  );
+
+  const userGraouBalance = new BigNumber(
+    user_esdt.find((esdt: any) => esdt.identifier === graou_identifier)?.balance
+  );
+
+  const cost = new BigNumber(lottery_cost);
+
   const lotteriesDisplay =
     filter === 'owned'
-      ? [lotteryID]
+      ? lotteries.user
       : filter === 'ongoing'
       ? runningLottery
       : endedLottery;
@@ -141,6 +156,7 @@ export const Lottery = () => {
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+          {/* Bloc 1 == Liste des lotteries  */}
           {!lottery.id ? (
             <>
               <div
@@ -170,22 +186,25 @@ export const Lottery = () => {
                   />
                   Ended
                 </label>
-                <label style={{ margin: '3px' }}>
-                  <input
-                    type='radio'
-                    name='filter'
-                    value='owned'
-                    checked={filter === 'owned'}
-                    onChange={() => (setFilter('owned'), setPage(1))}
-                  />
-                  Owned
-                </label>
+                {lotteries.user.length > 0 && (
+                  <label style={{ margin: '3px' }}>
+                    <input
+                      type='radio'
+                      name='filter'
+                      value='owned'
+                      checked={filter === 'owned'}
+                      onChange={() => (setFilter('owned'), setPage(1))}
+                    />
+                    Owned
+                  </label>
+                )}
               </div>
               <LotteryList
                 runningLottery={lotteriesDisplay.slice(4 * page - 4, 4 * page)}
               />
               <div className='pagination'>
                 <button
+                  className='dinoButton'
                   onClick={() => {
                     if (page > 1) {
                       setPage(page - 1);
@@ -198,30 +217,27 @@ export const Lottery = () => {
 
                 {lotteriesDisplay
                   .slice(4 * page - 4, 4 * page)
-                  .map((lottery) => (
+                  .map((lottery: any) => (
                     <span
                       key={lottery}
+                      className='dinoButton smhidden'
                       onClick={() => {
                         setLotteryID(lottery);
                         navigate(`/lotteries/${lottery}`, { replace: true });
                       }}
                       style={{
-                        display: 'inline-block',
-                        width: '20px',
                         height: '20px',
                         backgroundColor: '#f0f0f0',
                         border: '1px solid #ccc',
-                        textAlign: 'center',
                         lineHeight: '20px',
-                        margin: '2px',
                         cursor: 'pointer'
                       }}
-                      className='pagination-square'
                     >
                       {lottery}
                     </span>
                   ))}
                 <button
+                  className='dinoButton'
                   disabled={lotteriesDisplay.length <= page * 4}
                   onClick={() => {
                     if (lotteriesDisplay.length > page * 4) {
@@ -232,7 +248,10 @@ export const Lottery = () => {
                   Next
                 </button>
               </div>
-              <CreateLotteryModal />
+              <CreateLotteryModal
+                count={lotteries?.user?.length}
+                cost={userGraouBalance.isGreaterThanOrEqualTo(cost)}
+              />
             </>
           ) : (
             <div
@@ -246,6 +265,8 @@ export const Lottery = () => {
               <button onClick={() => navigate('/lotteries')}>Return</button>
             </div>
           )}
+
+          {/* Bloce 2 == Détails de la lotterie */}
           {lottery.id > 0 && (
             <>
               <div
@@ -254,6 +275,7 @@ export const Lottery = () => {
               >
                 Lottery #{lottery?.id.toFixed()}
               </div>{' '}
+              {/* Details de la lotterie (owner , tickets, start, end, max per wallet) */}
               <div className='dinocard'>
                 <div className='sub-dinocard box-item'>
                   {lottery && (
@@ -291,6 +313,7 @@ export const Lottery = () => {
                   )}
                 </div>
               </div>
+              {/* Details du prix d'entrée et récompense*/}
               <div className='dinocard'>
                 {lottery && lottery.prize_identifier && (
                   <>
@@ -346,12 +369,10 @@ export const Lottery = () => {
                     </div>
                   </>
                 )}
-                {/* {timeStart >= 60 * 30 && (
-                  <div className='sub-dinocard'>{displayText}</div>
-                )}{' '} */}
               </div>
+              {/* Block winner après tirage */}
               {lottery.winner !=
-              'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' ? (
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
                 <>
                   <div className='dinocard'>
                     <div className='sub-dinocard'>
@@ -362,21 +383,32 @@ export const Lottery = () => {
                     </div>
                   </div>
                 </>
-              ) : (
-                <>
-                  {lottery.tickets_sold >= lottery.max_tickets && (
-                    <> Waiting for the owner to draw the winner</>
-                  )}
-                </>
               )}
+              {/* Tout est vendu ou la lotterie est terminée */}
+              {lottery &&
+                lottery.tickets_sold.isGreaterThanOrEqualTo(
+                  lottery.max_tickets
+                ) && (
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    Waiting for the owner to draw the winner
+                  </div>
+                )}
+              {/* Actions pour l'owner */}
               {lottery.owner == address && (
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   {lottery.winner ==
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
+                  'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' ? (
                     <ActionDraw
                       lottery_id={lotteryID}
-                      disabled={lottery.tickets_sold == 0}
+                      disabled={
+                        lottery.tickets_sold == 0 ||
+                        (lottery.end.isGreaterThan(0) &&
+                          timeEnd > 0 &&
+                          lottery.tickets_sold.isLessThan(lottery.max_tickets))
+                      }
                     />
+                  ) : (
+                    <ActionDelete lottery_id={lotteryID} />
                   )}
                   {lottery.winner ==
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
@@ -384,100 +416,78 @@ export const Lottery = () => {
                   )}
                 </div>
               )}
-              {/* {lottery &&
-                (lottery.tickets_sold >= lottery.max_tickets ||
-                  (lottery.end < Date.now() && lottery.end > 0)) ? (
-
-                       <></>
-                        ) : (
-                          <>
-                           
-                          </>
-                        )}
-                )}{' '} */}
-              <div
-                style={{
-                  width: '100%',
-                  justifyContent: 'center',
-                  display: 'grid'
-                }}
-              >
-                <div className='text-label' style={{ margin: 'auto' }}>
-                  {lottery && lottery.max_tickets > lottery.tickets_sold ? (
-                    <>
-                      {timeStart > 0 ? (
-                        <div>Open in : {formatTime(timeStart)}</div>
-                      ) : (
+              {/* Timer pour tout le monde */}
+              {timeStart > 0 && (
+                <div
+                  style={{
+                    width: '100%',
+                    justifyContent: 'center',
+                    display: 'grid'
+                  }}
+                >
+                  Open in : {formatTime(timeStart)}
+                </div>
+              )}
+              {timeStart == 0 && lottery.end > 0 && (
+                <div
+                  style={{
+                    width: '100%',
+                    justifyContent: 'center',
+                    display: 'grid'
+                  }}
+                >
+                  End in : {formatTime(timeEnd)}
+                </div>
+              )}
+              {/* Actions pour les participants */}
+              {(timeStart == 0 || lottery.start == 0) &&
+                lottery.owner != address && (
+                  <div
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      display: 'grid'
+                    }}
+                  >
+                    {/* Il reste des tickets à vendre */}
+                    {lottery &&
+                      lottery.max_tickets.isGreaterThan(
+                        lottery.tickets_sold
+                      ) && (
                         <>
-                          {timeEnd > 0 || lottery.end == 0 ? (
-                            <>
-                              {lottery.owner != address ? (
-                                <ActionBuy
-                                  lottery_id={lotteryID}
-                                  price_identifier={lottery?.price_identifier}
-                                  price_nonce={lottery.price_nonce}
-                                  price_amount={lottery.price_amount}
-                                  balance={new BigNumber(balance)}
-                                  esdt_balance={
-                                    new BigNumber(
-                                      userEsdtBalance ? userEsdtBalance : 0
-                                    )
-                                  }
-                                  sft_balance={
-                                    new BigNumber(
-                                      userSftBalance ? userSftBalance : 0
-                                    )
-                                  }
-                                  buyed={
-                                    lottery.max_per_wallet > 0 &&
-                                    buyed >= lottery.max_per_wallet
-                                      ? true
-                                      : false
-                                  }
-                                />
-                              ) : (
-                                <>Owner can't buy ticket</>
-                              )}
-                              {buyed > 0 && (
-                                <p>You have {buyed.toFixed()} tickets</p>
-                              )}
-
-                              {lottery.end > 0 && (
-                                <div>End in : {formatTime(timeEnd)}</div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {lottery.winner ==
-                                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' &&
-                                lottery.tickets_sold > 0 && (
-                                  <>Sale ended waiting for final draw</>
-                                )}
-                              {lottery.end > 0 && timeEnd == 0 && (
-                                <div>
-                                  The lottery has ended as the deadline expired.
-                                </div>
-                              )}
-                            </>
-                          )}
+                          <ActionBuy
+                            lottery_id={lotteryID}
+                            price_identifier={lottery?.price_identifier}
+                            price_nonce={lottery.price_nonce}
+                            price_amount={lottery.price_amount}
+                            balance={new BigNumber(balance)}
+                            esdt_balance={
+                              new BigNumber(
+                                userEsdtBalance ? userEsdtBalance : 0
+                              )
+                            }
+                            sft_balance={
+                              new BigNumber(userSftBalance ? userSftBalance : 0)
+                            }
+                            buyed={
+                              lottery.max_per_wallet > 0 &&
+                              buyed >= lottery.max_per_wallet
+                                ? true
+                                : false
+                            }
+                          />
+                          <span>
+                            {buyed && buyed > 0 && (
+                              <>
+                                You have {buyed.toFixed()} tickets
+                                <br />
+                              </>
+                            )}
+                          </span>
                         </>
                       )}
-                    </>
-                  ) : (
-                    <>
-                      <span>
-                        {buyed && buyed > 0 && (
-                          <>
-                            You have {buyed.toFixed()} tickets
-                            <br />
-                          </>
-                        )}
-                      </span>{' '}
-                    </>
-                  )}
-                  <div></div>
-                </div>
-              </div>{' '}
+                  </div>
+                )}
             </>
           )}
         </div>{' '}

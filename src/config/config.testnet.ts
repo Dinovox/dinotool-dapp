@@ -10,3 +10,4 @@ export const environment = EnvironmentsEnum.testnet;
 export const metamaskSnapWalletAddress =
   'https://testnet-snap-wallet.multiversx.com';
 export const lotteryContract = 'erd1qqqqqqqqqqqqqpgq';
+export const lottery_cost = '10000000000000000000';

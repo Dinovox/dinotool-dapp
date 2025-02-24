@@ -13,7 +13,10 @@ import { useGetNftInformations } from './Transaction/helpers/useGetNftInformatio
 import { max } from 'moment';
 // import { DatePicker } from 'antd-mobile';
 
-const CreateLotteryModal: React.FC = () => {
+const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
+  count,
+  cost
+}: any) => {
   const [visible, setVisible] = useState(false);
   const [priceType, setPriceType] = useState('');
   const [priceIdentifier, setPriceIdentifier] = useState('');
@@ -23,7 +26,7 @@ const CreateLotteryModal: React.FC = () => {
   const [maxPerWallet, setMaxPerWallet] = useState<number | undefined>(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [feePercentage, setFeePercentage] = useState<number>(0.1);
+  const [feePercentage, setFeePercentage] = useState<number>(0.5);
   const [prizeType, setPrizeType] = useState<string>('');
   const [prizeIdentifier, setPrizeIdentifier] = useState('');
 
@@ -271,8 +274,12 @@ const CreateLotteryModal: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <button onClick={showModal} disabled={!address} className='dinoButton'>
-        Create Lottery
+      <button
+        onClick={showModal}
+        disabled={!address || count >= 4}
+        className='dinoButton'
+      >
+        Create Lottery {count}/4
       </button>
 
       <Modal
@@ -700,6 +707,12 @@ const CreateLotteryModal: React.FC = () => {
                       onChange={(e) => {
                         const value = parseInt(e.target.value, 10);
                         setMaxTickets(value);
+
+                        setMaxPerWallet((prevMaxPerWallet = 0) => {
+                          return prevMaxPerWallet > maxTickets / 4
+                            ? Math.floor(maxTickets / 4)
+                            : prevMaxPerWallet;
+                        });
                       }}
                       disabled={acceptConditions}
                     />
@@ -794,7 +807,7 @@ const CreateLotteryModal: React.FC = () => {
                     name='feePercentage'
                     label='Fee Percentage'
                     tooltip='Fees will be deducted from the creator’s pool to support the development of the platform.'
-                    help='Minimum 0.1% and maximum 10%'
+                    help='Minimum 0.5% and maximum 10%'
                     rules={[
                       {
                         required: false,
@@ -811,12 +824,24 @@ const CreateLotteryModal: React.FC = () => {
                         const value: any = (e.target as HTMLInputElement).value;
                         if (value > 10) {
                           setFeePercentage(10);
-                        } else if (value < 0.1) {
-                          setFeePercentage(0.1);
+                        } else if (value < 0.5) {
+                          setFeePercentage(0.5);
                         } else {
                           setFeePercentage(value);
                         }
                       }}
+                    />
+                    <Input
+                      type='range'
+                      step={0.5}
+                      min={0.5}
+                      max={10}
+                      value={feePercentage}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setFeePercentage(value);
+                      }}
+                      disabled={acceptConditions}
                     />
                   </Form.Item>
                 </>
@@ -835,16 +860,40 @@ const CreateLotteryModal: React.FC = () => {
                       validator: (_, value) =>
                         value
                           ? Promise.resolve()
-                          : Promise.reject(
-                              new Error('Lock form before submit!')
-                            )
+                          : Promise.reject(new Error('Check before submit!'))
                     }
                   ]}
                 >
                   <Checkbox
+                    disabled={!cost}
                     onChange={() => setAcceptConditions(!acceptConditions)}
                   >
-                    Lock configuration and pay 10 GRAOU to start the lottery
+                    {' '}
+                    {!cost ? (
+                      <span>
+                        You need 10 XGRAOU to start the lottery. Get some by
+                        staking a{' '}
+                        <a
+                          style={{ color: 'blue' }}
+                          href='https://xoxno.com/collection/DINOVOX-cb2297'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          DINOVOX
+                        </a>{' '}
+                        at{' '}
+                        <a
+                          style={{ color: 'blue' }}
+                          href='https://www.dinovox.com/fr/staking'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          dinovox.com
+                        </a>
+                      </span>
+                    ) : (
+                      'Pay 10 XGRAOU to start the lottery'
+                    )}
                   </Checkbox>
                 </Form.Item>
                 <Form.Item>
@@ -866,8 +915,8 @@ const CreateLotteryModal: React.FC = () => {
                     fee_percentage={Math.ceil(feePercentage * 100)}
                     acceptConditions={acceptConditions}
                     setAcceptConditions={setAcceptConditions}
-                    disabled={!acceptConditions}
-                  />
+                    disabled={!acceptConditions || !cost}
+                  />{' '}
                 </Form.Item>
               </>
             )}

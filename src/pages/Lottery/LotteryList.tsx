@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './LotteryList.css';
 import FileDisplay from './FileDisplay';
 import { useNavigate } from 'react-router-dom';
@@ -6,8 +6,13 @@ import { useGetLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
 import notFound from './esdtnotfound.svg';
+import dayjs from 'dayjs';
+import BigNumber from 'bignumber.js';
 
 const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
+  const [timeStart, setTimeStart] = useState(0);
+  const [timeEnd, setTimeEnd] = useState(0);
+
   const navigate = useNavigate();
   const lottery = useGetLottery(lottery_id);
   const prize_nft_information = useGetNftInformations(
@@ -19,17 +24,33 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   );
 
   //   console.log('prize_nft_information', prize_nft_information);
-  //   console.log('prize_esdt_information', prize_esdt_information);
-
+  // console.log('prize_esdt_information', prize_esdt_information);
   const status =
     lottery.winner !=
     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
       ? 'Ended'
-      : lottery.tickets_sold >= lottery.max_tickets ||
-        (lottery.end < Date.now() / 1000 && lottery.end > 0)
+      : lottery.tickets_sold.isGreaterThanOrEqualTo(lottery.max_tickets) ||
+        (lottery?.end.isLessThan(Date.now() / 1000) && lottery.end > 0)
       ? 'Draw'
       : 'Ongoing';
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return `${h}h ${m}m ${s}s`;
+  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = Date.now() / 1000;
+      const newTimeStart = lottery?.start - currentTime;
+      setTimeStart(newTimeStart > 0 ? Math.floor(newTimeStart) : 0);
+      // Empêche le temps restant d'aller en dessous de 0
+      const newTimeEnd = lottery?.end - currentTime;
+      setTimeEnd(newTimeEnd > 0 ? Math.floor(newTimeEnd) : 0);
+    }, 1000);
 
+    return () => clearInterval(interval); // Nettoyage de l'intervalle
+  }, [lottery]);
   return (
     <>
       {lottery.id > 0 && (
@@ -65,7 +86,9 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
           ) : (
             <FileDisplay
               source={
-                prize_esdt_information?.media?.length
+                prize_esdt_information?.assets?.svgUrl
+                  ? prize_esdt_information?.assets?.svgUrl
+                  : prize_esdt_information?.media?.length
                   ? prize_esdt_information?.media[0]?.svgUrl
                   : notFound
               }
@@ -84,17 +107,26 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
               {' '}
               Lottery #{lottery?.id.toFixed()}
             </h2>
-            <p className='text-sm text-gray-600'>
-              Tickets:{' '}
-              <strong>
-                {lottery?.tickets_sold.toFixed()} /{' '}
-                {lottery?.max_tickets.toFixed()}{' '}
-              </strong>
-            </p>
+            {timeStart > 0 ? (
+              <div>Open in : {formatTime(timeStart)}</div>
+            ) : (
+              <p className='text-sm text-gray-600'>
+                Tickets:{' '}
+                <strong>
+                  {lottery?.tickets_sold.toFixed()} /{' '}
+                  {lottery?.max_tickets.toFixed()}{' '}
+                </strong>
+              </p>
+            )}
 
-            <p className='text-sm text-gray-600'>
-              {lottery.end > 0 && <>End: {blockToTime(lottery?.end)} </>}
-            </p>
+            {timeStart == 0 && timeEnd > 0 && (
+              <div>
+                {lottery.end > 0 && <>End in: {formatTime(timeEnd)} </>}
+              </div>
+            )}
+            {timeStart == 0 && lottery.end.isGreaterThan(0) && timeEnd == 0 && (
+              <div>Time expired</div>
+            )}
 
             <button
               className='smallDinoButton '

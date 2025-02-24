@@ -30,18 +30,26 @@
       {
         "name": "fee_collector",
         "type": "Address"
+      },
+      {
+        "name": "blacklisted_identifiers",
+        "type": "TokenIdentifier"
       }
     ],
     "outputs": []
   },
   "upgradeConstructor": {
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "blacklisted_identifiers",
+        "type": "TokenIdentifier"
+      }
+    ],
     "outputs": []
   },
   "endpoints": [
     {
       "name": "create",
-      "onlyOwner": true,
       "mutability": "mutable",
       "payableInTokens": ["*"],
       "inputs": [
@@ -88,6 +96,17 @@
       "name": "buy",
       "mutability": "mutable",
       "payableInTokens": ["*"],
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "cancel",
+      "mutability": "mutable",
       "inputs": [
         {
           "name": "lottery_id",
@@ -167,12 +186,39 @@
       ]
     },
     {
+      "name": "getUserLotteries",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user_id",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "variadic<u64>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
       "name": "getMainToken",
       "mutability": "readonly",
       "inputs": [],
       "outputs": [
         {
           "type": "TokenIdentifier"
+        }
+      ]
+    },
+    {
+      "name": "getBlacklistedIdentifiers",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<TokenIdentifier>",
+          "multi_result": true
         }
       ]
     },
@@ -232,6 +278,22 @@
       ]
     },
     {
+      "name": "getLotteries",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "optional<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Lotteries"
+        }
+      ]
+    },
+    {
       "name": "getLotteryDetails",
       "mutability": "readonly",
       "inputs": [
@@ -262,11 +324,43 @@
           "indexed": true
         }
       ]
+    },
+    {
+      "identifier": "lotteryDrawn",
+      "inputs": [
+        {
+          "name": "lottery_id",
+          "type": "u64",
+          "indexed": true
+        },
+        {
+          "name": "winner",
+          "type": "Address",
+          "indexed": true
+        }
+      ]
     }
   ],
   "esdtAttributes": [],
   "hasCallback": false,
   "types": {
+    "Lotteries": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "running_lotteries",
+          "type": "List<u64>"
+        },
+        {
+          "name": "ended_lotteries",
+          "type": "List<u64>"
+        },
+        {
+          "name": "user_lotteries",
+          "type": "List<u64>"
+        }
+      ]
+    },
     "LotteryInfo": {
       "type": "struct",
       "fields": [

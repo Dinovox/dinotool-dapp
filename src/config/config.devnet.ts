@@ -20,3 +20,5 @@ export const metamaskSnapWalletAddress =
   'https://devnet-snap-wallet.multiversx.com';
 
 export const xgraou_identifier = 'GRAOU-96c360';
+
+export const lottery_cost = '10000000000000000000';

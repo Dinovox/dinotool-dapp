@@ -25,7 +25,7 @@ export const ActionBuy = ({
 }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
-  const fees = new BigNumber(140669180000000);
+  const fees = new BigNumber(100000000000000);
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
       string | null
@@ -112,6 +112,7 @@ export const ActionBuy = ({
         <>
           <button
             disabled={
+              balance.isLessThan(fees) ||
               buyed ||
               (price_identifier == 'EGLD-000000' &&
                 balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
@@ -127,7 +128,8 @@ export const ActionBuy = ({
             onClick={sendFundTransaction}
             className={'dinoButton'}
           >
-            {(price_identifier == 'EGLD-000000' &&
+            {balance.isLessThan(fees) ||
+            (price_identifier == 'EGLD-000000' &&
               balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
             (price_identifier != 'EGLD-000000' &&
               price_nonce == 0 &&
@@ -137,7 +139,7 @@ export const ActionBuy = ({
               sft_balance.isLessThan(new BigNumber(price_amount)))
               ? 'balance too low'
               : buyed
-              ? 'One mint per wallet'
+              ? 'Max buy reached'
               : 'Buy ticket'}
           </button>
         </>

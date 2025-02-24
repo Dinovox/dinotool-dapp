@@ -5,7 +5,7 @@ import { useGetAccount, useGetIsLoggedIn, useGetNetworkConfig } from 'hooks';
 import { RouteNamesEnum } from 'localConstants';
 import MultiversXLogo from '../../../assets/img/multiversx-logo.svg?react';
 import { useMatch } from 'react-router-dom';
-import dinovoxLogo from '/dinovox_logo.webp';
+import dinovoxLogo from '/DinoVoxDinoTools.png';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { EnvironmentsEnum } from 'types';
 import { environment } from 'config';

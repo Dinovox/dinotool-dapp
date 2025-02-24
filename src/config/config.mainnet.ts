@@ -23,3 +23,4 @@ export const metamaskSnapWalletAddress = 'https://snap-wallet.multiversx.com';
 //xGRAOU n'est pas transférable et doit être desactivé dans les formulaires
 export const xgraou_identifier = 'XGRAOU-a7441a';
 export const graou_identifier = xgraou_identifier;
+export const lottery_cost = '10000000000000000000';
