@@ -95,19 +95,23 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
       setPriceIdentifier('EGLD-000000');
       setPriceTicker('EGLD-000000');
       setPriceDecimals(18);
+      setPriceAmount(new BigNumber(0));
+      setPriceDisplay('');
     } else if (e.target.value === 'FREE') {
       setPriceType('FREE');
       setMaxPerWallet(maxPerWallet == 0 ? 1 : maxPerWallet);
       setPriceIdentifier('FREE-000000');
       setPriceTicker('FREE-000000');
+      setPriceAmount(new BigNumber(100 * 10 ** 18));
+      setPriceDisplay('100');
     } else {
       setPriceType(e.target.value);
       setPriceTicker('');
       setPriceIdentifier('');
+      setPriceAmount(new BigNumber(0));
+      setPriceDisplay('');
     }
     setPriceNonce(0);
-    setPriceAmount(new BigNumber(0));
-    setPriceDisplay('');
   };
 
   const price_options =
@@ -494,16 +498,17 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   </Radio.Group>{' '}
                   {priceType == 'FREE' && (
                     <div style={{ color: 'red', marginTop: '10px' }}>
-                      Warning: We cannot prevent bots from participating in free
-                      lotteries. To ensure fairness, we recommend using paid
-                      lotteries, even if it involves distributing an SFT in
-                      advance.
+                      Warning: We cannot fully prevent bots from participating
+                      in free lotteries. However, to enhance fairness, users can
+                      only obtain free tickets if they hold xGRAOU tokens in
+                      their wallet. You may set a minimum xGRAOU balance
+                      required to claim a ticket.
                     </div>
                   )}
                 </Form.Item>
 
                 {/* Selection du PRICE */}
-                {['ESDT', 'SFT'].includes(priceType) && (
+                {['ESDT', 'SFT', 'FREE'].includes(priceType) && (
                   <Form.Item
                     name={'priceIdentifier' + priceType}
                     label='Identifier'
@@ -516,9 +521,13 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   >
                     {' '}
                     <Select
-                      defaultValue={priceIdentifier}
+                      defaultValue={
+                        priceType == 'FREE'
+                          ? xgraou_identifier
+                          : priceIdentifier
+                      }
                       className='select-token'
-                      disabled={acceptConditions}
+                      disabled={acceptConditions || priceType == 'FREE'}
                       onDropdownVisibleChange={handleDropdownChange}
                       onChange={(value, datas: any) => {
                         disableKeyboard();
@@ -609,7 +618,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
                 )}
                 {/* Montant du PRICE */}
-                {['ESDT', 'SFT', 'EGLD'].includes(priceType) && (
+                {['ESDT', 'SFT', 'EGLD', 'FREE'].includes(priceType) && (
                   <Form.Item
                     name='priceAmount'
                     label='Amount'
@@ -657,8 +666,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
           >
             {prizeIdentifier &&
               prizeAmount.isGreaterThan(0) &&
-              ((priceIdentifier && priceAmount.isGreaterThan(0)) ||
-                priceType == 'FREE') && (
+              priceIdentifier &&
+              priceAmount.isGreaterThan(0) && (
                 <>
                   <Form.Item
                     name='maxTickets'
@@ -849,8 +858,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
           </div>
           {prizeIdentifier &&
             prizeAmount.isGreaterThan(0) &&
-            ((priceIdentifier && priceAmount.isGreaterThan(0)) ||
-              priceType == 'FREE') && (
+            priceIdentifier &&
+            priceAmount.isGreaterThan(0) && (
               <>
                 <Form.Item
                   name='acceptConditions'

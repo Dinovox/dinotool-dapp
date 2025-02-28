@@ -3,7 +3,11 @@ import { useState } from 'react';
 import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { lotteryContractAddress } from 'config';
+import {
+  lotteryContractAddress,
+  xgraou_identifier,
+  graou_identifier
+} from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
@@ -21,7 +25,10 @@ export const ActionBuy = ({
   buyed,
   balance,
   esdt_balance,
-  sft_balance
+  graou_balance,
+  sft_balance,
+  started,
+  ended
 }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
@@ -49,7 +56,15 @@ export const ActionBuy = ({
     } else if (price_identifier == 'FREE-000000') {
       fundTransaction = {
         value: 0,
-        data: 'buy@' + bigToHex(BigInt(lottery_id)),
+        data:
+          'ESDTTransfer@' +
+          Buffer.from(graou_identifier, 'utf8').toString('hex') +
+          '@' +
+          bigToHex(BigInt(price_amount)) +
+          '@' +
+          Buffer.from('buy', 'utf8').toString('hex') +
+          '@' +
+          bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
         gasLimit: '14000000'
       };
@@ -106,21 +121,26 @@ export const ActionBuy = ({
   if (!address) {
     return null;
   }
+
   return (
     <>
       {!hasPendingTransactions ? (
         <>
           <button
             disabled={
+              ended ||
               balance.isLessThan(fees) ||
+              (price_identifier == 'FREE-000000' &&
+                graou_balance.isLessThan(new BigNumber(price_amount))) ||
               buyed ||
               (price_identifier == 'EGLD-000000' &&
                 balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
               (price_identifier != 'EGLD-000000' &&
+                price_identifier != 'FREE-000000' &&
                 price_nonce == 0 &&
                 esdt_balance.isLessThan(new BigNumber(price_amount))) ||
               (price_identifier != 'EGLD-000000' &&
-                price_nonce != 0 &&
+                price_nonce > 0 &&
                 sft_balance.isLessThan(new BigNumber(price_amount)))
                 ? true
                 : false
@@ -128,15 +148,20 @@ export const ActionBuy = ({
             onClick={sendFundTransaction}
             className={'dinoButton'}
           >
-            {balance.isLessThan(fees) ||
-            (price_identifier == 'EGLD-000000' &&
-              balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
-            (price_identifier != 'EGLD-000000' &&
-              price_nonce == 0 &&
-              esdt_balance.isLessThan(new BigNumber(price_amount))) ||
-            (price_identifier != 'EGLD-000000' &&
-              price_nonce != 0 &&
-              sft_balance.isLessThan(new BigNumber(price_amount)))
+            {ended
+              ? 'Lottery ended'
+              : balance.isLessThan(fees) ||
+                (price_identifier == 'FREE-000000' &&
+                  graou_balance.isLessThan(new BigNumber(price_amount))) ||
+                (price_identifier == 'EGLD-000000' &&
+                  balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
+                (price_identifier != 'EGLD-000000' &&
+                  price_identifier != 'FREE-000000' &&
+                  price_nonce == 0 &&
+                  esdt_balance.isLessThan(new BigNumber(price_amount))) ||
+                (price_identifier != 'EGLD-000000' &&
+                  price_nonce != 0 &&
+                  sft_balance.isLessThan(new BigNumber(price_amount)))
               ? 'balance too low'
               : buyed
               ? 'Max buy reached'

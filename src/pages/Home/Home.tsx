@@ -4,16 +4,21 @@ import { Link } from 'react-router-dom';
 import './NavigationCards.css';
 import lotterie from '../../assets/img/lotterie.webp';
 import navMain from '../../assets/img/navMain.webp';
-import dinogazette from '../../assets/img/sold_graout.jpg';
+import mintLive from '../../assets/img//mint_live.jpeg';
+import soldGraout from '../../assets/img/sold_graout.jpg';
 import random from '../../assets/img/random.png';
 import chest from '../../assets/img/chest.png';
 import drop from '../../assets/img/drop.png';
 import { environment } from 'config';
+import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
+import BigNumber from 'bignumber.js';
 
 export const Home = () => {
   const [displayText, setDisplayText] = useState('🦖');
   const [isShaking, setIsShaking] = useState(false);
+  const mintable = useGetMintable();
 
+  console.log('mintable:', mintable);
   const fullText = '🦖 . . . #GRAOU!';
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -33,7 +38,7 @@ export const Home = () => {
     {
       title: 'Dinogazette',
       link: '/mint',
-      image: dinogazette
+      image: mintable?.amount.isGreaterThan(0) ? mintLive : soldGraout
     },
     {
       title: 'Lotteries',

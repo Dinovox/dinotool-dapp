@@ -24,7 +24,8 @@ export const useGetLotteries = () => {
   const [lotteries, setLotteries] = useState({
     running: <any>[],
     endend: <any>[],
-    user: <any>[]
+    user_owned: <any>[],
+    user_tickets: <any>[]
   });
 
   const proxy = new ProxyNetworkProvider(network.apiAddress);
@@ -53,7 +54,12 @@ export const useGetLotteries = () => {
         console.error('No lotteries data found' + address);
         return;
       }
-      const { running_lotteries, ended_lotteries, user_lotteries } = lotteries;
+      const {
+        running_lotteries,
+        ended_lotteries,
+        user_lotteries,
+        user_tickets
+      } = lotteries;
       setLotteries({
         running: running_lotteries
           ? running_lotteries
@@ -65,8 +71,13 @@ export const useGetLotteries = () => {
               .map((id: string) => Number(id))
               .sort((a: any, b: any) => b - a)
           : [],
-        user: user_lotteries
+        user_owned: user_lotteries
           ? user_lotteries
+              .map((id: string) => Number(id))
+              .sort((a: any, b: any) => b - a)
+          : [],
+        user_tickets: user_tickets
+          ? user_tickets
               .map((id: string) => Number(id))
               .sort((a: any, b: any) => b - a)
           : []

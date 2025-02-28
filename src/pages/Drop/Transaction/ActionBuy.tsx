@@ -6,10 +6,15 @@ import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { graou_identifier, mintcontractAddress, dropContract } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import {
+  useGetAccountInfo,
+  useGetIsLoggedIn
+} from '@multiversx/sdk-dapp/hooks';
 import { Button } from './Button';
 import { BigNumber } from 'bignumber.js';
 import bigNumToHex from 'helpers/bigNumToHex';
+import { useNavigate } from 'react-router-dom';
+
 export const ActionBuy = ({
   identifier,
   nonce,
@@ -19,6 +24,8 @@ export const ActionBuy = ({
   disabled
 }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
+  const isLoggedIn = useGetIsLoggedIn();
+  const navigate = useNavigate();
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
       string | null
@@ -83,17 +90,30 @@ export const ActionBuy = ({
   };
   return (
     <>
-      {!hasPendingTransactions ? (
+      {!isLoggedIn ? (
         <>
-          <button className='dinoButton' onClick={sendFundTransaction}>
-            {submitted ? 'Submited' : 'Submit '}
-          </button>
+          {' '}
+          <button onClick={() => navigate('/lotteries')}>Connect</button>
         </>
       ) : (
         <>
-          <button className='dinoButton' onClick={sendFundTransaction} disabled>
-            Processing
-          </button>
+          {!hasPendingTransactions ? (
+            <>
+              <button className='dinoButton' onClick={sendFundTransaction}>
+                {submitted ? 'Submited' : 'Submit '}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className='dinoButton'
+                onClick={sendFundTransaction}
+                disabled
+              >
+                Processing
+              </button>
+            </>
+          )}
         </>
       )}
     </>

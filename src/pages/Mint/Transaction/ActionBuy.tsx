@@ -6,13 +6,18 @@ import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { mintcontractAddress } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import {
+  useGetAccountInfo,
+  useGetIsLoggedIn
+} from '@multiversx/sdk-dapp/hooks';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
+import { useNavigate } from 'react-router-dom';
 
 export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
-
+  const isLoggedIn = useGetIsLoggedIn();
+  const navigate = useNavigate();
   const fees = new BigNumber(140669180000000);
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
@@ -62,29 +67,41 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
   };
   return (
     <>
-      {!hasPendingTransactions ? (
+      {!isLoggedIn ? (
         <>
-          <button
-            className='dinoButton'
-            onClick={sendFundTransaction}
-            disabled={
-              hasBuyed || balance.isLessThan(new BigNumber(price).plus(fees))
-                ? true
-                : false
-            }
-          >
-            {balance.isLessThan(new BigNumber(price).plus(fees))
-              ? 'balance too low'
-              : hasBuyed
-              ? 'One mint per wallet'
-              : 'Mint'}
+          {' '}
+          <button className='dinoButton' onClick={() => navigate('/unlock')}>
+            Connect
           </button>
         </>
       ) : (
         <>
-          <button className='dinoButton' disabled>
-            Processing
-          </button>
+          {!hasPendingTransactions ? (
+            <>
+              <button
+                className='dinoButton'
+                onClick={sendFundTransaction}
+                disabled={
+                  hasBuyed ||
+                  balance.isLessThan(new BigNumber(price).plus(fees))
+                    ? true
+                    : false
+                }
+              >
+                {balance.isLessThan(new BigNumber(price).plus(fees))
+                  ? 'balance too low'
+                  : hasBuyed
+                  ? 'One mint per wallet'
+                  : 'Mint'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button className='dinoButton' disabled>
+                Processing
+              </button>
+            </>
+          )}
         </>
       )}
     </>

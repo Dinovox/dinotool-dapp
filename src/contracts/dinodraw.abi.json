@@ -39,12 +39,7 @@
     "outputs": []
   },
   "upgradeConstructor": {
-    "inputs": [
-      {
-        "name": "blacklisted_identifiers",
-        "type": "TokenIdentifier"
-      }
-    ],
+    "inputs": [],
     "outputs": []
   },
   "endpoints": [
@@ -74,11 +69,11 @@
           "type": "u64"
         },
         {
-          "name": "start_time",
+          "name": "start",
           "type": "u64"
         },
         {
-          "name": "end_time",
+          "name": "end",
           "type": "u64"
         },
         {
@@ -128,7 +123,6 @@
     },
     {
       "name": "delete",
-      "onlyOwner": true,
       "mutability": "mutable",
       "inputs": [
         {
@@ -307,6 +301,69 @@
           "type": "tuple<LotteryInfo,Address,Address>"
         }
       ]
+    },
+    {
+      "name": "getUserParticipation",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "List<u64>"
+        }
+      ]
+    },
+    {
+      "name": "setMainToken",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "main_token",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "setMainTokenAmount",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "main_token_amount",
+          "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addToBlacklist",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeFromBlacklist",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": []
     }
   ],
   "events": [
@@ -357,6 +414,10 @@
         },
         {
           "name": "user_lotteries",
+          "type": "List<u64>"
+        },
+        {
+          "name": "user_tickets",
           "type": "List<u64>"
         }
       ]

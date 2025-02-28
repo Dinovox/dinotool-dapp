@@ -29,8 +29,9 @@ import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import { useGetEndedLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetEndedLottery';
 import { useGetLotteries } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
-import { graou_identifier, lottery_cost } from 'config';
+import { graou_identifier, lottery_cost, xgraou_identifier } from 'config';
 import { ActionDelete } from './Transaction/ActionDelete';
+import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserParticipations';
 
 export const Lottery = () => {
   const [timeStart, setTimeStart] = useState(60 * 60);
@@ -88,6 +89,7 @@ export const Lottery = () => {
   const lotteries = useGetLotteries();
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.endend;
+  const userLotteries = useGetUserParticipations(filter);
   // console.log('runningLottery', runningLottery.toString());
 
   // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
@@ -129,25 +131,28 @@ export const Lottery = () => {
 
   const userEsdtBalance = new BigNumber(
     user_esdt.find((esdt: any) => esdt.identifier === lottery?.price_identifier)
-      ?.balance
+      ?.balance || 0
   );
+
   const userSftBalance = new BigNumber(
     user_sft.find(
       (sft: any) =>
         sft.collection == lottery?.price_identifier &&
         sft.nonce == lottery?.price_nonce
-    )?.balance
+    )?.balance || 0
   );
-
   const userGraouBalance = new BigNumber(
-    user_esdt.find((esdt: any) => esdt.identifier === graou_identifier)?.balance
+    user_esdt.find((esdt: any) => esdt.identifier === graou_identifier)
+      ?.balance || 0
   );
 
   const cost = new BigNumber(lottery_cost);
 
   const lotteriesDisplay =
-    filter === 'owned'
-      ? lotteries.user
+    filter === 'user'
+      ? userLotteries
+      : filter === 'owned'
+      ? lotteries.user_owned
       : filter === 'ongoing'
       ? runningLottery
       : endedLottery;
@@ -186,7 +191,8 @@ export const Lottery = () => {
                   />
                   Ended
                 </label>
-                {lotteries.user.length > 0 && (
+
+                {lotteries.user_owned.length > 0 && (
                   <label style={{ margin: '3px' }}>
                     <input
                       type='radio'
@@ -198,9 +204,25 @@ export const Lottery = () => {
                     Owned
                   </label>
                 )}
+                {lotteries.user_tickets.length > 0 && (
+                  <label style={{ margin: '3px' }}>
+                    <input
+                      type='radio'
+                      name='filter'
+                      value='user'
+                      checked={filter === 'user'}
+                      onChange={() => (setFilter('user'), setPage(1))}
+                    />
+                    Participations
+                  </label>
+                )}
               </div>
               <LotteryList
-                runningLottery={lotteriesDisplay.slice(4 * page - 4, 4 * page)}
+                runningLottery={
+                  lotteriesDisplay.length > 0
+                    ? lotteriesDisplay?.slice(4 * page - 4, 4 * page)
+                    : []
+                }
               />
               <div className='pagination'>
                 <button
@@ -215,27 +237,28 @@ export const Lottery = () => {
                   Previous
                 </button>
 
-                {lotteriesDisplay
-                  .slice(4 * page - 4, 4 * page)
-                  .map((lottery: any) => (
-                    <span
-                      key={lottery}
-                      className='dinoButton smhidden'
-                      onClick={() => {
-                        setLotteryID(lottery);
-                        navigate(`/lotteries/${lottery}`, { replace: true });
-                      }}
-                      style={{
-                        height: '20px',
-                        backgroundColor: '#f0f0f0',
-                        border: '1px solid #ccc',
-                        lineHeight: '20px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {lottery}
-                    </span>
-                  ))}
+                {lotteriesDisplay.length > 0 &&
+                  lotteriesDisplay
+                    .slice(4 * page - 4, 4 * page)
+                    .map((lottery: any) => (
+                      <span
+                        key={lottery}
+                        className='dinoButton smhidden'
+                        onClick={() => {
+                          setLotteryID(lottery);
+                          navigate(`/lotteries/${lottery}`, { replace: true });
+                        }}
+                        style={{
+                          height: '20px',
+                          backgroundColor: '#f0f0f0',
+                          border: '1px solid #ccc',
+                          lineHeight: '20px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {lottery}
+                      </span>
+                    ))}
                 <button
                   className='dinoButton'
                   disabled={lotteriesDisplay.length <= page * 4}
@@ -249,7 +272,7 @@ export const Lottery = () => {
                 </button>
               </div>
               <CreateLotteryModal
-                count={lotteries?.user?.length}
+                count={lotteries?.user_owned?.length}
                 cost={userGraouBalance.isGreaterThanOrEqualTo(cost)}
               />
             </>
@@ -339,7 +362,16 @@ export const Lottery = () => {
                                 width='200px'
                                 height='200px'
                               />
-                              <p>Free</p>
+                              <p>
+                                {formatAmount({
+                                  input: lottery.price_amount.toFixed(),
+                                  decimals: 18,
+                                  digits: 2,
+                                  showLastNonZeroDecimal: true,
+                                  addCommas: true
+                                })}{' '}
+                                {xgraou_identifier} refunded
+                              </p>
                             </div>
                           ) : (
                             <EsdtDisplay
@@ -387,7 +419,9 @@ export const Lottery = () => {
               {/* Tout est vendu ou la lotterie est terminée */}
               {lottery &&
                 lottery.tickets_sold.isGreaterThanOrEqualTo(
-                  lottery.max_tickets
+                  lottery.max_tickets &&
+                    lottery.winner ==
+                      'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
                 ) && (
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     Waiting for the owner to draw the winner
@@ -428,7 +462,7 @@ export const Lottery = () => {
                   Open in : {formatTime(timeStart)}
                 </div>
               )}
-              {timeStart == 0 && lottery.end > 0 && (
+              {timeStart == 0 && lottery.end > 0 && timeEnd > 0 && (
                 <div
                   style={{
                     width: '100%',
@@ -466,6 +500,7 @@ export const Lottery = () => {
                                 userEsdtBalance ? userEsdtBalance : 0
                               )
                             }
+                            graou_balance={userGraouBalance}
                             sft_balance={
                               new BigNumber(userSftBalance ? userSftBalance : 0)
                             }
@@ -475,15 +510,26 @@ export const Lottery = () => {
                                 ? true
                                 : false
                             }
+                            started={timeStart}
+                            ended={
+                              lottery.end > 0 && timeEnd <= 0 ? true : false
+                            }
                           />
-                          <span>
-                            {buyed && buyed > 0 && (
+                          <div
+                            style={{
+                              width: '100%',
+                              justifyContent: 'center',
+                              display: 'grid'
+                            }}
+                          >
+                            {' '}
+                            {Number(buyed) > 0 && (
                               <>
                                 You have {buyed.toFixed()} tickets
                                 <br />
                               </>
                             )}
-                          </span>
+                          </div>
                         </>
                       )}
                   </div>
