@@ -726,7 +726,15 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       disabled={acceptConditions}
                     />
                   </Form.Item>
-
+                  {maxTickets > 50 && (
+                    <>
+                      {' '}
+                      <div style={{ color: 'red', marginTop: '10px' }}>
+                        Lotteries with more than 50 tickets sold cannot be
+                        canceled.
+                      </div>
+                    </>
+                  )}
                   <Form.Item
                     name='maxPerWallet'
                     label='Max Per Wallet'

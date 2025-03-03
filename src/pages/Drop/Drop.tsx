@@ -219,7 +219,7 @@ export const Drop = () => {
           style={{ textAlign: 'center' }}
         >
           {' '}
-          <div className='mintGazTitle dinoTitle'>DROP (alpha)</div>
+          <div className='mintGazTitle dinoTitle'>DROP</div>
           <div className='mx-auto' style={{ margin: '10px' }}>
             <span>Send tokens or SFTs to multiple addresses</span>
           </div>

@@ -106,7 +106,7 @@ export const ActionBuy = ({
     await refreshAccount();
 
     const { sessionId /*, error*/ } = await sendTransactions({
-      transactions: fundTransaction,
+      transactions: [fundTransaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing buy transaction',
         errorMessage: 'An error has occured buy',

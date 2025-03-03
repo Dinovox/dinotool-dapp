@@ -1,24 +1,19 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
-import { Transaction } from './Transaction';
 import { ActionBuy } from './Transaction/ActionBuy';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import { formatAmount } from 'utils/sdkDappUtils';
-import toHex from 'helpers/toHex';
 import './MintSFT.css';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAccount } from 'hooks';
 import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import sold_graout from 'assets/img/sold_graout.jpg';
 import { useGetLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks';
 import { useGetUserTickets } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserTickets';
 import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
 import EsdtDisplay from './EsdtDisplay';
 import NftDisplay from './NftDisplay';
-import { time } from 'console';
 import { ActionDraw } from './Transaction/ActionDraw';
 import CreateLotteryModal from './Create';
-import { useGetRunningLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetRunningLottery';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { ActionCancel } from './Transaction/ActionCancel';
@@ -27,11 +22,11 @@ import freeChest from 'assets/img/freeChest.png';
 import FileDisplay from './FileDisplay';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
-import { useGetEndedLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetEndedLottery';
 import { useGetLotteries } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
 import { graou_identifier, lottery_cost, xgraou_identifier } from 'config';
 import { ActionDelete } from './Transaction/ActionDelete';
 import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserParticipations';
+import LotteryWinner from './LotteryWinner';
 
 export const Lottery = () => {
   const [timeStart, setTimeStart] = useState(60 * 60);
@@ -52,10 +47,15 @@ export const Lottery = () => {
   }, [id]);
 
   const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
+    const j = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
-    return `${h}h ${m}m ${s}s`;
+    if (j > 0) {
+      return `${j}j ${h}h ${m}m`;
+    } else {
+      return `${h}h ${m}m ${s}s`;
+    }
   };
 
   const [currentTime, setCurrentTime] = useState(Date.now() / 1000);
@@ -170,51 +170,54 @@ export const Lottery = () => {
               >
                 Lotteries
               </div>{' '}
-              <div className='filter-options' style={{ margin: '3px' }}>
-                <label style={{ margin: '3px' }}>
-                  <input
-                    type='radio'
-                    name='filter'
-                    value='ongoing'
-                    checked={filter === 'ongoing'}
-                    onChange={() => (setFilter('ongoing'), setPage(1))}
-                  />
+              <div
+                className='filter-options'
+                style={{ margin: '3px', width: '100%' }}
+              >
+                <button
+                  className={`dinoButton ${
+                    filter !== 'ongoing' ? 'reverse' : ''
+                  }`}
+                  name='filter'
+                  value='ongoing'
+                  onClick={() => (setFilter('ongoing'), setPage(1))}
+                >
                   Ongoing
-                </label>
-                <label style={{ margin: '3px' }}>
-                  <input
-                    type='radio'
-                    name='filter'
-                    value='ended'
-                    checked={filter === 'ended'}
-                    onChange={() => (setFilter('ended'), setPage(1))}
-                  />
+                </button>
+                <button
+                  className={`dinoButton ${
+                    filter !== 'ended' ? 'reverse' : ''
+                  }`}
+                  name='filter'
+                  value='ended'
+                  onClick={() => (setFilter('ended'), setPage(1))}
+                >
                   Ended
-                </label>
+                </button>
 
                 {lotteries.user_owned.length > 0 && (
-                  <label style={{ margin: '3px' }}>
-                    <input
-                      type='radio'
-                      name='filter'
-                      value='owned'
-                      checked={filter === 'owned'}
-                      onChange={() => (setFilter('owned'), setPage(1))}
-                    />
+                  <button
+                    className={`dinoButton ${
+                      filter !== 'owned' ? 'reverse' : ''
+                    }`}
+                    name='filter'
+                    value='owned'
+                    onClick={() => (setFilter('owned'), setPage(1))}
+                  >
                     Owned
-                  </label>
+                  </button>
                 )}
                 {lotteries.user_tickets.length > 0 && (
-                  <label style={{ margin: '3px' }}>
-                    <input
-                      type='radio'
-                      name='filter'
-                      value='user'
-                      checked={filter === 'user'}
-                      onChange={() => (setFilter('user'), setPage(1))}
-                    />
+                  <button
+                    className={`dinoButton ${
+                      filter !== 'user' ? 'reverse' : ''
+                    }`}
+                    name='filter'
+                    value='user'
+                    onClick={() => (setFilter('user'), setPage(1))}
+                  >
                     Participations
-                  </label>
+                  </button>
                 )}
               </div>
               <LotteryList
@@ -337,85 +340,119 @@ export const Lottery = () => {
                 </div>
               </div>
               {/* Details du prix d'entrée et récompense*/}
-              <div className='dinocard'>
-                {lottery && lottery.prize_identifier && (
-                  <>
-                    <div className='sub-dinocard box-item'>
-                      <span className='text-label'>Entry Cost </span>
+              <div className='bg-[#fefaf5] pt-6 justify-center pb-6 mb-6 '>
+                {' '}
+                <LotteryWinner lottery={lottery} />
+                <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'></div>
+                <div className='dinocard' style={{ minHeight: '250px' }}>
+                  {lottery && lottery.prize_identifier && (
+                    <>
+                      <div className='sub-dinocard box-item'>
+                        <span className='text-label'>Entry Cost </span>
 
-                      {lottery.price_nonce > 0 ? (
-                        <NftDisplay
-                          nftInfo={price_nft_information}
-                          amount={lottery.price_amount}
-                        />
-                      ) : (
-                        <>
-                          {' '}
-                          {lottery.price_identifier == 'FREE-000000' ? (
-                            <div
-                              className='mint-image'
-                              style={{ margin: 'auto', width: '200px' }}
-                            >
-                              <FileDisplay
-                                source={freeChest}
-                                fileType={''}
-                                width='200px'
-                                height='200px'
+                        {lottery.price_nonce > 0 ? (
+                          <NftDisplay
+                            nftInfo={price_nft_information}
+                            amount={lottery.price_amount}
+                          />
+                        ) : (
+                          <>
+                            {' '}
+                            {lottery.price_identifier == 'FREE-000000' ? (
+                              <div
+                                className='mint-image'
+                                style={{ margin: 'auto', width: '200px' }}
+                              >
+                                <FileDisplay
+                                  source={freeChest}
+                                  fileType={''}
+                                  width='200px'
+                                  height='200px'
+                                />
+                                <p>
+                                  {formatAmount({
+                                    input: lottery.price_amount.toFixed(),
+                                    decimals: 18,
+                                    digits: 2,
+                                    showLastNonZeroDecimal: true,
+                                    addCommas: true
+                                  })}{' '}
+                                  {xgraou_identifier} refunded
+                                </p>
+                              </div>
+                            ) : (
+                              <EsdtDisplay
+                                esdtInfo={price_esdt_information}
+                                amount={lottery.price_amount}
                               />
-                              <p>
-                                {formatAmount({
-                                  input: lottery.price_amount.toFixed(),
-                                  decimals: 18,
-                                  digits: 2,
-                                  showLastNonZeroDecimal: true,
-                                  addCommas: true
-                                })}{' '}
-                                {xgraou_identifier} refunded
-                              </p>
-                            </div>
-                          ) : (
-                            <EsdtDisplay
-                              esdtInfo={price_esdt_information}
-                              amount={lottery.price_amount}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                    <div className='sub-dinocard'>
-                      <span className='text-label'>Winning Prize </span>
-                      {lottery.prize_nonce > 0 ? (
-                        <NftDisplay
-                          nftInfo={prize_nft_information}
-                          amount={lottery.prize_amount}
-                        />
-                      ) : (
-                        <>
-                          {' '}
-                          <EsdtDisplay
-                            esdtInfo={prize_esdt_information}
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <div className='sub-dinocard box-item'>
+                        <span className='text-label'> Prize </span>
+                        {lottery.prize_nonce > 0 ? (
+                          <NftDisplay
+                            nftInfo={prize_nft_information}
                             amount={lottery.prize_amount}
                           />
-                        </>
-                      )}
+                        ) : (
+                          <>
+                            {' '}
+                            <EsdtDisplay
+                              esdtInfo={prize_esdt_information}
+                              amount={lottery.prize_amount}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>{' '}
+                {/* Il reste des tickets à vendre */}
+                {lottery &&
+                  lottery.max_tickets.isGreaterThan(lottery.tickets_sold) && (
+                    <div style={{ justifyContent: 'center', display: 'grid' }}>
+                      <ActionBuy
+                        lottery_id={lotteryID}
+                        price_identifier={lottery?.price_identifier}
+                        price_nonce={lottery.price_nonce}
+                        price_amount={lottery.price_amount}
+                        balance={new BigNumber(balance)}
+                        esdt_balance={
+                          new BigNumber(userEsdtBalance ? userEsdtBalance : 0)
+                        }
+                        graou_balance={userGraouBalance}
+                        sft_balance={
+                          new BigNumber(userSftBalance ? userSftBalance : 0)
+                        }
+                        buyed={
+                          lottery.max_per_wallet > 0 &&
+                          buyed >= lottery.max_per_wallet
+                            ? true
+                            : false
+                        }
+                        started={timeStart}
+                        ended={lottery.end > 0 && timeEnd <= 0 ? true : false}
+                      />
+                      <div
+                        style={{
+                          width: '100%',
+                          justifyContent: 'center',
+                          display: 'grid'
+                        }}
+                      >
+                        {' '}
+                        {Number(buyed) > 0 && (
+                          <>
+                            You have {buyed.toFixed()} tickets
+                            <br />
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </>
-                )}
+                  )}
               </div>
-              {/* Block winner après tirage */}
-              {lottery.winner !=
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
-                <>
-                  <div className='dinocard'>
-                    <div className='sub-dinocard'>
-                      <div className='info-item'></div>
-                      <span className='text-label'>Winner: </span>
-
-                      <ShortenedAddress address={lottery.winner} />
-                    </div>
-                  </div>
-                </>
-              )}
               {/* Tout est vendu ou la lotterie est terminée */}
               {lottery &&
                 lottery.tickets_sold.isGreaterThanOrEqualTo(
@@ -435,18 +472,22 @@ export const Lottery = () => {
                     <ActionDraw
                       lottery_id={lotteryID}
                       disabled={
-                        lottery.tickets_sold == 0 ||
+                        lottery.tickets_sold.isLessThan(1) ||
                         (lottery.end.isGreaterThan(0) &&
                           timeEnd > 0 &&
                           lottery.tickets_sold.isLessThan(lottery.max_tickets))
                       }
+                      tickets={lottery.tickets_sold}
                     />
                   ) : (
                     <ActionDelete lottery_id={lotteryID} />
                   )}
                   {lottery.winner ==
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
-                    <ActionCancel lottery_id={lotteryID} />
+                    <ActionCancel
+                      lottery_id={lotteryID}
+                      disabled={lottery.tickets_sold.isGreaterThan(50)}
+                    />
                   )}
                 </div>
               )}
@@ -482,57 +523,7 @@ export const Lottery = () => {
                       justifyContent: 'center',
                       display: 'grid'
                     }}
-                  >
-                    {/* Il reste des tickets à vendre */}
-                    {lottery &&
-                      lottery.max_tickets.isGreaterThan(
-                        lottery.tickets_sold
-                      ) && (
-                        <>
-                          <ActionBuy
-                            lottery_id={lotteryID}
-                            price_identifier={lottery?.price_identifier}
-                            price_nonce={lottery.price_nonce}
-                            price_amount={lottery.price_amount}
-                            balance={new BigNumber(balance)}
-                            esdt_balance={
-                              new BigNumber(
-                                userEsdtBalance ? userEsdtBalance : 0
-                              )
-                            }
-                            graou_balance={userGraouBalance}
-                            sft_balance={
-                              new BigNumber(userSftBalance ? userSftBalance : 0)
-                            }
-                            buyed={
-                              lottery.max_per_wallet > 0 &&
-                              buyed >= lottery.max_per_wallet
-                                ? true
-                                : false
-                            }
-                            started={timeStart}
-                            ended={
-                              lottery.end > 0 && timeEnd <= 0 ? true : false
-                            }
-                          />
-                          <div
-                            style={{
-                              width: '100%',
-                              justifyContent: 'center',
-                              display: 'grid'
-                            }}
-                          >
-                            {' '}
-                            {Number(buyed) > 0 && (
-                              <>
-                                You have {buyed.toFixed()} tickets
-                                <br />
-                              </>
-                            )}
-                          </div>
-                        </>
-                      )}
-                  </div>
+                  ></div>
                 )}
             </>
           )}

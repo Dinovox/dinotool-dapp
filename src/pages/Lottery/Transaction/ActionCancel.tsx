@@ -12,7 +12,7 @@ import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
 
-export const ActionCancel = ({ lottery_id }: any) => {
+export const ActionCancel = ({ lottery_id, disabled }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const fees = new BigNumber(140669180000000);
@@ -27,12 +27,13 @@ export const ActionCancel = ({ lottery_id }: any) => {
   // console.log('price_identifier', price_identifier);
   // console.log('price_nonce', price_nonce.toFixed());
   // console.log('price_amount', price_amount.toFixed());
+  // 100 : 38,444,516 => 40000000 (EGLD)
   const sendFundTransaction = async () => {
     const fundTransaction = {
       value: 0,
       data: 'cancel@' + bigToHex(BigInt(lottery_id)),
       receiver: addressTobech32,
-      gasLimit: '14000000'
+      gasLimit: '40000000'
     };
 
     await refreshAccount();
@@ -57,7 +58,11 @@ export const ActionCancel = ({ lottery_id }: any) => {
     <>
       {!hasPendingTransactions ? (
         <>
-          <button className='dinoButton reverse' onClick={sendFundTransaction}>
+          <button
+            className='dinoButton reverse'
+            onClick={sendFundTransaction}
+            disabled={disabled}
+          >
             Cancel lottery
           </button>
         </>

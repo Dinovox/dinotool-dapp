@@ -34,10 +34,15 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
       ? 'Draw'
       : 'Ongoing';
   const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
+    const j = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
-    return `${h}h ${m}m ${s}s`;
+    if (j > 0) {
+      return `${j}j ${h}h ${m}m`;
+    } else {
+      return `${h}h ${m}m ${s}s`;
+    }
   };
   useEffect(() => {
     const interval = setInterval(() => {
@@ -80,8 +85,8 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                   ? prize_nft_information?.media[0]?.fileType
                   : ''
               }
-              width='180px'
-              height='184px'
+              width='168px'
+              height='168px'
             />
           ) : (
             <FileDisplay
@@ -97,12 +102,12 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                   ? prize_esdt_information?.media[0]?.fileType
                   : ''
               }
-              width='180px'
-              height='184px'
+              width='168px'
+              height='168px'
             />
           )}
 
-          <div className='p-3 subCard'>
+          <div className='subCard'>
             <h2 className='text-lg font-bold'>
               {' '}
               Lottery #{lottery?.id.toFixed()}
@@ -125,7 +130,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
               </div>
             )}
             {timeStart == 0 && lottery.end.isGreaterThan(0) && timeEnd == 0 && (
-              <div>Time expired</div>
+              <div>Expired</div>
             )}
 
             <button
@@ -148,7 +153,7 @@ const LotteryList = ({ runningLottery }: any) => {
   // endedLottery = endedLottery.slice(-4).reverse();
   return (
     <div className='bg-[#fefaf5] pt-6 flex justify-center pb-6 mb-6 '>
-      <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2'>
         {runningLottery.map((lottery_id: any) => (
           <LotteryCard key={lottery_id} lottery_id={lottery_id} />
         ))}{' '}

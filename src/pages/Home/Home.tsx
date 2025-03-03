@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './NavigationCards.css';
 import lotterie from '../../assets/img/lotterie.webp';
-import navMain from '../../assets/img/navMain.webp';
-import mintLive from '../../assets/img//mint_live.jpeg';
+import navMain from '../../assets/img/dinoMain.png';
+import mintLive from '../../assets/img//dinoGaz.jpeg';
 import soldGraout from '../../assets/img/sold_graout.jpg';
 import random from '../../assets/img/random.png';
 import chest from '../../assets/img/chest.png';
@@ -20,12 +20,6 @@ export const Home = () => {
 
   console.log('mintable:', mintable);
   const fullText = '🦖 . . . #GRAOU!';
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    return `${h}h ${m}m ${s}s`;
-  };
 
   // Images are 210px 150px
   const navItems = [
@@ -58,22 +52,6 @@ export const Home = () => {
       blured: true
     }
   ];
-
-  // useEffect(() => {
-  //   const characters = Array.from(fullText); //array for emoji..
-  //   let index = 0;
-
-  //   const interval = setInterval(() => {
-  //     if (index < characters.length) {
-  //       setDisplayText(characters.slice(0, index + 1).join(''));
-  //       index++;
-  //     } else {
-  //       index = 0;
-  //       setDisplayText('🦖');
-  //     }
-  //   }, 300);
-  //   return () => clearInterval(interval);
-  // }, []);
 
   useEffect(() => {
     const characters = Array.from(fullText);
@@ -125,18 +103,6 @@ export const Home = () => {
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-            <a
-              href='https://x.com/search?q=%23GRAOU&src=typed_query'
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              <div className={`text-container ${isShaking ? 'shake' : ''}`}>
-                {displayText}
-              </div>{' '}
-            </a>
-          </div>
-
           <div className='navigation-cards '>
             {navItems.map((item, index) => (
               <div
@@ -180,6 +146,17 @@ export const Home = () => {
                 )}
               </div>
             ))}
+          </div>
+          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
+            <a
+              href='https://x.com/search?q=%23GRAOU&src=typed_query'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              <div className={`text-container ${isShaking ? 'shake' : ''}`}>
+                {displayText}
+              </div>{' '}
+            </a>
           </div>
         </div>
       </PageWrapper>

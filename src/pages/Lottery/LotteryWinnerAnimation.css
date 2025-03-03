@@ -1,0 +1,84 @@
+/* Conteneur principal pour centrer tout */
+.lottery-container {
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Style pour le placeholder avant tirage */
+.lottery-draw-placeholder {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Styles pour le gagnant avec animation (inchangés, sauf ajustements pour centrer) */
+.lottery-winner-card-enhanced {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 10px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  max-width: 100%;
+  width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Style spécifique pour le cadre du gagnant (vert) */
+.lottery-winner-result {
+  background: #c8e6c9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 100%;
+  width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid #a5d6a7;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.lottery-winner-result:hover {
+  background: #b2dfba;
+  transform: scale(1.02);
+}
+
+/* Sous-composants du gagnant */
+.lottery-winner-subcard-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.lottery-winner-label-enhanced {
+  font-weight: bold;
+  color: #333;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+/* Style pour les particules (emojis/confettis) */
+.confetti-particle {
+  position: fixed;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Effet au survol amélioré pour la carte gagnante */
+.lottery-winner-card-enhanced:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease;
+}

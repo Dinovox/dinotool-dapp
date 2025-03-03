@@ -12,7 +12,7 @@ import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
 
-export const ActionDraw = ({ lottery_id, disabled }: any) => {
+export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const fees = new BigNumber(140669180000000);
@@ -24,12 +24,14 @@ export const ActionDraw = ({ lottery_id, disabled }: any) => {
   const addressTobech32 = new Address(lotteryContractAddress);
   const { address } = useGetAccountInfo();
 
+  // 0-50 ? 14000000
+  // 100 : 14,736,515
   const sendFundTransaction = async () => {
     const fundTransaction = {
       value: 0,
       data: 'draw@' + bigToHex(BigInt(lottery_id)),
       receiver: addressTobech32,
-      gasLimit: '14000000'
+      gasLimit: '20000000'
     };
 
     await refreshAccount();

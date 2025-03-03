@@ -18,10 +18,15 @@ export const Mint = () => {
   const [timeEnd, setTimeEnd] = useState(60 * 60);
 
   const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
+    const j = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
-    return `${h}h ${m}m ${s}s`;
+    if (j > 0) {
+      return `${j}j ${h}h ${m}m`;
+    } else {
+      return `${h}h ${m}m ${s}s`;
+    }
   };
 
   const [currentTime, setCurrentTime] = useState(Date.now() / 1000);

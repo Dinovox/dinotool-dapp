@@ -10,8 +10,8 @@ interface FileDisplayProps {
 const FileDisplay: React.FC<FileDisplayProps> = ({
   source,
   fileType,
-  width = '180px', // Valeur par défaut
-  height = '180px' // Valeur par défaut
+  width = '168px', // Valeur par défaut
+  height = '168px' // Valeur par défaut
 }: FileDisplayProps) => {
   if (!source) {
     return <div style={{ width, height, backgroundColor: '#f0f0f0' }} />; // Placeholder pour garder l'espace réservé

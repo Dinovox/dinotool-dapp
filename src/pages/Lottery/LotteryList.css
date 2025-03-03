@@ -49,7 +49,7 @@
   padding: 0px;
   isolation: isolate;
 
-  width: 180px;
+  width: 168px;
   height: 297px;
 
   /* White */
@@ -91,7 +91,7 @@
   font-family: 'Manrope';
   font-style: normal;
   font-weight: 500;
-  font-size: 10px;
+  font-size: 16px;
   line-height: 170%;
   /* or 17px */
   letter-spacing: -0.03em;
@@ -107,7 +107,7 @@
   font-family: 'Manrope';
   font-style: normal;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 170%;
   /* or 24px */
   letter-spacing: -0.03em;

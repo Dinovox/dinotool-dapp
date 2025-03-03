@@ -25,7 +25,7 @@
 .info-item {
   display: flex;
   justify-content: space-between;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 400;
   font-family: Manrope;
   line-height: 36px;
@@ -54,10 +54,14 @@
 .mint-image {
   text-align: center;
   margin: 20px 0;
+  white-space: nowrap; /* Empêche le retour à la ligne */
+  overflow: visible; /* Permet au texte de déborder */
+  text-overflow: clip;
 }
 
 .mint-image img {
-  width: 200px;
+  width: 168px;
+  height: 168px;
   border: 2px solid #f7ea43;
   border-radius: 10px;
 }
@@ -96,4 +100,24 @@
   top: 85px;
   float: left;
   margin-left: 10px;
+}
+.filter-options {
+  display: grid;
+  grid-template-columns: repeat(4, auto); /* 4 colonnes sur grand écran */
+  gap: 10px; /* Espacement entre les boutons */
+  justify-content: center; /* Centre les boutons */
+  align-items: center;
+}
+
+/* Pour mobile : 2 boutons par ligne */
+@media (max-width: 768px) {
+  .filter-options {
+    grid-template-columns: repeat(2, auto); /* 2 colonnes */
+    gap: 5px; /* Réduit l'espacement */
+  }
+
+  .dinoButton {
+    width: 100%; /* Chaque bouton prend toute la largeur de sa colonne */
+    margin: 4px;
+  }
 }

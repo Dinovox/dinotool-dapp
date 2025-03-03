@@ -6,6 +6,7 @@ import { RouteNamesEnum } from 'localConstants';
 import MultiversXLogo from '../../../assets/img/multiversx-logo.svg?react';
 import { useMatch } from 'react-router-dom';
 import dinovoxLogo from '/DinoVoxDinoTools.png';
+import DinoToolsAlpha from '/DinoToolsAlpha.png';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { EnvironmentsEnum } from 'types';
 import { environment } from 'config';
@@ -32,6 +33,8 @@ export const Header = () => {
   const isLoggedIn = useGetIsLoggedIn();
   const isUnlockRoute = Boolean(useMatch(RouteNamesEnum.unlock));
   const network = useGetNetworkConfig();
+  const currentRouteName = useMatch('*')?.pathname || 'unknown';
+
   const ConnectButton = isUnlockRoute ? null : (
     <MxLink to={RouteNamesEnum.unlock}>Connect</MxLink>
   );
@@ -58,15 +61,25 @@ export const Header = () => {
           to={isLoggedIn ? RouteNamesEnum.home : RouteNamesEnum.home}
         >
           {/* <MultiversXLogo className='w-full h-6' /> */}
-          <img src={dinovoxLogo} alt='Dinovox Logo' className='w-64 h-auto' />
+          <img
+            src={
+              ['/lotteries', '/drop'].some((route) =>
+                currentRouteName.startsWith(route)
+              )
+                ? DinoToolsAlpha
+                : dinovoxLogo
+            }
+            alt='Dinovox Logo'
+            className='w-64 h-auto'
+          />
         </MxLink>
 
-        <nav className='h-full w-full text-sm sm:relative sm:left-auto sm:top-auto sm:flex sm:w-auto sm:flex-row sm:justify-end sm:bg-transparent'>
+        <nav className='h-full w-full text</div>-sm sm:relative sm:left-auto sm:top-auto sm:flex sm:w-auto sm:flex-row sm:justify-end sm:bg-transparent'>
           <div className='flex justify-end container mx-auto items-center gap-2'>
-            <div className='flex gap-1 items-center'>
+            {/* <div className='flex gap-1 items-center'>
               <div className='w-2 h-2 rounded-full bg-green-500' />
               <p className='text-gray-600'>{environment}</p>
-            </div>
+            </div> */}
             {/* {environment === 'devnet' && (
               <MxLink className='' to={RouteNamesEnum.lotteries}>
                 <div

@@ -18,7 +18,10 @@ const NftDisplay: React.FC<NftDisplayProps> = ({ nftInfo, amount }: any) => {
   return (
     <div>
       <div className='info-item'>
-        <div className='mint-image' style={{ margin: 'auto', width: '200px' }}>
+        <div
+          className='mint-image'
+          style={{ margin: 'auto', width: '168px', height: '168px' }}
+        >
           {nftInfo?.media?.length > 0 &&
           nftInfo?.media[0]?.fileType === 'video/mp4' ? (
             <video controls autoPlay muted playsInline loop>

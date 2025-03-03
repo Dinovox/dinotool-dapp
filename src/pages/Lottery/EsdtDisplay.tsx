@@ -18,10 +18,12 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
   return (
     <div>
       <div className='info-item'>
-        <span className='text-label'></span>{' '}
         {esdtInfo && esdtInfo.identifier == 'EGLD-000000' ? (
           <>
-            <div className='mint-image' style={{ margin: 'auto' }}>
+            <div
+              className='mint-image'
+              style={{ margin: 'auto', width: '168px', height: '168px' }}
+            >
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound
@@ -44,7 +46,10 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
           </>
         ) : (
           <>
-            <div className='mint-image' style={{ margin: 'auto' }}>
+            <div
+              className='mint-image'
+              style={{ margin: 'auto', width: '168px', height: '168px' }}
+            >
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound
