@@ -1,7 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Checkbox } from 'antd';
 import dayjs from 'dayjs';
-import { Modal, Form, Input, Radio, Select, Divider, DatePicker } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  Radio,
+  Select,
+  Divider,
+  DatePicker,
+  CheckboxChangeEvent
+} from 'antd';
+
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import { useGetAccountInfo } from 'hooks';
@@ -18,6 +28,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   cost
 }: any) => {
   const [visible, setVisible] = useState(false);
+  const [isFree, setIsFree] = useState(false);
+  const [autoDraw, setAutoDraw] = useState(false);
   const [priceType, setPriceType] = useState('');
   const [priceIdentifier, setPriceIdentifier] = useState('');
   const [priceNonce, setPriceNonce] = useState<number>(0);
@@ -69,8 +81,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
       setPrizeAmount(new BigNumber(1));
       setPrizeDisplay('1');
       setPrizeBalance(new BigNumber(1));
-    } else if (e.target.value === 'EGLD') {
-      setPrizeType('EGLD');
+    } else if (e.target.value === 'Egld') {
+      setPrizeType('Egld');
       setPrizeIdentifier('EGLD-000000');
       setPrizeTicker('EGLD-000000');
       setPrizeNonce(0);
@@ -90,20 +102,13 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   };
 
   const handlePriceType = (e: any) => {
-    if (e.target.value === 'EGLD') {
-      setPriceType('EGLD');
+    if (e.target.value === 'Egld') {
+      setPriceType('Egld');
       setPriceIdentifier('EGLD-000000');
       setPriceTicker('EGLD-000000');
       setPriceDecimals(18);
       setPriceAmount(new BigNumber(0));
       setPriceDisplay('');
-    } else if (e.target.value === 'FREE') {
-      setPriceType('FREE');
-      setMaxPerWallet(maxPerWallet == 0 ? 1 : maxPerWallet);
-      setPriceIdentifier('FREE-000000');
-      setPriceTicker('FREE-000000');
-      setPriceAmount(new BigNumber(100 * 10 ** 18));
-      setPriceDisplay('100');
     } else {
       setPriceType(e.target.value);
       setPriceTicker('');
@@ -115,22 +120,22 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   };
 
   const price_options =
-    priceType === 'ESDT'
+    priceType === 'Esdt'
       ? user_esdt
-      : priceType === 'SFT'
+      : priceType === 'Sft'
       ? user_sft.filter((token: any) => token.type === 'SemiFungibleESDT')
       : [];
 
   const prize_options_sft =
-    prizeType === 'ESDT'
+    prizeType === 'Esdt'
       ? user_esdt
-      : prizeType === 'SFT'
+      : prizeType === 'Sft'
       ? user_sft.filter((token: any) => token.type === 'SemiFungibleESDT')
       : [];
   const prize_options_nft =
-    prizeType === 'ESDT'
+    prizeType === 'Esdt'
       ? user_esdt
-      : prizeType === 'NFT'
+      : prizeType === 'Nft'
       ? user_sft.filter((token: any) => token.type === 'NonFungibleESDT')
       : [];
 
@@ -187,7 +192,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
 
     if (
       convertedValue.isGreaterThan(prizeBalance) &&
-      ['SFT', 'ESDT', 'EGLD'].includes(prizeType)
+      ['Sft', 'Esdt', 'Egld'].includes(prizeType)
     ) {
       convertedValue = new BigNumber(prizeBalance);
       setPrizeDisplay(
@@ -276,6 +281,17 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
     return null;
   }
 
+  function handleIsFree(e: CheckboxChangeEvent): void {
+    const checked = e.target.checked;
+    setIsFree(checked);
+    setPriceType(checked ? 'Esdt' : '');
+    setPriceIdentifier(checked ? xgraou_identifier : '');
+    setPriceTicker(checked ? xgraou_identifier : '');
+    setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
+    setPriceDisplay(checked ? '100' : '');
+    setMaxPerWallet(checked ? 1 : 0);
+  }
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <button
@@ -315,14 +331,14 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                 onChange={handlePrizeType}
                 disabled={acceptConditions}
               >
-                <Radio value='ESDT'>ESDT</Radio>
-                <Radio value='EGLD'>EGLD</Radio>
-                <Radio value='SFT'>SFT</Radio>
-                <Radio value='NFT'>NFT</Radio>
+                <Radio value='Esdt'>ESDT</Radio>
+                <Radio value='Egld'>EGLD</Radio>
+                <Radio value='Sft'>SFT</Radio>
+                <Radio value='Nft'>NFT</Radio>
               </Radio.Group>
             </Form.Item>{' '}
             {/* Selection du PRIZE */}
-            {['ESDT', 'SFT', 'NFT'].includes(prizeType) && (
+            {['Esdt', 'Sft', 'Nft'].includes(prizeType) && (
               <Form.Item
                 name={'prizeIdentifier' + prizeType}
                 label='Identifier'
@@ -391,7 +407,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   )}
                 >
                   {' '}
-                  {prizeType === 'ESDT' &&
+                  {prizeType === 'Esdt' &&
                     user_esdt.map((token: any) => (
                       <Select.Option
                         onFocus={(e: any) => e.target.blur()}
@@ -408,7 +424,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                         {token.identifier}
                       </Select.Option>
                     ))}{' '}
-                  {prizeType === 'SFT' &&
+                  {prizeType === 'Sft' &&
                     prize_options_sft.map((token: any) => (
                       <Select.Option
                         onFocus={(e: any) => e.target.blur()}
@@ -421,7 +437,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                         {token.identifier}
                       </Select.Option>
                     ))}{' '}
-                  {prizeType === 'NFT' &&
+                  {prizeType === 'Nft' &&
                     prize_options_nft.map((token: any) => (
                       <Select.Option
                         onFocus={(e: any) => e.target.blur()}
@@ -438,11 +454,11 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
               </Form.Item>
             )}
             {/* Photo du PRIZE */}
-            {prizeIdentifier && ['NFT', 'SFT'].includes(prizeType) && (
+            {prizeIdentifier && ['Nft', 'Sft'].includes(prizeType) && (
               <NftDisplay nftInfo={prize_nft_information} amount={0} />
             )}{' '}
             {/* Montant du PRIZE */}{' '}
-            {['ESDT', 'SFT', 'EGLD'].includes(prizeType) && (
+            {['Esdt', 'Sft', 'Egld'].includes(prizeType) && (
               <Form.Item
                 name='prizeAmount'
                 label='Amount'
@@ -460,7 +476,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   onWheel={(e) => (e.target as HTMLInputElement).blur()} // Désactive le scroll
                   value={prizeDisplay} // Valeur affichée
                   onChange={handlePrizeAmountChange} // Gestion de la saisie
-                  disabled={prizeType === 'NFT' || acceptConditions}
+                  disabled={prizeType === 'Nft' || acceptConditions}
                 />
               </Form.Item>
             )}
@@ -490,25 +506,33 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     onChange={handlePriceType}
                     disabled={acceptConditions}
                     defaultValue={priceType}
+                    value={priceType}
                   >
-                    <Radio value='ESDT'>ESDT</Radio>
-                    <Radio value='EGLD'>EGLD</Radio>
-                    <Radio value='SFT'>SFT</Radio>
-                    <Radio value='FREE'>FREE</Radio>
+                    <Radio value='Esdt'>ESDT</Radio>
+                    <Radio value='Egld'>EGLD</Radio>
+                    <Radio value='Sft'>SFT</Radio>
+                    <Checkbox
+                      value={isFree}
+                      checked={isFree}
+                      onChange={handleIsFree}
+                    >
+                      FREE
+                    </Checkbox>
                   </Radio.Group>{' '}
-                  {priceType == 'FREE' && (
+                  {isFree && (
                     <div style={{ color: 'red', marginTop: '10px' }}>
-                      Warning: We cannot fully prevent bots from participating
-                      in free lotteries. However, to enhance fairness, users can
-                      only obtain free tickets if they hold xGRAOU tokens in
-                      their wallet. You may set a minimum xGRAOU balance
-                      required to claim a ticket.
+                      ⚠️ Warning: While we cannot completely prevent bots from
+                      joining free lotteries, we have implemented a safeguard:
+                      users can only claim free tickets if they hold a minimum
+                      balance of ESDT, SFT, or EGLD tokens in their wallet. You
+                      may define the required minimum balance to enhance
+                      fairness.
                     </div>
                   )}
                 </Form.Item>
 
                 {/* Selection du PRICE */}
-                {['ESDT', 'SFT', 'FREE'].includes(priceType) && (
+                {['Esdt', 'Sft'].includes(priceType) && (
                   <Form.Item
                     name={'priceIdentifier' + priceType}
                     label='Identifier'
@@ -521,13 +545,10 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   >
                     {' '}
                     <Select
-                      defaultValue={
-                        priceType == 'FREE'
-                          ? xgraou_identifier
-                          : priceIdentifier
-                      }
+                      defaultValue={priceIdentifier}
+                      value={priceIdentifier}
                       className='select-token'
-                      disabled={acceptConditions || priceType == 'FREE'}
+                      disabled={acceptConditions}
                       onDropdownVisibleChange={handleDropdownChange}
                       onChange={(value, datas: any) => {
                         disableKeyboard();
@@ -589,10 +610,11 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                           key={token.identifier}
                           value={token.identifier}
                           datas={token}
-                          disabled={[
-                            xgraou_identifier,
-                            graou_identifier
-                          ].includes(token.identifier)}
+                          disabled={
+                            [xgraou_identifier, graou_identifier].includes(
+                              token.identifier
+                            ) && !isFree
+                          }
                         >
                           {token.identifier}
                         </Select.Option>
@@ -618,7 +640,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
                 )}
                 {/* Montant du PRICE */}
-                {['ESDT', 'SFT', 'EGLD', 'FREE'].includes(priceType) && (
+                {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
                   <Form.Item
                     name='priceAmount'
                     label='Amount'
@@ -912,6 +934,14 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       'Pay 10 XGRAOU to start the lottery'
                     )}
                   </Checkbox>
+
+                  <Checkbox
+                    disabled={false}
+                    onChange={() => setAutoDraw(!autoDraw)}
+                  >
+                    {' '}
+                    <span>Auto draw</span>
+                  </Checkbox>
                 </Form.Item>
                 <Form.Item>
                   <ActionCreate
@@ -929,6 +959,11 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     max_per_wallet={maxPerWallet}
                     start_time={startTime}
                     end_time={endTime}
+                    //
+                    price_type={priceType}
+                    is_free={isFree}
+                    auto_draw={autoDraw}
+                    //
                     fee_percentage={Math.ceil(feePercentage * 100)}
                     acceptConditions={acceptConditions}
                     setAcceptConditions={setAcceptConditions}

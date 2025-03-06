@@ -26,8 +26,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   //   console.log('prize_nft_information', prize_nft_information);
   // console.log('prize_esdt_information', prize_esdt_information);
   const status =
-    lottery.winner !=
-    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
+    lottery.winner_id > 0
       ? 'Ended'
       : lottery.tickets_sold.isGreaterThanOrEqualTo(lottery.max_tickets) ||
         (lottery?.end.isLessThan(Date.now() / 1000) && lottery.end > 0)

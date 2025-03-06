@@ -79,6 +79,14 @@
         {
           "name": "fee_percentage",
           "type": "u64"
+        },
+        {
+          "name": "price_type",
+          "type": "PriceType"
+        },
+        {
+          "name": "auto_draw",
+          "type": "bool"
         }
       ],
       "outputs": [
@@ -364,6 +372,56 @@
         }
       ],
       "outputs": []
+    },
+    {
+      "name": "isAdmin",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "addAdmin",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeAdmin",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getAdmins",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<Address>",
+          "multi_result": true
+        }
+      ]
     }
   ],
   "events": [
@@ -462,6 +520,10 @@
           "type": "TokenIdentifier"
         },
         {
+          "name": "price_type",
+          "type": "PriceType"
+        },
+        {
           "name": "price_nonce",
           "type": "u64"
         },
@@ -484,6 +546,47 @@
         {
           "name": "fee_percentage",
           "type": "u64"
+        },
+        {
+          "name": "auto_draw",
+          "type": "bool"
+        }
+      ]
+    },
+    "PriceType": {
+      "type": "enum",
+      "variants": [
+        {
+          "name": "Egld",
+          "discriminant": 0
+        },
+        {
+          "name": "Esdt",
+          "discriminant": 1
+        },
+        {
+          "name": "Sft",
+          "discriminant": 2
+        },
+        {
+          "name": "Nft",
+          "discriminant": 3
+        },
+        {
+          "name": "FreeEgld",
+          "discriminant": 4
+        },
+        {
+          "name": "FreeEsdt",
+          "discriminant": 5
+        },
+        {
+          "name": "FreeSft",
+          "discriminant": 6
+        },
+        {
+          "name": "FreeNft",
+          "discriminant": 7
         }
       ]
     }

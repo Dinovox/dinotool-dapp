@@ -13,6 +13,32 @@ import {
 import BigNumber from 'bignumber.js';
 import bigNumToHex from 'helpers/bigNumToHex';
 
+enum PriceType {
+  Egld,
+  Esdt,
+  Sft,
+  Nft,
+  FreeEgld,
+  FreeEsdt,
+  FreeSft,
+  FreeNft
+}
+
+function getPriceTypeEnum(priceType: string): PriceType | undefined {
+  const priceTypeMap: Record<string, PriceType> = {
+    Egld: PriceType.Egld,
+    Esdt: PriceType.Esdt,
+    Sft: PriceType.Sft,
+    Nft: PriceType.Nft,
+    FreeEgld: PriceType.FreeEgld,
+    FreeEsdt: PriceType.FreeEsdt,
+    FreeSft: PriceType.FreeSft,
+    FreeNft: PriceType.FreeNft
+  };
+
+  return priceTypeMap[priceType] ?? undefined;
+}
+
 export const ActionCreate = ({
   prize_identifier,
   prize_nonce,
@@ -24,6 +50,9 @@ export const ActionCreate = ({
   max_per_wallet,
   start_time,
   end_time,
+  price_type,
+  is_free,
+  auto_draw,
   fee_percentage,
   disabled
 }: any) => {
@@ -52,28 +81,38 @@ export const ActionCreate = ({
   const sendFundTransaction = async () => {
     const graou_identifier = 'GRAOU-c9dd53';
     const graou_amount = new BigNumber(10000000000000000000);
-
-    const sub =
-      '@' +
-      Buffer.from(price_identifier, 'utf8').toString('hex') +
-      '@' +
-      bigNumToHex(new BigNumber(price_nonce)) +
-      '@' +
-      bigNumToHex(new BigNumber(price_amount)) +
-      '@' +
-      bigNumToHex(new BigNumber(max_tickets)) +
-      '@' +
-      bigNumToHex(new BigNumber(max_per_wallet)) +
-      '@' +
-      bigNumToHex(new BigNumber(start_time)) +
-      '@' +
-      bigNumToHex(new BigNumber(end_time)) +
-      '@' +
-      bigNumToHex(new BigNumber(fee_percentage));
-
-    const fundTransaction = {
-      value: 0,
-      data:
+    let data = '';
+    if (auto_draw) {
+      //auto draw demande des EGLD en plus en fonction du nombre de tickets
+      data =
+        'MultiESDTNFTTransfer@' +
+        new Address(lotteryContractAddress).toHex() +
+        '@03@' +
+        Buffer.from(graou_identifier, 'utf8').toString('hex') +
+        '@' +
+        bigNumToHex(new BigNumber(0)) +
+        '@' +
+        bigNumToHex(graou_amount) +
+        '@' +
+        Buffer.from(prize_identifier, 'utf8').toString('hex') +
+        '@' +
+        bigNumToHex(
+          new BigNumber(prize_nonce).isGreaterThan(0)
+            ? new BigNumber(prize_nonce)
+            : new BigNumber(0)
+        ) +
+        '@' +
+        bigNumToHex(new BigNumber(prize_amount)) +
+        '@' +
+        Buffer.from('EGLD-000000', 'utf8').toString('hex') +
+        '@' +
+        bigNumToHex(new BigNumber(0)) +
+        '@' +
+        bigNumToHex(new BigNumber(100000000000000).multipliedBy(max_tickets)) +
+        '@' +
+        Buffer.from('create', 'utf8').toString('hex');
+    } else {
+      data =
         'MultiESDTNFTTransfer@' +
         new Address(lotteryContractAddress).toHex() +
         '@02@' +
@@ -93,8 +132,38 @@ export const ActionCreate = ({
         '@' +
         bigNumToHex(new BigNumber(prize_amount)) +
         '@' +
-        Buffer.from('create', 'utf8').toString('hex') +
-        sub,
+        Buffer.from('create', 'utf8').toString('hex');
+    }
+
+    const sub =
+      '@' +
+      Buffer.from(price_identifier, 'utf8').toString('hex') +
+      '@' +
+      bigNumToHex(new BigNumber(price_nonce)) +
+      '@' +
+      bigNumToHex(new BigNumber(price_amount)) +
+      '@' +
+      bigNumToHex(new BigNumber(max_tickets)) +
+      '@' +
+      bigNumToHex(new BigNumber(max_per_wallet)) +
+      '@' +
+      bigNumToHex(new BigNumber(start_time)) +
+      '@' +
+      bigNumToHex(new BigNumber(end_time)) +
+      '@' +
+      bigNumToHex(new BigNumber(fee_percentage)) +
+      '@' +
+      bigNumToHex(
+        new BigNumber(
+          getPriceTypeEnum(is_free ? 'Free' + price_type : price_type) ??
+            PriceType.Egld
+        )
+      ) +
+      '@' +
+      bigNumToHex(new BigNumber(auto_draw ? 1 : 0));
+    const fundTransaction = {
+      value: 0,
+      data: data + sub,
       receiver: address,
       gasLimit: '14000000'
     };
@@ -102,7 +171,7 @@ export const ActionCreate = ({
     await refreshAccount();
 
     const { sessionId } = await sendTransactions({
-      transactions: fundTransaction,
+      transactions: [fundTransaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing create transaction',
         errorMessage: 'An error occurred during creation',
@@ -138,7 +207,7 @@ export const ActionCreate = ({
             ) {
               const lotteryIdBase64 = event.topics[2];
               const lotteryId = BigInt(
-                '0x' + Buffer.from(lotteryIdBase64, 'base64').toString('hex')
+                Buffer.from(lotteryIdBase64, 'base64').toString('hex')
               );
 
               navigate(`/lotteries/${lotteryId}`);

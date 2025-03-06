@@ -12,9 +12,14 @@ interface EsdtInfo {
 interface EsdtDisplayProps {
   esdtInfo: EsdtInfo[];
   amount: number;
+  is_free?: boolean;
 }
 
-const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
+const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
+  esdtInfo,
+  amount,
+  is_free = false
+}: any) => {
   return (
     <div>
       <div className='info-item'>
@@ -24,13 +29,13 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
               className='mint-image'
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
+              {is_free && <div className='dinoFree'>FREE</div>}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound
                 }
                 alt='SFT'
               />
-
               <span className='identifier'>
                 {' '}
                 {formatAmount({
@@ -41,7 +46,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
                   addCommas: true
                 })}{' '}
                 EGLD
-              </span>
+              </span>{' '}
             </div>
           </>
         ) : (
@@ -50,6 +55,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({ esdtInfo, amount }: any) => {
               className='mint-image'
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
+              {is_free && <div className='dinoFree'>FREE</div>}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound

@@ -35,6 +35,31 @@
   font-weight: 400;
 }
 
+.dinoFree {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+
+  width: 168px;
+  height: 30px;
+
+  /* Yellow */
+  background: #f5ed43;
+  transform: rotate(-3deg);
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  z-index: 10;
+  margin: 60px auto;
+  font-family: BitCell;
+  font-size: 50px;
+  font-weight: 400;
+}
 .mint-title {
   text-align: center;
   color: rgb(255 119 75);

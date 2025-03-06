@@ -10,7 +10,7 @@ export const dropContract =
   'erd1qqqqqqqqqqqqqpgqhc8uwawel9treyrc2ltp3r7qqj3520j0ch9sqswc2v';
 
 export const lotteryContractAddress =
-  'erd1qqqqqqqqqqqqqpgqyfrc02kk63ln5a83w0w55lme4u2d3c94ch9s3u5lmj';
+  'erd1qqqqqqqqqqqqqpgqt9pvee0j0pg4u75s4mvv8xuc2f0340guch9sedzc8j';
 
 export const graou_identifier = 'GRAOU-c9dd53';
 export const API_URL = 'https://devnet-api.multiversx.com';

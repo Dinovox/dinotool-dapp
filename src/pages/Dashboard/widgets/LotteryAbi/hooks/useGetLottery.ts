@@ -15,11 +15,13 @@ export const useGetLottery = (lottery_id: any) => {
   const [mintable, setMintable] = useState<any>({
     id: 0,
     owner_id: 0,
+    winner_id: 0,
     start: 0,
     end: 0,
     prize_identifier: '',
     prize_nonce: 0,
     prize_amount: new BigNumber(0),
+    pricet_type: '',
     price_identifier: '',
     price_nonce: 0,
     price_amount: new BigNumber(0),
@@ -28,7 +30,8 @@ export const useGetLottery = (lottery_id: any) => {
     tickets_sold: new BigNumber(0),
     fee_percentage: 0,
     owner: '',
-    winner: ''
+    winner: '',
+    auto_draw: false
   });
 
   const { hasPendingTransactions } = useGetPendingTransactions();
@@ -43,6 +46,7 @@ export const useGetLottery = (lottery_id: any) => {
       setMintable({
         id: 0,
         owner_id: 0,
+        winner_id: 0,
         start: 0,
         end: 0,
         prize_identifier: '',
@@ -56,7 +60,8 @@ export const useGetLottery = (lottery_id: any) => {
         tickets_sold: new BigNumber(0),
         fee_percentage: 0,
         owner: '',
-        winner: ''
+        winner: '',
+        auto_draw: false
       });
       return;
     }
@@ -81,10 +86,8 @@ export const useGetLottery = (lottery_id: any) => {
         return;
       }
       const { field0, field1, field2 } = lotteryData;
-
       const owner = field1?.bech32?.() || '';
       const winner = field2?.bech32?.() || '';
-
       if (lotteryData) {
         setMintable({
           ...field0,

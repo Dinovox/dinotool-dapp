@@ -10,28 +10,8 @@ const LotteryWinner = ({ lottery }: any) => {
   );
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Liste d'adresses fictives pour simuler un tirage
-  const mockAddresses = [
-    'erd1pqj...jkI789', // Exemple basé sur votre image
-    'erd1xyz123456789abc...def789',
-    'erd1abc987654321def...ghi456'
-  ];
-
-  // Simuler un tirage aléatoire
-  const handleDrawLottery = () => {
-    const randomWinner =
-      mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
-    setCurrentWinner(randomWinner);
-    setShowConfetti(true);
-    // Réinitialiser les confettis après 3 secondes
-    // setTimeout(() => setShowConfetti(false), 3000);
-  };
-
   useEffect(() => {
-    if (
-      currentWinner !==
-      'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
-    ) {
+    if (lottery.winner_id > 0) {
       setShowConfetti(true);
     }
   }, [currentWinner]);
@@ -93,8 +73,6 @@ const LotteryWinner = ({ lottery }: any) => {
           left: `${Math.random() * 100}%`,
           top: `${Math.random() * 100}%`,
           fontSize: `${Math.random() * 10 + 20}px`,
-
-          //   fontSize: '24px',
           zIndex: 100
         }}
       >
@@ -105,15 +83,7 @@ const LotteryWinner = ({ lottery }: any) => {
 
   return (
     <div className='lottery-container'>
-      {currentWinner ===
-      'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' ? (
-        <></>
-      ) : (
-        // <div className='lottery-draw-placeholder'>
-        //   <button className='lottery-draw-button' onClick={handleDrawLottery}>
-        //     Draw lottery
-        //   </button>
-        // </div>
+      {lottery.winner_id > 0 && (
         <motion.div
           className='lottery-winner-card-enhanced'
           initial='hidden'

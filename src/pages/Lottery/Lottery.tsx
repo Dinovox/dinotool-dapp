@@ -354,38 +354,28 @@ export const Lottery = () => {
                           <NftDisplay
                             nftInfo={price_nft_information}
                             amount={lottery.price_amount}
+                            is_free={
+                              ['FreeEgld', 'FreeSft', 'FreeEsdt'].includes(
+                                lottery.price_type.name
+                              )
+                                ? true
+                                : false
+                            }
                           />
                         ) : (
                           <>
                             {' '}
-                            {lottery.price_identifier == 'FREE-000000' ? (
-                              <div
-                                className='mint-image'
-                                style={{ margin: 'auto', width: '200px' }}
-                              >
-                                <FileDisplay
-                                  source={freeChest}
-                                  fileType={''}
-                                  width='200px'
-                                  height='200px'
-                                />
-                                <p>
-                                  {formatAmount({
-                                    input: lottery.price_amount.toFixed(),
-                                    decimals: 18,
-                                    digits: 2,
-                                    showLastNonZeroDecimal: true,
-                                    addCommas: true
-                                  })}{' '}
-                                  {xgraou_identifier} refunded
-                                </p>
-                              </div>
-                            ) : (
-                              <EsdtDisplay
-                                esdtInfo={price_esdt_information}
-                                amount={lottery.price_amount}
-                              />
-                            )}
+                            <EsdtDisplay
+                              esdtInfo={price_esdt_information}
+                              amount={lottery.price_amount}
+                              is_free={
+                                ['FreeEgld', 'FreeSft', 'FreeEsdt'].includes(
+                                  lottery.price_type.name
+                                )
+                                  ? true
+                                  : false
+                              }
+                            />
                           </>
                         )}
                       </div>
@@ -411,6 +401,7 @@ export const Lottery = () => {
                 </div>{' '}
                 {/* Il reste des tickets à vendre */}
                 {lottery &&
+                  lottery.owner != address &&
                   lottery.max_tickets.isGreaterThan(lottery.tickets_sold) && (
                     <div style={{ justifyContent: 'center', display: 'grid' }}>
                       <ActionBuy
@@ -456,9 +447,7 @@ export const Lottery = () => {
               {/* Tout est vendu ou la lotterie est terminée */}
               {lottery &&
                 lottery.tickets_sold.isGreaterThanOrEqualTo(
-                  lottery.max_tickets &&
-                    lottery.winner ==
-                      'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
+                  lottery.max_tickets && lottery.winner_id == 0
                 ) && (
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     Waiting for the owner to draw the winner
@@ -467,8 +456,7 @@ export const Lottery = () => {
               {/* Actions pour l'owner */}
               {lottery.owner == address && (
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  {lottery.winner ==
-                  'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' ? (
+                  {lottery.winner_id == 0 ? (
                     <ActionDraw
                       lottery_id={lotteryID}
                       disabled={
@@ -482,8 +470,7 @@ export const Lottery = () => {
                   ) : (
                     <ActionDelete lottery_id={lotteryID} />
                   )}
-                  {lottery.winner ==
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu' && (
+                  {lottery.winner_id == 0 && (
                     <ActionCancel
                       lottery_id={lotteryID}
                       disabled={lottery.tickets_sold.isGreaterThan(50)}

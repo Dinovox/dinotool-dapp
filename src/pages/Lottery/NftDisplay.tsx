@@ -12,14 +12,23 @@ interface NftInfo {
 interface NftDisplayProps {
   nftInfo: NftInfo[];
   amount: number;
+  is_free?: boolean;
 }
 
-const NftDisplay: React.FC<NftDisplayProps> = ({ nftInfo, amount }: any) => {
+const NftDisplay: React.FC<NftDisplayProps> = ({
+  nftInfo,
+  amount,
+  is_free = false
+}: any) => {
   // console.log('nftInfo', nftInfo);
   return (
     <div>
       <div className='info-item'>
-        <div className='mint-image' style={{ margin: 'auto' }}>
+        <div
+          className='mint-image'
+          style={{ margin: 'auto', width: '168px', height: '168px' }}
+        >
+          {is_free && <div className='dinoFree'>FREE</div>}
           {nftInfo?.media?.length > 0 &&
           nftInfo?.media[0]?.fileType === 'video/mp4' ? (
             <video controls autoPlay muted playsInline loop>
