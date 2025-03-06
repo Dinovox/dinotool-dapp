@@ -37,7 +37,7 @@ export const Home = () => {
     {
       title: 'Lotteries',
       link: '/lotteries',
-      image: environment === 'mainnet' ? random : lotterie,
+      image: environment === 'mainnet' ? random : random,
       blured: environment === 'mainnet'
     },
     {
@@ -50,6 +50,12 @@ export const Home = () => {
       link: '/chests',
       image: environment === 'mainnet' ? random : chest,
       blured: true
+    },
+    {
+      title: 'Feedback',
+      link: 'https://dinovox.com/feedback',
+      image: random,
+      external: true
     }
   ];
 

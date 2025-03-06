@@ -59,7 +59,8 @@
   text-overflow: clip;
 }
 
-.mint-image img {
+.mint-image img,
+.mint-image video {
   width: 168px;
   height: 168px;
   border: 2px solid #f7ea43;

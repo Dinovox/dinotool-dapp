@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatAmount } from 'utils';
+import BigNumber from 'bignumber.js';
 
 interface NftInfo {
   id: string;
@@ -18,10 +19,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({ nftInfo, amount }: any) => {
   return (
     <div>
       <div className='info-item'>
-        <div
-          className='mint-image'
-          style={{ margin: 'auto', width: '168px', height: '168px' }}
-        >
+        <div className='mint-image' style={{ margin: 'auto' }}>
           {nftInfo?.media?.length > 0 &&
           nftInfo?.media[0]?.fileType === 'video/mp4' ? (
             <video controls autoPlay muted playsInline loop>
@@ -34,7 +32,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({ nftInfo, amount }: any) => {
               <img src={nftInfo?.media[0]?.url} alt='SFT' />
             )
           )}
-          {amount > 0 && amount.toFixed()}{' '}
+          {amount > 0 && new BigNumber(amount).toFixed()}{' '}
           <span className='identifier'> {nftInfo?.identifier}</span>
         </div>
       </div>

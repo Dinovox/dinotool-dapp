@@ -1,0 +1,120 @@
+/* Style global */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Sections alignées côte à côte sur grand écran */
+.section {
+  flex: 1;
+  min-width: 300px;
+  max-width: 450px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Titres des sections */
+.section-title {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+/* Style des cartes NFT */
+.dinocard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.nft-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.nft-card:hover {
+  transform: scale(1.05);
+}
+
+.nft-identifier {
+  font-weight: bold;
+  color: #333;
+}
+
+.nft-balance {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Bouton Burn */
+.burn-button {
+  background: #ff4b4b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.burn-button:hover {
+  background: #d40000;
+}
+
+/* Style des vouchers */
+.vouchers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.voucher-card {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 8px;
+  width: 180px;
+  text-align: center;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.voucher-title {
+  font-weight: bold;
+  color: #856404;
+}
+
+.voucher-value {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Message quand aucun voucher n'est disponible */
+.no-voucher {
+  font-size: 14px;
+  color: #888;
+  margin-top: 10px;
+}
+
+/* Mobile: Les sections passent en colonne */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+}

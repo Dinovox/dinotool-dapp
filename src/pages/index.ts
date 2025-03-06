@@ -7,3 +7,4 @@ export * from './Mint';
 export * from './Drop';
 export * from './Quiz';
 export * from './Lottery';
+export * from './Vouchers';
