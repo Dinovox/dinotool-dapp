@@ -1,0 +1,22 @@
+{
+  "lotteries": "Loteries",
+  "lottery_number": "Loterie n° {{number}}",
+  "open_in": "Ouvre dans {{time}}",
+  "end_in": "Ferme dans {{time}}",
+  "tickets": "Billets",
+  "expired": "Expiré",
+  "open_details": "Participer",
+  "status_ongoing": "En cours",
+  "status_ended": "Terminées",
+  "status_owned": "Possédées",
+  "previous": "Precédent",
+  "next": "Suivant",
+  "return": "Retour",
+  "owner": "Créateur",
+  "start": "Début",
+  "end": "Fin",
+  "entry_cost": "Coût d'entrée",
+  "prize": "Récompense",
+  "you_have_tickets": "Vous avez {{number}} billet{{s}}",
+  "wait_owner": "En attente du tirage du gagnant par le créateur"
+}

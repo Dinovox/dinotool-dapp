@@ -1,0 +1,22 @@
+{
+  "lotteries": "Lotteries",
+  "lottery_number": "Lottery # {{number}}",
+  "open_in": "Open in {{time}}",
+  "end_in": "End in {{time}}",
+  "tickets": "Tickets",
+  "expired": "Expired",
+  "open_details": "Open details",
+  "status_ongoing": "Ongoing",
+  "status_ended": "Ended",
+  "status_owned": "Owned",
+  "previous": "Previous",
+  "next": "Next",
+  "return": "Return",
+  "owner": "Owner",
+  "start": "Start",
+  "end": "End",
+  "entry_cost": "Entry cost",
+  "prize": "Prize",
+  "you_have_tickets": "You have {{number}} ticket{{s}}",
+  "wait_owner": "Waiting for the owner to draw the winner"
+}

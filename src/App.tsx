@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LanguageSelector from './components/LanguageSelector';
+import './routes/i18n';
 
 import {
   AxiosInterceptorContext, // using this is optional
@@ -20,7 +22,7 @@ import {
 } from 'config';
 import { RouteNamesEnum } from 'localConstants';
 import { PageNotFound, Unlock } from 'pages';
-import { routes } from 'routes';
+import { useRoutesWithTranslation } from 'routes';
 import { BatchTransactionsContextProvider } from 'wrappers';
 
 const AppContent = () => {
@@ -59,7 +61,7 @@ const AppContent = () => {
           <SignTransactionsModals />
           <Routes>
             <Route path={RouteNamesEnum.unlock} element={<Unlock />} />
-            {routes.map((route) => (
+            {useRoutesWithTranslation().map((route) => (
               <Route
                 path={route.path}
                 key={`route-key-'${route.path}`}
@@ -77,6 +79,7 @@ const AppContent = () => {
 export const App = () => {
   return (
     <AxiosInterceptorContext.Provider>
+      <LanguageSelector />
       <AxiosInterceptorContext.Interceptor
         authenticatedDomains={sampleAuthenticatedDomains}
       >

@@ -10,55 +10,58 @@ import {
   Vouchers
 } from 'pages';
 import { RouteType } from 'types';
-
+import { useTranslation } from 'react-i18next';
 interface RouteWithTitleType extends RouteType {
   title: string;
 }
+export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
+  const { t } = useTranslation();
 
-export const routes: RouteWithTitleType[] = [
-  {
-    path: RouteNamesEnum.home,
-    title: 'Home',
-    component: Home
-  },
-  {
-    path: RouteNamesEnum.dashboard,
-    title: 'Dashboard',
-    component: Dashboard
-  },
-  {
-    path: RouteNamesEnum.disclaimer,
-    title: 'Disclaimer',
-    component: Disclaimer
-  },
-  {
-    path: RouteNamesEnum.mint,
-    title: 'Mint',
-    component: Mint
-  },
-  {
-    path: RouteNamesEnum.drop,
-    title: 'Drop',
-    component: Drop
-  },
-  {
-    path: RouteNamesEnum.quiz,
-    title: 'Quiz',
-    component: Quiz
-  },
-  {
-    path: RouteNamesEnum.lotteries,
-    title: 'Lotteries',
-    component: Lottery
-  },
-  {
-    path: `${RouteNamesEnum.lotteries}/:id`,
-    title: 'Lottery',
-    component: Lottery
-  },
-  {
-    path: RouteNamesEnum.vouchers,
-    title: 'Vouchers',
-    component: Vouchers
-  }
-];
+  return [
+    {
+      path: RouteNamesEnum.home,
+      title: t('home'),
+      component: Home
+    },
+    {
+      path: RouteNamesEnum.dashboard,
+      title: t('dashboard'),
+      component: Dashboard
+    },
+    {
+      path: RouteNamesEnum.disclaimer,
+      title: t('disclaimer'),
+      component: Disclaimer
+    },
+    {
+      path: RouteNamesEnum.mint,
+      title: t('mint'),
+      component: Mint
+    },
+    {
+      path: RouteNamesEnum.drop,
+      title: 'Drop',
+      component: Drop
+    },
+    {
+      path: RouteNamesEnum.quiz,
+      title: 'Quiz',
+      component: Quiz
+    },
+    {
+      path: RouteNamesEnum.lotteries,
+      title: t('lotteries'),
+      component: Lottery
+    },
+    {
+      path: `${RouteNamesEnum.lotteries}/:id`,
+      title: t('lottery'),
+      component: Lottery
+    },
+    {
+      path: RouteNamesEnum.vouchers,
+      title: t('vouchers'),
+      component: Vouchers
+    }
+  ];
+};

@@ -8,8 +8,13 @@ import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformat
 import notFound from './esdtnotfound.svg';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
+
   const [timeStart, setTimeStart] = useState(0);
   const [timeEnd, setTimeEnd] = useState(0);
 
@@ -109,13 +114,17 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
           <div className='subCard'>
             <h2 className='text-lg font-bold'>
               {' '}
-              Lottery #{lottery?.id.toFixed()}
+              {t('lotteries:lottery_number', { number: lottery?.id.toFixed() })}
             </h2>
             {timeStart > 0 ? (
-              <div>Open in : {formatTime(timeStart)}</div>
+              <div>
+                {t('lotteries:open_in', {
+                  time: formatTime(timeStart)
+                })}
+              </div>
             ) : (
               <p className='text-sm text-gray-600'>
-                Tickets:{' '}
+                {t('lotteries:tickets')}:{' '}
                 <strong>
                   {lottery?.tickets_sold.toFixed()} /{' '}
                   {lottery?.max_tickets.toFixed()}{' '}
@@ -125,11 +134,18 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
 
             {timeStart == 0 && timeEnd > 0 && (
               <div>
-                {lottery.end > 0 && <>End in: {formatTime(timeEnd)} </>}
+                {lottery.end > 0 && (
+                  <>
+                    {' '}
+                    {t('lotteries:end_in', {
+                      time: formatTime(timeEnd)
+                    })}
+                  </>
+                )}
               </div>
             )}
             {timeStart == 0 && lottery.end.isGreaterThan(0) && timeEnd == 0 && (
-              <div>Expired</div>
+              <div>{t('lotteries:expired')}</div>
             )}
 
             <button
@@ -138,7 +154,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                 navigate(`/lotteries/${lottery.id}`, { replace: false });
               }}
             >
-              Open details
+              {t('lotteries:open_details')}{' '}
             </button>
           </div>
         </div>

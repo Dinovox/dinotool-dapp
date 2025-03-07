@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AuthenticatedRoutesWrapper } from 'components/sdkDappComponents';
 import { RouteNamesEnum } from 'localConstants/routes';
-import { routes } from 'routes/routes';
+import { useRoutesWithTranslation } from 'routes/routes';
 import { Footer } from './Footer';
 import { Header } from './Header';
 
@@ -13,7 +13,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
       <Header />
       <main className='flex flex-grow items-stretch justify-center pt-6 m-auto'>
         <AuthenticatedRoutesWrapper
-          routes={routes}
+          routes={useRoutesWithTranslation()}
           unlockRoute={`${RouteNamesEnum.unlock}${search}`}
         >
           {children}

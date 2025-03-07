@@ -17,23 +17,27 @@ import soldGraout from '../../assets/img/sold_graout.jpg';
 import random from '../../assets/img/random.png';
 import chest from '../../assets/img/chest.png';
 import drop from '../../assets/img/drop.png';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from '../../hooks/useLoadTranslations';
 
 import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import BigNumber from 'bignumber.js';
 
 export const Home = () => {
+  const loading = useLoadTranslations('home');
+  const { t } = useTranslation();
+
   const [displayText, setDisplayText] = useState('🦖');
   const [isShaking, setIsShaking] = useState(false);
   const mintable = useGetMintable();
 
-  console.log('mintable:', mintable);
   const fullText = '🦖 . . . #GRAOU!';
 
   // Images are 210px 150px
   const navItems = [
     {
-      title: 'Main website',
+      title: t('home:main_title'),
       link: 'https://www.dinovox.com/fr',
       image: cardMain,
       external: true
@@ -44,7 +48,7 @@ export const Home = () => {
       image: mintable?.amount.isGreaterThan(0) ? cardGazette : cardSoldGraout
     },
     {
-      title: environment === 'mainnet' ? 'Soon' : 'Lotteries',
+      title: environment === 'mainnet' ? 'Soon' : t('home:lotteries_title'),
       link: '/lotteries',
       image: environment === 'mainnet' ? cardWip : cardLotteries,
       blured: environment === 'mainnet'
@@ -61,7 +65,7 @@ export const Home = () => {
       blured: true
     },
     {
-      title: 'Feedback',
+      title: t('home:feedback_title'),
       link: 'https://dinovox.com/feedback',
       image: cardFeedback,
       external: true
@@ -113,7 +117,9 @@ export const Home = () => {
     setFilter(getRandomFilter());
     setTransform(getRandomTransform());
   };
-
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>

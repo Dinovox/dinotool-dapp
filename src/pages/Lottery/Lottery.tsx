@@ -27,8 +27,13 @@ import { graou_identifier, lottery_cost, xgraou_identifier } from 'config';
 import { ActionDelete } from './Transaction/ActionDelete';
 import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserParticipations';
 import LotteryWinner from './LotteryWinner';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 export const Lottery = () => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
+
   const [timeStart, setTimeStart] = useState(60 * 60);
   const [timeEnd, setTimeEnd] = useState(60 * 60);
   const { address } = useGetAccount();
@@ -168,7 +173,7 @@ export const Lottery = () => {
                 className='mintGazTitle dinoTitle'
                 style={{ width: '340px' }}
               >
-                Lotteries
+                {t('lotteries:lotteries')}
               </div>{' '}
               <div
                 className='filter-options'
@@ -182,7 +187,7 @@ export const Lottery = () => {
                   value='ongoing'
                   onClick={() => (setFilter('ongoing'), setPage(1))}
                 >
-                  Ongoing
+                  {t('lotteries:status_ongoing')}
                 </button>
                 <button
                   className={`dinoButton ${
@@ -192,7 +197,7 @@ export const Lottery = () => {
                   value='ended'
                   onClick={() => (setFilter('ended'), setPage(1))}
                 >
-                  Ended
+                  {t('lotteries:status_ended')}
                 </button>
 
                 {lotteries.user_owned.length > 0 && (
@@ -204,7 +209,7 @@ export const Lottery = () => {
                     value='owned'
                     onClick={() => (setFilter('owned'), setPage(1))}
                   >
-                    Owned
+                    {t('lotteries:status_owned')}
                   </button>
                 )}
                 {lotteries.user_tickets.length > 0 && (
@@ -237,7 +242,7 @@ export const Lottery = () => {
                   }}
                   disabled={page <= 1}
                 >
-                  Previous
+                  {t('lotteries:previous')}
                 </button>
 
                 {lotteriesDisplay.length > 0 &&
@@ -271,7 +276,7 @@ export const Lottery = () => {
                     }
                   }}
                 >
-                  Next
+                  {t('lotteries:next')}
                 </button>
               </div>
               <CreateLotteryModal
@@ -288,7 +293,9 @@ export const Lottery = () => {
               }}
             >
               {' '}
-              <button onClick={() => navigate('/lotteries')}>Return</button>
+              <button onClick={() => navigate('/lotteries')}>
+                {t('lotteries:return')}
+              </button>
             </div>
           )}
 
@@ -299,7 +306,9 @@ export const Lottery = () => {
                 className='mintGazTitle dinoTitle'
                 style={{ width: '340px' }}
               >
-                Lottery #{lottery?.id.toFixed()}
+                {t('lotteries:lottery_number', {
+                  number: lottery?.id.toFixed()
+                })}
               </div>{' '}
               {/* Details de la lotterie (owner , tickets, start, end, max per wallet) */}
               <div className='dinocard'>
@@ -307,7 +316,9 @@ export const Lottery = () => {
                   {lottery && (
                     <>
                       <div className='info-item'>
-                        <span className='text-label'>Owner: </span>
+                        <span className='text-label'>
+                          {t('lotteries:owner')}:{' '}
+                        </span>
                         {lottery.owner && (
                           <>
                             <ShortenedAddress address={lottery.owner} />
@@ -315,7 +326,9 @@ export const Lottery = () => {
                         )}
                       </div>
                       <div className='info-item'>
-                        <span className='text-label'>Tickets: </span>{' '}
+                        <span className='text-label'>
+                          {t('lotteries:tickets')}:{' '}
+                        </span>{' '}
                         {lottery?.tickets_sold.toFixed()} /{' '}
                         {lottery?.max_tickets.toFixed()}
                       </div>{' '}
@@ -326,12 +339,16 @@ export const Lottery = () => {
                         </div>
                       )}
                       <div className='info-item'>
-                        <span className='text-label'>Start: </span>{' '}
+                        <span className='text-label'>
+                          {t('lotteries:start')}:{' '}
+                        </span>{' '}
                         {blockToTime(lottery?.start)}{' '}
                       </div>
                       {lottery.end > 0 && (
                         <div className='info-item'>
-                          <span className='text-label'>End: </span>{' '}
+                          <span className='text-label'>
+                            {t('lotteries:end')}:{' '}
+                          </span>{' '}
                           {blockToTime(lottery?.end)}{' '}
                         </div>
                       )}
@@ -348,7 +365,9 @@ export const Lottery = () => {
                   {lottery && lottery.prize_identifier && (
                     <>
                       <div className='sub-dinocard box-item'>
-                        <span className='text-label'>Entry Cost </span>
+                        <span className='text-label'>
+                          {t('lotteries:entry_cost')}{' '}
+                        </span>
 
                         {lottery.price_nonce > 0 ? (
                           <NftDisplay
@@ -380,7 +399,10 @@ export const Lottery = () => {
                         )}
                       </div>
                       <div className='sub-dinocard box-item'>
-                        <span className='text-label'> Prize </span>
+                        <span className='text-label'>
+                          {' '}
+                          {t('lotteries:prize')}{' '}
+                        </span>
                         {lottery.prize_nonce > 0 ? (
                           <NftDisplay
                             nftInfo={prize_nft_information}
@@ -436,7 +458,10 @@ export const Lottery = () => {
                         {' '}
                         {Number(buyed) > 0 && (
                           <>
-                            You have {buyed.toFixed()} tickets
+                            {t('lotteries:you_have_tickets', {
+                              number: buyed.toFixed(),
+                              s: buyed > 1 ? 's' : ''
+                            })}
                             <br />
                           </>
                         )}
@@ -450,7 +475,7 @@ export const Lottery = () => {
                   lottery.max_tickets && lottery.winner_id == 0
                 ) && (
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    Waiting for the owner to draw the winner
+                    {t('lotteries:wait_owner')}{' '}
                   </div>
                 )}
               {/* Actions pour l'owner */}
@@ -487,7 +512,7 @@ export const Lottery = () => {
                     display: 'grid'
                   }}
                 >
-                  Open in : {formatTime(timeStart)}
+                  {t('lotteries:open_in', { time: formatTime(timeStart) })}:
                 </div>
               )}
               {timeStart == 0 && lottery.end > 0 && timeEnd > 0 && (
@@ -498,7 +523,7 @@ export const Lottery = () => {
                     display: 'grid'
                   }}
                 >
-                  End in : {formatTime(timeEnd)}
+                  {t('lotteries:end_in', { time: formatTime(timeEnd) })}:
                 </div>
               )}
               {/* Actions pour les participants */}
