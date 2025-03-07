@@ -2,6 +2,14 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './NavigationCards.css';
+import cardMain from '../../assets/cards/main.png';
+import cardGazette from '../../assets/cards/gazette.png';
+import cardLotteries from '../../assets/cards/Lotteries.png';
+import cardDrop from '../../assets/cards/drop.png';
+import cardFeedback from '../../assets/cards/feedback.png';
+import cardWip from '../../assets/cards/wip.png';
+import cardSoldGraout from '../../assets/cards/sold.png';
+
 import lotterie from '../../assets/img/lotterie.webp';
 import navMain from '../../assets/img/dinoMain.png';
 import mintLive from '../../assets/img//dinoGaz.jpeg';
@@ -9,6 +17,7 @@ import soldGraout from '../../assets/img/sold_graout.jpg';
 import random from '../../assets/img/random.png';
 import chest from '../../assets/img/chest.png';
 import drop from '../../assets/img/drop.png';
+
 import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import BigNumber from 'bignumber.js';
@@ -26,35 +35,35 @@ export const Home = () => {
     {
       title: 'Main website',
       link: 'https://www.dinovox.com/fr',
-      image: navMain,
+      image: cardMain,
       external: true
     },
     {
       title: 'Dinogazette',
       link: '/mint',
-      image: mintable?.amount.isGreaterThan(0) ? mintLive : soldGraout
+      image: mintable?.amount.isGreaterThan(0) ? cardGazette : cardSoldGraout
     },
     {
-      title: 'Lotteries',
+      title: environment === 'mainnet' ? 'Soon' : 'Lotteries',
       link: '/lotteries',
-      image: environment === 'mainnet' ? random : random,
+      image: environment === 'mainnet' ? cardWip : cardLotteries,
       blured: environment === 'mainnet'
     },
     {
       title: 'Drop',
       link: '/drop',
-      image: drop
+      image: cardDrop
     },
     {
-      title: 'GRAOUCHEST',
+      title: 'Soon',
       link: '/chests',
-      image: environment === 'mainnet' ? random : chest,
+      image: cardWip,
       blured: true
     },
     {
       title: 'Feedback',
       link: 'https://dinovox.com/feedback',
-      image: random,
+      image: cardFeedback,
       external: true
     }
   ];

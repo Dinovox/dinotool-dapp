@@ -161,6 +161,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
 
   const handlePrizeAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let rawValue = e.target.value;
+
     // Permet la saisie vide sans réinitialisation
     if (rawValue === '') {
       setPrizeDisplay('');
@@ -180,6 +181,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
     }
 
     setPrizeDisplay(rawValue); // Affichage naturel à l'utilisateur
+
     // Conversion en BigNumber avec les décimales
     let convertedValue = new BigNumber(rawValue).multipliedBy(
       10 ** prizeDecimals
@@ -287,6 +289,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
     setPriceType(checked ? 'Esdt' : '');
     setPriceIdentifier(checked ? xgraou_identifier : '');
     setPriceTicker(checked ? xgraou_identifier : '');
+    setPriceDecimals(checked ? 18 : 0);
     setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
     setPriceDisplay(checked ? '100' : '');
     setMaxPerWallet(checked ? 1 : 0);
@@ -640,6 +643,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
                 )}
                 {/* Montant du PRICE */}
+                {priceDecimals.toFixed()}
                 {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
                   <Form.Item
                     name='priceAmount'
