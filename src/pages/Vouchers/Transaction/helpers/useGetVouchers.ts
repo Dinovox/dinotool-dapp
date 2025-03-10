@@ -22,15 +22,15 @@ export const useGetVouchers = () => {
           config
         );
 
-        setVouchers(data?.vouchers || []); // Assure que ça reste un tableau
+        setVouchers(data?.vouchers || []);
       } catch (err) {
         console.error('Unable to fetch vouchers', err);
-        setVouchers([]); // Évite que l'état soit undefined en cas d'erreur
+        setVouchers([]);
       }
     };
 
     fetchVouchers();
-  }, [tokenLogin]); // Se recharge uniquement si `tokenLogin` change
+  }, [tokenLogin]);
 
   return vouchers;
 };

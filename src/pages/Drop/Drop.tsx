@@ -17,8 +17,13 @@ import { FormatAmount } from 'components';
 import { useGetDinoHolders } from './Transaction/helpers/useGetDinoHolders';
 import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
 import { cp } from 'fs';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { Trans, useTranslation } from 'react-i18next';
 
 export const Drop = () => {
+  const loading = useLoadTranslations('drop');
+  const { t } = useTranslation();
+
   const dinobox_holders = useGetDinoHolders('DINOBOX-54d57b');
   const dinovox_holders = useGetDinoHolders('DINOVOX-cb2297');
   const dinovox_stakers = useGetDinoStakers();
@@ -100,10 +105,10 @@ export const Drop = () => {
       if (addressIsValid(address)) {
         if (address.startsWith('erd1qqqqqqqqqqq')) {
           invalidCountTemp++;
-          newInvalidAddresses.push(`${line} (SC - Invalide)`);
+          newInvalidAddresses.push(`${line} ${t('drop:invalid_sc')}`);
         } else if (seenAddresses.has(address)) {
           invalidCountTemp++;
-          newInvalidAddresses.push(`${line} (Doublon)`);
+          newInvalidAddresses.push(`${line} ${t('drop:invalid_duplicate')}`);
         } else {
           validCountTemp++;
           let qty = quantity
@@ -123,7 +128,7 @@ export const Drop = () => {
         }
       } else {
         invalidCountTemp++;
-        newInvalidAddresses.push(`${line} (Format - Invalide)`);
+        newInvalidAddresses.push(`${line} ${t('drop:invalid_format')}`);
       }
 
       // Découpe des adresses valides en chunks
@@ -221,7 +226,7 @@ export const Drop = () => {
           {' '}
           <div className='mintGazTitle dinoTitle'>DROP</div>
           <div className='mx-auto' style={{ margin: '10px' }}>
-            <span>Send tokens or SFTs to multiple addresses</span>
+            <span>{t('drop:title')}</span>
           </div>
           <div className=''>
             <div className=''>
@@ -234,7 +239,7 @@ export const Drop = () => {
                         <span className='tooltip-inline'>
                           (ℹ)
                           <span className='tooltiptext-inline'>
-                            Select the SFT or ESDT to send.
+                            {t('drop:tooltip')}
                           </span>
                         </span>{' '}
                       </label>
@@ -250,7 +255,7 @@ export const Drop = () => {
                         onChange={handleNFT}
                       >
                         <option key={0} value=''>
-                          Select
+                          {t('drop:select')}
                         </option>
                         {[
                           ...userNftBalance?.filter(
@@ -299,12 +304,11 @@ export const Drop = () => {
                       <>
                         <div className='form-group'>
                           <label htmlFor='defaultQty'>
-                            Default quantity{' '}
+                            {t('drop:default_qty')}{' '}
                             <span className='tooltip-inline'>
                               (ℹ)
                               <span className='tooltiptext-inline'>
-                                The default quantity for each address. (Unless
-                                specified in the address list.)
+                                {t('drop:default_qty_tooltip')}
                               </span>
                             </span>{' '}
                           </label>
@@ -325,12 +329,11 @@ export const Drop = () => {
                     {decimals.gt(0) && (
                       <div className='form-group'>
                         <label htmlFor='decimals'>
-                          Decimals{' '}
+                          {t('drop:decimals')}{' '}
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              ESDTs are divisible up to 18 decimal places. This
-                              value is defined by the creator of the ESDT.
+                              {t('drop:decimals_tooltip')}
                             </span>
                           </span>{' '}
                         </label>
@@ -349,13 +352,11 @@ export const Drop = () => {
                     {decimals.gt(0) && (
                       <div className='form-group'>
                         <label>
-                          Decimals (Yes/No)
+                          {t('drop:decimals_yes_no')}{' '}
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Quantities will be automatically adjusted based on
-                              the ESDT’s decimal precision. Uncheck this box to
-                              manually enter amounts with decimal values.
+                              {t('drop:decimals_yes_no_tooltip')}
                             </span>
                           </span>
                         </label>{' '}
@@ -369,7 +370,7 @@ export const Drop = () => {
                               onChange={() => setUseDecimals(true)}
                               disabled={submitted}
                             />
-                            Yes
+                            {t('drop:yes')}
                           </label>
                           <label>
                             <input
@@ -380,7 +381,7 @@ export const Drop = () => {
                               onChange={() => setUseDecimals(false)}
                               disabled={submitted}
                             />
-                            No
+                            {t('drop:no')}
                           </label>
                         </div>
                       </div>
@@ -391,27 +392,18 @@ export const Drop = () => {
                   <>
                     <div className='form-group'>
                       <label htmlFor='addresses'>
-                        List of addresses and amounts{' '}
+                        {t('drop:list_of_addresses')}{' '}
                         <span className='tooltip-inline'>
                           (ℹ)
                           <span className='tooltiptext-inline'>
-                            Paste the list of addresses to send the ESDT or SFT
-                            to. Separate each address with a newline or
-                            semicolon. You can set a specific amount for each
-                            address by adding an amount after the address.
+                            {t('drop:list_of_addresses_tooltip')}
                           </span>
                         </span>
                       </label>
                       <textarea
                         id='addresses'
                         value={addresses}
-                        placeholder={
-                          'Collez les adresses ici :\n' +
-                          'erd17gzyp....lskyy74q036l6h \n' +
-                          'Vous pouvez définir une quantité pour chaque adresse :\n' +
-                          'erd1.... 10 \n' +
-                          'erd1.... 5'
-                        }
+                        placeholder={t('drop:addresses_placeholder')}
                         onChange={(e) => setAddresses(e.target.value)}
                         required
                         style={{
@@ -439,7 +431,7 @@ export const Drop = () => {
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Check this box to include dino stakers. (SC only)
+                              {t('drop:dino_stakers_tooltip')}
                             </span>
                           </span>
                         </label>
@@ -457,8 +449,7 @@ export const Drop = () => {
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Check this box to include holders of the box.
-                              (wallet only)
+                              {t('drop:box_holders_tooltip')}
                             </span>
                           </span>
                         </label>
@@ -476,8 +467,7 @@ export const Drop = () => {
                           <span className='tooltip-inline'>
                             (ℹ)
                             <span className='tooltiptext-inline'>
-                              Check this box to include dinovox holders. (wallet
-                              only)
+                              {t('drop:vox_holders_tooltip')}
                             </span>
                           </span>
                         </label>
@@ -493,14 +483,22 @@ export const Drop = () => {
                 {' '}
                 <div className='address-info'>
                   <h3>
-                    Valid Addresses :{' '}
-                    <span className='highlight'>{validCount}</span>
+                    <Trans
+                      i18nKey='drop:valid_addresses'
+                      values={{ count: validCount }}
+                      components={{ span: <span className='highlight' /> }}
+                    />
                   </h3>{' '}
                   {invalidCount > 0 && (
                     <div className='invalid-addresses-container'>
                       <h3>
-                        Invalid Addresses :{' '}
-                        <span className='highlight-error'>{invalidCount}</span>
+                        <Trans
+                          i18nKey='drop:invalid_addresses'
+                          values={{ count: invalidCount }}
+                          components={{
+                            span: <span className='highlight-error' />
+                          }}
+                        />
                       </h3>
                       <ul className='invalid-addresses-list'>
                         {invalidAddresses.map((line, index) => (
@@ -521,20 +519,32 @@ export const Drop = () => {
                       borderRadius: '5px'
                     }}
                   >
-                    Amount to send:{' '}
-                    <FormatAmount
-                      value={totalQuantity.toFixed()}
-                      decimals={decimals.toNumber()}
-                      showLabel={false}
-                      showLastNonZeroDecimal={true}
-                    />{' '}
+                    <Trans
+                      i18nKey='drop:amount_to_send'
+                      components={{
+                        FormatAmount: (
+                          <FormatAmount
+                            value={totalQuantity.toFixed()}
+                            decimals={decimals.toNumber()}
+                            showLabel={false}
+                            showLastNonZeroDecimal={true}
+                          />
+                        )
+                      }}
+                    />
                     <br />
-                    Balance:{' '}
-                    <FormatAmount
-                      value={selectedNFT.balance.toFixed()}
-                      decimals={decimals.toNumber()}
-                      showLabel={false}
-                      showLastNonZeroDecimal={true}
+                    <Trans
+                      i18nKey='drop:balance'
+                      components={{
+                        FormatAmount: (
+                          <FormatAmount
+                            value={selectedNFT.balance.toFixed()}
+                            decimals={decimals.toNumber()}
+                            showLabel={false}
+                            showLastNonZeroDecimal={true}
+                          />
+                        )
+                      }}
                     />
                     {selectedNFT &&
                       selectedNFT.balance &&

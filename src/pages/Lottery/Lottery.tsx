@@ -93,7 +93,7 @@ export const Lottery = () => {
 
   const lotteries = useGetLotteries();
   const runningLottery = lotteries.running;
-  const endedLottery = lotteries.endend;
+  const endedLottery = lotteries.ended;
   const userLotteries = useGetUserParticipations(filter);
   // console.log('runningLottery', runningLottery.toString());
 
@@ -189,16 +189,19 @@ export const Lottery = () => {
                 >
                   {t('lotteries:status_ongoing')}
                 </button>
-                <button
-                  className={`dinoButton ${
-                    filter !== 'ended' ? 'reverse' : ''
-                  }`}
-                  name='filter'
-                  value='ended'
-                  onClick={() => (setFilter('ended'), setPage(1))}
-                >
-                  {t('lotteries:status_ended')}
-                </button>
+
+                {lotteries.ended.length > 0 && (
+                  <button
+                    className={`dinoButton ${
+                      filter !== 'ended' ? 'reverse' : ''
+                    }`}
+                    name='filter'
+                    value='ended'
+                    onClick={() => (setFilter('ended'), setPage(1))}
+                  >
+                    {t('lotteries:status_ended')}
+                  </button>
+                )}
 
                 {lotteries.user_owned.length > 0 && (
                   <button

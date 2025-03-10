@@ -1,6 +1,8 @@
 import React from 'react';
 import { formatAmount } from 'utils';
 import notFound from './esdtnotfound.svg';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 interface EsdtInfo {
   id: string;
@@ -20,6 +22,8 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
   amount,
   is_free = false
 }: any) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
   return (
     <div>
       <div className='info-item'>
@@ -29,7 +33,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
               className='mint-image'
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
-              {is_free && <div className='dinoFree'>FREE</div>}
+              {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound
@@ -55,7 +59,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
               className='mint-image'
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
-              {is_free && <div className='dinoFree'>FREE</div>}
+              {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound

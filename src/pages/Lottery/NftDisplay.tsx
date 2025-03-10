@@ -1,6 +1,8 @@
 import React from 'react';
 import { formatAmount } from 'utils';
 import BigNumber from 'bignumber.js';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 
 interface NftInfo {
   id: string;
@@ -20,7 +22,8 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
   amount,
   is_free = false
 }: any) => {
-  // console.log('nftInfo', nftInfo);
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
   return (
     <div>
       <div className='info-item'>
@@ -28,7 +31,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
           className='mint-image'
           style={{ margin: 'auto', width: '168px', height: '168px' }}
         >
-          {is_free && <div className='dinoFree'>FREE</div>}
+          {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
           {nftInfo?.media?.length > 0 &&
           nftInfo?.media[0]?.fileType === 'video/mp4' ? (
             <video controls autoPlay muted playsInline loop>

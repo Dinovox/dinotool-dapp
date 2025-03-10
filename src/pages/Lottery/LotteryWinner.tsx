@@ -2,8 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import './LotteryWinnerAnimation.css'; // Utiliser le même fichier CSS mis à jour
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 const LotteryWinner = ({ lottery }: any) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
+
   const [currentWinner, setCurrentWinner] = useState(
     lottery.winner ||
       'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
@@ -12,9 +17,10 @@ const LotteryWinner = ({ lottery }: any) => {
 
   useEffect(() => {
     if (lottery.winner_id > 0) {
+      setCurrentWinner(lottery.winner);
       setShowConfetti(true);
     }
-  }, [currentWinner]);
+  }, [currentWinner, lottery]);
 
   // Variantes pour l'animation du gagnant
   const winnerVariants = {
@@ -95,7 +101,9 @@ const LotteryWinner = ({ lottery }: any) => {
           }}
         >
           <div className='lottery-winner-subcard-enhanced'>
-            <div className='lottery-winner-info-enhanced'>Winner</div>
+            <div className='lottery-winner-info-enhanced'>
+              {t('lotteries:winner')}
+            </div>
           </div>
           <div className='lottery-winner-result'>
             <ShortenedAddress address={currentWinner} />

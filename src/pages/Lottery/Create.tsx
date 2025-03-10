@@ -21,12 +21,17 @@ import { graou_identifier, xgraou_identifier } from 'config';
 import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import { max } from 'moment';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { Trans, useTranslation } from 'react-i18next';
 // import { DatePicker } from 'antd-mobile';
 
 const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   count,
   cost
 }: any) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
+
   const [visible, setVisible] = useState(false);
   const [isFree, setIsFree] = useState(false);
   const [autoDraw, setAutoDraw] = useState(false);
@@ -302,17 +307,17 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
         disabled={!address || count >= 4}
         className='dinoButton'
       >
-        Create Lottery {count}/4
+        {t('lotteries:create_lottery_count', { count: count })}
       </button>
 
       <Modal
-        title='Create Lottery'
+        title={t('lotteries:create_lottery')}
         open={visible}
         onCancel={handleCancel}
         footer={null}
       >
         <Form layout='vertical' onFinish={handleCreate}>
-          Winning prize
+          {t('lotteries:winning_prize')}
           <div
             style={{
               border: '1px solid rgb(92 129 128)',
@@ -321,8 +326,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
           >
             <Form.Item
               name={'tokenPrizeType'}
-              label='Token Type'
-              tooltip='What type of token will be rewarded to the winner?'
+              label={t('lotteries:token_type')}
+              tooltip={t('lotteries:token_prize_tooltip')}
               rules={[
                 {
                   required: false,
@@ -344,7 +349,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
             {['Esdt', 'Sft', 'Nft'].includes(prizeType) && (
               <Form.Item
                 name={'prizeIdentifier' + prizeType}
-                label='Identifier'
+                label={t('lotteries:identifier')}
                 rules={[
                   {
                     required: false,
@@ -374,7 +379,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     setPrizeDisplay(prizeType === 'NFT' ? '1' : '');
                   }}
                   showSearch={true}
-                  placeholder='Select a token or enter manually'
+                  placeholder={t('lotteries:identifier_placeholder')}
                   optionFilterProp='children'
                   filterOption={(input, option) =>
                     String(option?.children ?? '')
@@ -386,11 +391,11 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       {' '}
                       {keyboardEnabled ? (
                         <button onClick={disableKeyboard}>
-                          Disable keyboard
+                          {t('lotteries:disable_keyboard')}
                         </button>
                       ) : (
                         <button onClick={enableKeyboard}>
-                          Enable keyboard
+                          {t('lotteries:enable_keyboard')}
                         </button>
                       )}
                       {menu}
@@ -464,7 +469,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
             {['Esdt', 'Sft', 'Egld'].includes(prizeType) && (
               <Form.Item
                 name='prizeAmount'
-                label='Amount'
+                label={t('lotteries:amount')}
                 rules={[
                   {
                     required: false,
@@ -484,7 +489,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
               </Form.Item>
             )}
           </div>
-          Entry cost
+          {t('lotteries:entry_cost')}
           <div
             style={{
               border: '1px solid rgb(92 129 128)',
@@ -496,8 +501,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                 {/* Selection type de PRICE */}
                 <Form.Item
                   name='tokenPriceType'
-                  label='Token Type'
-                  tooltip='What type of token will be used to enter the lottery?'
+                  label={t('lotteries:token_type')}
+                  tooltip={t('lotteries:token_price_tooltip')}
                   rules={[
                     {
                       required: false,
@@ -519,26 +524,20 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       checked={isFree}
                       onChange={handleIsFree}
                     >
-                      FREE
+                      {t('lotteries:free')}
                     </Checkbox>
                   </Radio.Group>{' '}
                   {isFree && (
                     <div style={{ color: 'red', marginTop: '10px' }}>
-                      ⚠️ Warning: While we cannot completely prevent bots from
-                      joining free lotteries, we have implemented a safeguard:
-                      users can only claim free tickets if they hold a minimum
-                      balance of ESDT, SFT, or EGLD tokens in their wallet. You
-                      may define the required minimum balance to enhance
-                      fairness.
+                      {t('lotteries:free_warning')}
                     </div>
                   )}
                 </Form.Item>
-
                 {/* Selection du PRICE */}
                 {['Esdt', 'Sft'].includes(priceType) && (
                   <Form.Item
                     name={'priceIdentifier' + priceType}
-                    label='Identifier'
+                    label={t('lotteries:identifier')}
                     rules={[
                       {
                         required: false,
@@ -569,7 +568,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                         setPriceDisplay('');
                       }}
                       showSearch={true}
-                      placeholder='Select a token or enter manually'
+                      placeholder={t('lotteries:identifier_placeholder')}
                       optionFilterProp='children'
                       filterOption={(input, option) =>
                         String(option?.children ?? '')
@@ -578,13 +577,14 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       }
                       dropdownRender={(menu) => (
                         <>
+                          {' '}
                           {keyboardEnabled ? (
                             <button onClick={disableKeyboard}>
-                              Disable keyboard
+                              {t('lotteries:disable_keyboard')}
                             </button>
                           ) : (
                             <button onClick={enableKeyboard}>
-                              Enable keyboard
+                              {t('lotteries:enable_keyboard')}
                             </button>
                           )}
                           {menu}
@@ -625,29 +625,15 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     </Select>
                   </Form.Item>
                 )}
-                {/* Tout condensé dans price option */}
-                {/* {priceType == 'SFT' && (
-                  <Form.Item name='priceNonce' label='Nonce'>
-                    {' '}
-                    <Input type='text' value={priceNonce} disabled />
-                  </Form.Item>
-                )} */}
-                {/* debug */}
-                {/* {(priceType == 'ESDT' || priceType == 'EGLD') && (
-                  <Form.Item name='priceDecimals' label='Decimals'>
-                    {' '}
-                    <Input type='text' value={priceDecimals} disabled />
-                  </Form.Item>
-                )} */}
                 {priceIdentifier && ['SFT'].includes(priceType) && (
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
                 )}
+
                 {/* Montant du PRICE */}
-                {priceDecimals.toFixed()}
                 {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
                   <Form.Item
                     name='priceAmount'
-                    label='Amount'
+                    label={t('lotteries:amount')}
                     rules={[
                       {
                         required: false,
@@ -683,7 +669,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
               </>
             )}
           </div>
-          Configuration
+          {t('lotteries:settings')}
           <div
             style={{
               border: '1px solid rgb(92 129 128)',
@@ -697,9 +683,12 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                 <>
                   <Form.Item
                     name='maxTickets'
-                    label='Total Tickets'
-                    help='Minimum 4 and maximum 100'
-                    tooltip='The maximum number of tickets that can be sold.'
+                    label={t('lotteries:total_tickets')}
+                    help={t('lotteries:minimum_and_maximum', {
+                      min: '4',
+                      max: '100'
+                    })}
+                    tooltip={t('lotteries:total_tickets_tooltip')}
                     rules={[
                       {
                         required: false,
@@ -756,16 +745,15 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     <>
                       {' '}
                       <div style={{ color: 'red', marginTop: '10px' }}>
-                        Lotteries with more than 50 tickets sold cannot be
-                        canceled.
+                        {t('lotteries:cannot_cancel')}
                       </div>
                     </>
                   )}
                   <Form.Item
                     name='maxPerWallet'
-                    label='Max Per Wallet'
-                    tooltip='Leave 0 for unlimited'
-                    help='Minimum 0 and maximum 25% of total tickets'
+                    label={t('lotteries:max_per_wallet')}
+                    tooltip={t('lotteries:leave_zero')}
+                    help={t('lotteries:max_per_wallet_help')}
                     rules={[
                       {
                         required: false,
@@ -808,8 +796,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   </Form.Item>
                   <Form.Item
                     name='startTime'
-                    label='Start'
-                    tooltip='Leave empty for immediate start'
+                    label={t('lotteries:start')}
+                    tooltip={t('lotteries:leave_empty_start')}
                     rules={[
                       {
                         required: false,
@@ -819,6 +807,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   >
                     <DatePicker
                       showTime
+                      placeholder={t('lotteries:select_date')}
                       onChange={handleStart}
                       popupClassName='custom-datepicker'
                       onFocus={(e) => e.target.blur()}
@@ -828,8 +817,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   </Form.Item>
                   <Form.Item
                     name='endTime'
-                    label='End'
-                    tooltip='Leave empty for no end'
+                    label={t('lotteries:end')}
+                    tooltip={t('lotteries:leave_empty_end')}
                     rules={[
                       {
                         required: false,
@@ -848,9 +837,12 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   </Form.Item>
                   <Form.Item
                     name='feePercentage'
-                    label='Fee Percentage'
-                    tooltip='Fees will be deducted from the creator’s pool to support the development of the platform.'
-                    help='Minimum 0.5% and maximum 10%'
+                    label={t('lotteries:fee_percentage')}
+                    tooltip={t('lotteries:fee_percentage_tooltip')}
+                    help={t('lotteries:minimum_and_maximum', {
+                      min: '0.5%',
+                      max: '10%'
+                    })}
                     rules={[
                       {
                         required: false,
@@ -898,14 +890,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                 <Form.Item
                   name='acceptConditions'
                   valuePropName='checked'
-                  rules={[
-                    {
-                      validator: (_, value) =>
-                        value
-                          ? Promise.resolve()
-                          : Promise.reject(new Error('Check before submit!'))
-                    }
-                  ]}
+                  rules={[]}
                 >
                   <Checkbox
                     disabled={!cost}
@@ -913,29 +898,31 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   >
                     {' '}
                     {!cost ? (
-                      <span>
-                        You need 10 XGRAOU to start the lottery. Get some by
-                        staking a{' '}
-                        <a
-                          style={{ color: 'blue' }}
-                          href='https://xoxno.com/collection/DINOVOX-cb2297'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                        >
-                          DINOVOX
-                        </a>{' '}
-                        at{' '}
-                        <a
-                          style={{ color: 'blue' }}
-                          href='https://www.dinovox.com/fr/staking'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                        >
-                          dinovox.com
-                        </a>
-                      </span>
+                      <Trans
+                        i18nKey='lotteries:you_need_x_graou'
+                        values={{ x: 10 }}
+                        components={{
+                          bold: <b />,
+                          link1: (
+                            <a
+                              style={{ color: 'blue' }}
+                              href='https://xoxno.com/collection/DINOVOX-cb2297'
+                              target='_blank'
+                              rel='noopener noreferrer'
+                            />
+                          ),
+                          link2: (
+                            <a
+                              style={{ color: 'blue' }}
+                              href='https://www.dinovox.com/fr/staking'
+                              target='_blank'
+                              rel='noopener noreferrer'
+                            />
+                          )
+                        }}
+                      />
                     ) : (
-                      'Pay 10 XGRAOU to start the lottery'
+                      t('lotteries:pay_x_graou_start', { x: 10 })
                     )}
                   </Checkbox>
 
@@ -944,7 +931,13 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     onChange={() => setAutoDraw(!autoDraw)}
                   >
                     {' '}
-                    <span>Auto draw</span>
+                    <span>{t('lotteries:auto_draw')}</span>
+                    <span className='tooltip-inline'>
+                      (ℹ)
+                      <span className='tooltiptext-inline'>
+                        {t('lotteries:auto_draw_tooltip')}
+                      </span>
+                    </span>{' '}
                   </Checkbox>
                 </Form.Item>
                 <Form.Item>

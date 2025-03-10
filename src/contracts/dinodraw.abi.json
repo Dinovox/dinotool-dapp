@@ -177,6 +177,17 @@
       ]
     },
     {
+      "name": "getLotteriesToDraw",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<u64>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
       "name": "getEndedLottery",
       "mutability": "readonly",
       "inputs": [],
@@ -468,6 +479,10 @@
         },
         {
           "name": "ended_lotteries",
+          "type": "List<u64>"
+        },
+        {
+          "name": "to_draw_lotteries",
           "type": "List<u64>"
         },
         {

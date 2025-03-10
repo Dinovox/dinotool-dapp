@@ -54,7 +54,7 @@ export const Home = () => {
       blured: environment === 'mainnet'
     },
     {
-      title: 'Drop',
+      title: t('home:drop'),
       link: '/drop',
       image: cardDrop
     },
@@ -65,10 +65,12 @@ export const Home = () => {
       blured: true
     },
     {
-      title: t('home:feedback_title'),
-      link: 'https://dinovox.com/feedback',
-      image: cardFeedback,
-      external: true
+      title:
+        environment === 'mainnet' ? t('home:soon') : t('home:feedback_title'),
+      link: '/',
+      image: environment === 'mainnet' ? cardWip : cardFeedback,
+      external: false,
+      blured: environment === 'mainnet'
     }
   ];
 

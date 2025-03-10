@@ -11,13 +11,13 @@ const useLoadTranslations = (namespace: string) => {
         const translations = await import(
           `../helpers/translations/${namespace}/i18n.${lang}.json`
         );
-        console.log(`Chargement des traductions (${lang}) pour :`, namespace);
+        // console.log(`Chargement des traductions (${lang}) pour :`, namespace);
         i18n.addResourceBundle(lang, namespace, translations.default);
       } catch (error) {
         console.warn(`⚠️ Traduction (${lang}) introuvable pour ${namespace}.`);
         if (lang !== 'en') {
-          console.log('⏳ Chargement du fallback en anglais...');
-          await loadTranslation('en'); // Fallback vers l'anglais
+          // console.log('⏳ Chargement du fallback en anglais...');
+          await loadTranslation('en');
         } else {
           console.error(
             `❌ Impossible de charger la traduction pour ${namespace}.`
@@ -29,7 +29,7 @@ const useLoadTranslations = (namespace: string) => {
     };
 
     setLoading(true);
-    loadTranslation(i18n.language || 'en'); // Charger la langue actuelle ou "en" par défaut
+    loadTranslation(i18n.language || 'en');
   }, [i18n.language, namespace]);
 
   return loading;

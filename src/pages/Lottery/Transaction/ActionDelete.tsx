@@ -4,15 +4,17 @@ import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactio
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { lotteryContractAddress } from 'config';
-// import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
-import BigNumber from 'bignumber.js';
-import { lotteryContract } from 'utils/smartContract';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
+import { red } from '@mui/material/colors';
 
 export const ActionDelete = ({ lottery_id }: any) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
+
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
@@ -42,7 +44,8 @@ export const ActionDelete = ({ lottery_id }: any) => {
         errorMessage: 'An error has occured delete',
         successMessage: 'Delete transaction successful'
       },
-      redirectAfterSign: false
+      redirectAfterSign: true,
+      redirectPath: '/lotteries'
     });
     if (sessionId != null) {
       setTransactionSessionId(sessionId);
@@ -56,13 +59,13 @@ export const ActionDelete = ({ lottery_id }: any) => {
       {!hasPendingTransactions ? (
         <>
           <button className='dinoButton reverse' onClick={sendFundTransaction}>
-            Delete lottery
+            {t('lotteries:delete_lottery')}{' '}
           </button>
         </>
       ) : (
         <>
           <button className='dinoButton' disabled>
-            Processing
+            {t('lotteries:processing')}{' '}
           </button>
         </>
       )}

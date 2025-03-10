@@ -14,6 +14,8 @@ import { Button } from './Button';
 import { BigNumber } from 'bignumber.js';
 import bigNumToHex from 'helpers/bigNumToHex';
 import { useNavigate } from 'react-router-dom';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 export const ActionBuy = ({
   identifier,
@@ -23,6 +25,8 @@ export const ActionBuy = ({
   onSubmit,
   disabled
 }: any) => {
+  const loading = useLoadTranslations('drop');
+  const { t } = useTranslation();
   const { hasPendingTransactions } = useGetPendingTransactions();
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
@@ -110,7 +114,7 @@ export const ActionBuy = ({
                 onClick={sendFundTransaction}
                 disabled
               >
-                Processing
+                {t('drop:processing')}
               </button>
             </>
           )}

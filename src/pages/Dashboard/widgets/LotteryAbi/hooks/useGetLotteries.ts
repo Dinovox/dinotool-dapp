@@ -23,7 +23,7 @@ export const useGetLotteries = () => {
 
   const [lotteries, setLotteries] = useState({
     running: <any>[],
-    endend: <any>[],
+    ended: <any>[],
     user_owned: <any>[],
     user_tickets: <any>[]
   });
@@ -66,7 +66,7 @@ export const useGetLotteries = () => {
               .map((id: string) => Number(id))
               .sort((a: any, b: any) => b - a)
           : [],
-        endend: ended_lotteries
+        ended: ended_lotteries
           ? ended_lotteries
               .map((id: string) => Number(id))
               .sort((a: any, b: any) => b - a)

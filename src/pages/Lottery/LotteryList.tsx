@@ -32,11 +32,11 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   // console.log('prize_esdt_information', prize_esdt_information);
   const status =
     lottery.winner_id > 0
-      ? 'Ended'
+      ? 'ended'
       : lottery.tickets_sold.isGreaterThanOrEqualTo(lottery.max_tickets) ||
         (lottery?.end.isLessThan(Date.now() / 1000) && lottery.end > 0)
-      ? 'Draw'
-      : 'Ongoing';
+      ? 'draw'
+      : 'ongoing';
   const formatTime = (seconds: number) => {
     const j = Math.floor(seconds / 86400);
     const h = Math.floor((seconds % 86400) / 3600);
@@ -75,7 +75,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
               lottery.status === 'ongoing' ? 'bg-yellow-400' : 'bg-orange-500'
             }`}
           >
-            {status}
+            {t('lotteries:status_' + status.toLowerCase())}
           </span>
           {lottery.prize_nonce > 0 ? (
             <FileDisplay

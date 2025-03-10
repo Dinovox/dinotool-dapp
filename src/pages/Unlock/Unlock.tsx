@@ -18,6 +18,8 @@ import { RouteNamesEnum } from 'localConstants';
 import { useNavigate } from 'react-router-dom';
 import { AuthRedirectWrapper } from 'wrappers';
 import { WebWalletLoginWrapper, XaliasLoginWrapper } from './components';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 type CommonPropsType =
   | OperaWalletLoginButtonPropsType
@@ -34,6 +36,8 @@ const WebWalletLoginButton = USE_WEB_WALLET_CROSS_WINDOW
   : WebWalletUrlLoginButton;
 
 export const Unlock = () => {
+  const loading = useLoadTranslations('global');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const previousPage =
     sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.home;
@@ -53,9 +57,11 @@ export const Unlock = () => {
           data-testid='unlockPage'
         >
           <div className='flex flex-col items-center gap-1'>
-            <h2 className='text-2xl'>Login</h2>
+            <h2 className='text-2xl'>{t('global:login')}</h2>
 
-            <p className='text-center text-gray-400'>Choose a login method</p>
+            <p className='text-center text-gray-400'>
+              {t('global:login_method')}
+            </p>
           </div>
 
           <div className='flex flex-col md:flex-row'>

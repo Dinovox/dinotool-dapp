@@ -15,6 +15,9 @@ import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
+
 // import './../../Mint/MintSFT.css';
 
 export const ActionBuy = ({
@@ -30,6 +33,8 @@ export const ActionBuy = ({
   started,
   ended
 }: any) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const fees = new BigNumber(100000000000000);
@@ -162,16 +167,16 @@ export const ActionBuy = ({
                 (price_identifier != 'EGLD-000000' &&
                   price_nonce != 0 &&
                   sft_balance.isLessThan(new BigNumber(price_amount)))
-              ? 'balance too low'
+              ? t('lotteries:balance_not_enough')
               : buyed
-              ? 'Max buy reached'
-              : 'Buy ticket'}
+              ? t('lotteries:max_buy_reached')
+              : t('lotteries:buy_ticket')}
           </button>
         </>
       ) : (
         <>
           <button className='dinoButton' disabled={true}>
-            Processing
+            {t('lotteries:Processing')}
           </button>
         </>
       )}

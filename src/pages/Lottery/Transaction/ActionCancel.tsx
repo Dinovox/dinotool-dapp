@@ -12,7 +12,7 @@ import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
 
-export const ActionCancel = ({ lottery_id, disabled }: any) => {
+export const ActionCancel = ({ lottery_id, is_disabled }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const fees = new BigNumber(140669180000000);
@@ -45,7 +45,8 @@ export const ActionCancel = ({ lottery_id, disabled }: any) => {
         errorMessage: 'An error has occured cancel',
         successMessage: 'Cancel transaction successful'
       },
-      redirectAfterSign: false
+      redirectAfterSign: true,
+      redirectPath: '/lotteries'
     });
     if (sessionId != null) {
       setTransactionSessionId(sessionId);
@@ -61,7 +62,7 @@ export const ActionCancel = ({ lottery_id, disabled }: any) => {
           <button
             className='dinoButton reverse'
             onClick={sendFundTransaction}
-            disabled={disabled}
+            disabled={is_disabled}
           >
             Cancel lottery
           </button>

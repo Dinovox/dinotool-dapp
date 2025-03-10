@@ -10,6 +10,8 @@ import DinoToolsAlpha from '/DinoToolsAlpha.png';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { EnvironmentsEnum } from 'types';
 import { environment } from 'config';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 const callbackUrl = `${window.location.origin}/`;
 const onRedirect = undefined; // use this to redirect with useNavigate to a specific page after logout
@@ -30,13 +32,15 @@ const options = {
 };
 
 export const Header = () => {
+  const loading = useLoadTranslations('global');
+  const { t } = useTranslation();
   const isLoggedIn = useGetIsLoggedIn();
   const isUnlockRoute = Boolean(useMatch(RouteNamesEnum.unlock));
   const network = useGetNetworkConfig();
   const currentRouteName = useMatch('*')?.pathname || 'unknown';
 
   const ConnectButton = isUnlockRoute ? null : (
-    <MxLink to={RouteNamesEnum.unlock}>Connect</MxLink>
+    <MxLink to={RouteNamesEnum.unlock}>{t('global:connect')}</MxLink>
   );
 
   const handleLogout = () => {
@@ -132,7 +136,7 @@ export const Header = () => {
                   </MxLink>
                 )}{' '}
                 <button onClick={handleLogout} className='dinoButton reverse'>
-                  Close
+                  {t('global:close')}
                 </button>
               </>
             ) : (

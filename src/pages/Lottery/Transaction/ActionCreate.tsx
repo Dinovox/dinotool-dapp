@@ -12,6 +12,8 @@ import {
 } from '@multiversx/sdk-dapp/hooks';
 import BigNumber from 'bignumber.js';
 import bigNumToHex from 'helpers/bigNumToHex';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 enum PriceType {
   Egld,
@@ -56,6 +58,9 @@ export const ActionCreate = ({
   fee_percentage,
   disabled
 }: any) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
+
   const { hasPendingTransactions, pendingTransactions } =
     useGetPendingTransactions();
   const navigate = useNavigate();
@@ -233,11 +238,11 @@ export const ActionCreate = ({
           onClick={sendFundTransaction}
           disabled={disabled}
         >
-          Create Lottery
+          {t('lotteries:create_lottery')}
         </button>
       ) : (
         <button className='dinoButton' disabled>
-          Processing
+          {t('lotteries:processing')}
         </button>
       )}
     </>

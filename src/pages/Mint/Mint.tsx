@@ -12,8 +12,13 @@ import { useGetAccount } from 'hooks';
 import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import sold_graout from 'assets/img/sold_graout.jpg';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import { useTranslation } from 'react-i18next';
 
 export const Mint = () => {
+  const loading = useLoadTranslations('mint');
+  const { t } = useTranslation();
+
   const [timeStart, setTimeStart] = useState(60 * 60);
   const [timeEnd, setTimeEnd] = useState(60 * 60);
 
@@ -89,7 +94,7 @@ export const Mint = () => {
       <PageWrapper>
         <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
           <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-            Mint DINOGAZETTE
+            DINOGAZETTE
           </div>{' '}
           <div className='dinocard'>
             {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
@@ -126,7 +131,7 @@ export const Mint = () => {
                     </div>
                   )}
                   <div className='info-item'>
-                    <span className='text-label'>Price: </span>
+                    <span className='text-label'>{t('mint:price')}: </span>
                     {formatAmount({
                       input: mintable?.payment_price?.toFixed(),
                       decimals: 18,
@@ -140,7 +145,7 @@ export const Mint = () => {
                     </span>
                   </div>
                   <div className='info-item'>
-                    <span className='text-label'>Mint left: </span>{' '}
+                    <span className='text-label'>{t('mint:mint_left')}: </span>{' '}
                     {formatAmount({
                       input: mintable.amount.toFixed(),
                       decimals: 0,
@@ -151,7 +156,7 @@ export const Mint = () => {
                   </div>
                   {nft_information.supply && (
                     <div className='info-item'>
-                      <span className='text-label'>Supply: </span>{' '}
+                      <span className='text-label'>{t('mint:supply')}: </span>{' '}
                       {formatAmount({
                         input: nft_information.supply,
                         digits: 0,
@@ -169,12 +174,12 @@ export const Mint = () => {
                   </div>
 
                   <div className='info-item'>
-                    <span className='text-label'>Start: </span>{' '}
+                    <span className='text-label'>{t('mint:start')}: </span>{' '}
                     {blockToTime(mintable?.start_time)}{' '}
                   </div>
 
                   <div className='info-item'>
-                    <span className='text-label'>End: </span>{' '}
+                    <span className='text-label'>{t('mint:end')}: </span>{' '}
                     {blockToTime(mintable?.end_time)}{' '}
                   </div>
                 </div>
