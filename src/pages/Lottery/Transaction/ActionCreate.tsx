@@ -42,6 +42,7 @@ function getPriceTypeEnum(priceType: string): PriceType | undefined {
 }
 
 export const ActionCreate = ({
+  prize_type,
   prize_identifier,
   prize_nonce,
   prize_amount,
@@ -142,6 +143,10 @@ export const ActionCreate = ({
 
     const sub =
       '@' +
+      bigNumToHex(
+        new BigNumber(getPriceTypeEnum(prize_type) ?? PriceType.Egld)
+      ) +
+      '@' +
       Buffer.from(price_identifier, 'utf8').toString('hex') +
       '@' +
       bigNumToHex(new BigNumber(price_nonce)) +
@@ -211,10 +216,12 @@ export const ActionCreate = ({
               event.topics[0] === encoded_topic
             ) {
               const lotteryIdBase64 = event.topics[2];
+              // const lotteryId = BigInt(
+              //   Buffer.from(lotteryIdBase64, 'base64').toString('hex')
+              // );
               const lotteryId = BigInt(
-                Buffer.from(lotteryIdBase64, 'base64').toString('hex')
+                '0x' + Buffer.from(lotteryIdBase64, 'base64').toString('hex')
               );
-
               navigate(`/lotteries/${lotteryId}`);
               return;
             }

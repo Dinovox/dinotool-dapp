@@ -95,7 +95,6 @@ export const Lottery = () => {
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.ended;
   const userLotteries = useGetUserParticipations(filter);
-  // console.log('runningLottery', runningLottery.toString());
 
   // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
   const lottery = useGetLottery(lotteryID);
@@ -123,9 +122,9 @@ export const Lottery = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime = Date.now() / 1000;
-      const newTimeStart = lottery?.start - currentTime;
+      const newTimeStart = lottery?.start_time - currentTime;
       setTimeStart(newTimeStart > 0 ? Math.floor(newTimeStart) : 0);
-      const newTimeEnd = lottery?.end - currentTime;
+      const newTimeEnd = lottery?.end_time - currentTime;
       setTimeEnd(newTimeEnd > 0 ? Math.floor(newTimeEnd) : 0);
 
       // Empêche le temps restant d'aller en dessous de 0
@@ -224,7 +223,7 @@ export const Lottery = () => {
                     value='user'
                     onClick={() => (setFilter('user'), setPage(1))}
                   >
-                    Participations
+                    {t('lotteries:status_participated')}
                   </button>
                 )}
               </div>
@@ -345,14 +344,14 @@ export const Lottery = () => {
                         <span className='text-label'>
                           {t('lotteries:start')}:{' '}
                         </span>{' '}
-                        {blockToTime(lottery?.start)}{' '}
+                        {blockToTime(lottery?.start_time)}{' '}
                       </div>
-                      {lottery.end > 0 && (
+                      {lottery.end_time > 0 && (
                         <div className='info-item'>
                           <span className='text-label'>
                             {t('lotteries:end')}:{' '}
                           </span>{' '}
-                          {blockToTime(lottery?.end)}{' '}
+                          {blockToTime(lottery?.end_time)}{' '}
                         </div>
                       )}
                     </>
@@ -371,8 +370,7 @@ export const Lottery = () => {
                         <span className='text-label'>
                           {t('lotteries:entry_cost')}{' '}
                         </span>
-
-                        {lottery.price_nonce > 0 ? (
+                        {lottery.price_nonce.isGreaterThan(0) ? (
                           <NftDisplay
                             nftInfo={price_nft_information}
                             amount={lottery.price_amount}
@@ -449,7 +447,9 @@ export const Lottery = () => {
                             : false
                         }
                         started={timeStart}
-                        ended={lottery.end > 0 && timeEnd <= 0 ? true : false}
+                        ended={
+                          lottery.end_time > 0 && timeEnd <= 0 ? true : false
+                        }
                       />
                       <div
                         style={{
@@ -489,7 +489,7 @@ export const Lottery = () => {
                       lottery_id={lotteryID}
                       disabled={
                         lottery.tickets_sold.isLessThan(1) ||
-                        (lottery.end.isGreaterThan(0) &&
+                        (lottery.end_time.isGreaterThan(0) &&
                           timeEnd > 0 &&
                           lottery.tickets_sold.isLessThan(lottery.max_tickets))
                       }
@@ -518,7 +518,7 @@ export const Lottery = () => {
                   {t('lotteries:open_in', { time: formatTime(timeStart) })}:
                 </div>
               )}
-              {timeStart == 0 && lottery.end > 0 && timeEnd > 0 && (
+              {timeStart == 0 && lottery.end_time > 0 && timeEnd > 0 && (
                 <div
                   style={{
                     width: '100%',
@@ -530,7 +530,7 @@ export const Lottery = () => {
                 </div>
               )}
               {/* Actions pour les participants */}
-              {(timeStart == 0 || lottery.start == 0) &&
+              {(timeStart == 0 || lottery.start_time == 0) &&
                 lottery.owner != address && (
                   <div
                     style={{

@@ -3,7 +3,9 @@ import { formatAmount } from 'utils';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
-
+import { useGetNetworkConfig } from 'hooks';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLink } from '@fortawesome/free-solid-svg-icons';
 interface NftInfo {
   id: string;
   name: string;
@@ -24,6 +26,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
 }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
+  const { network } = useGetNetworkConfig();
   return (
     <div>
       <div className='info-item'>
@@ -45,7 +48,23 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
             )
           )}
           {amount > 0 && new BigNumber(amount).toFixed()}{' '}
-          <span className='identifier'> {nftInfo?.identifier}</span>
+          <span className='identifier'>
+            <a
+              href={`${network.explorerAddress}/nfts/${nftInfo?.identifier}`}
+              target='_blank'
+              rel='noreferrer'
+            >
+              {nftInfo?.identifier}{' '}
+              <FontAwesomeIcon
+                icon={faLink}
+                style={{
+                  fontSize: '12px',
+                  marginLeft: '5px',
+                  color: '#7195df'
+                }}
+              />
+            </a>
+          </span>
         </div>
       </div>
     </div>

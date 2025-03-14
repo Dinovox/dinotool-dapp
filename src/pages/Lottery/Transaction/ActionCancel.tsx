@@ -11,8 +11,10 @@ import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
+import { useTranslation } from 'react-i18next';
 
 export const ActionCancel = ({ lottery_id, is_disabled }: any) => {
+  const { t } = useTranslation();
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const fees = new BigNumber(140669180000000);
@@ -64,13 +66,13 @@ export const ActionCancel = ({ lottery_id, is_disabled }: any) => {
             onClick={sendFundTransaction}
             disabled={is_disabled}
           >
-            Cancel lottery
+            {t('lotteries:cancel_lottery')}
           </button>
         </>
       ) : (
         <>
           <button className='dinoButton' disabled>
-            Processing
+            {t('lotteries:processing')}
           </button>
         </>
       )}

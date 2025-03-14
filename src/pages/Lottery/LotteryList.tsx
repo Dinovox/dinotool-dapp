@@ -28,13 +28,12 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
     lottery?.prize_nonce == 0 ? lottery?.prize_identifier : ''
   );
 
-  //   console.log('prize_nft_information', prize_nft_information);
-  // console.log('prize_esdt_information', prize_esdt_information);
   const status =
     lottery.winner_id > 0
       ? 'ended'
       : lottery.tickets_sold.isGreaterThanOrEqualTo(lottery.max_tickets) ||
-        (lottery?.end.isLessThan(Date.now() / 1000) && lottery.end > 0)
+        (lottery?.end_time.isLessThan(Date.now() / 1000) &&
+          lottery.end_time > 0)
       ? 'draw'
       : 'ongoing';
   const formatTime = (seconds: number) => {
@@ -51,10 +50,10 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime = Date.now() / 1000;
-      const newTimeStart = lottery?.start - currentTime;
+      const newTimeStart = lottery?.start_time - currentTime;
       setTimeStart(newTimeStart > 0 ? Math.floor(newTimeStart) : 0);
       // Empêche le temps restant d'aller en dessous de 0
-      const newTimeEnd = lottery?.end - currentTime;
+      const newTimeEnd = lottery?.end_time - currentTime;
       setTimeEnd(newTimeEnd > 0 ? Math.floor(newTimeEnd) : 0);
     }, 1000);
 
@@ -134,7 +133,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
 
             {timeStart == 0 && timeEnd > 0 && (
               <div>
-                {lottery.end > 0 && (
+                {lottery.end_time > 0 && (
                   <>
                     {' '}
                     {t('lotteries:end_in', {
@@ -144,9 +143,9 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                 )}
               </div>
             )}
-            {timeStart == 0 && lottery.end.isGreaterThan(0) && timeEnd == 0 && (
-              <div>{t('lotteries:expired')}</div>
-            )}
+            {timeStart == 0 &&
+              lottery.end_time.isGreaterThan(0) &&
+              timeEnd == 0 && <div>{t('lotteries:expired')}</div>}
 
             <button
               className='smallDinoButton '

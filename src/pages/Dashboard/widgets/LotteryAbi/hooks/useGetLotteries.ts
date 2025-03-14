@@ -14,6 +14,7 @@ import { lotteryContract } from 'utils/smartContract';
 import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
 import axios from 'axios';
 import { graou_identifier } from 'config';
+import { to } from 'react-spring';
 
 const resultsParser = new ResultsParser();
 
@@ -24,6 +25,7 @@ export const useGetLotteries = () => {
   const [lotteries, setLotteries] = useState({
     running: <any>[],
     ended: <any>[],
+    to_draw: <any>[],
     user_owned: <any>[],
     user_tickets: <any>[]
   });
@@ -57,6 +59,7 @@ export const useGetLotteries = () => {
       const {
         running_lotteries,
         ended_lotteries,
+        to_draw_lotteries,
         user_lotteries,
         user_tickets
       } = lotteries;
@@ -68,6 +71,11 @@ export const useGetLotteries = () => {
           : [],
         ended: ended_lotteries
           ? ended_lotteries
+              .map((id: string) => Number(id))
+              .sort((a: any, b: any) => b - a)
+          : [],
+        to_draw: to_draw_lotteries
+          ? to_draw_lotteries
               .map((id: string) => Number(id))
               .sort((a: any, b: any) => b - a)
           : [],

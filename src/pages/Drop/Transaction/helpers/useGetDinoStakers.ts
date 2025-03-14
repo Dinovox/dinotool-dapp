@@ -26,7 +26,6 @@ export const useGetDinoStakers = () => {
     }
 
     if (!tokenLogin) {
-      console.log('Not logged in');
       return;
     }
 

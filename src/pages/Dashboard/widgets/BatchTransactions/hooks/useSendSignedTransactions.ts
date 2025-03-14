@@ -81,7 +81,7 @@ export const useSendSignedTransactions = ({
 
     if (error) {
       clearTransactionsInformation();
-      console.log('Failed to send batch', batchSessionId);
+      console.error('Failed to send batch', batchSessionId);
     }
   };
 

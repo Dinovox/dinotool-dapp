@@ -46,9 +46,6 @@ export const ActionBuy = ({
   const addressTobech32 = new Address(lotteryContractAddress);
   const { address } = useGetAccountInfo();
 
-  // console.log('price_identifier', price_identifier);
-  // console.log('price_nonce', price_nonce.toFixed());
-  // console.log('price_amount', price_amount.toFixed());
   const sendFundTransaction = async () => {
     let fundTransaction;
     if (price_identifier == 'EGLD-000000') {
@@ -176,7 +173,7 @@ export const ActionBuy = ({
       ) : (
         <>
           <button className='dinoButton' disabled={true}>
-            {t('lotteries:Processing')}
+            {t('lotteries:processing')}
           </button>
         </>
       )}

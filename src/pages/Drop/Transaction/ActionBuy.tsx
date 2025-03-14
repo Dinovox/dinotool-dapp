@@ -50,13 +50,6 @@ export const ActionBuy = ({
         sub = sub + '@' + receiver + '@' + bigNumToHex(addr.quantity);
       }
 
-      // console.log(
-      //   'sub',
-      //   batch.totalQuantity,
-      //   batch.totalQuantity.toString(16),
-      //   batch.totalQuantity.toFixed(),
-      //   bigNumToHex(batch.totalQuantity)
-      // );
       batchTx.push({
         value: 0,
         data:
@@ -75,7 +68,6 @@ export const ActionBuy = ({
         gasLimit: 3000000 + batch.addresses.length * 580000
       });
     }
-    // console.log('batchTx', batchTx);
 
     await refreshAccount();
 

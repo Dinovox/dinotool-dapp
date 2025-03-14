@@ -33,7 +33,9 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
               className='mint-image'
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
-              {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
+              {is_free && (
+                <div className='dinoFree'>{t('lotteries:free')}a</div>
+              )}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound

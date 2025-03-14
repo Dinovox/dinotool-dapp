@@ -65,12 +65,10 @@ export const Home = () => {
       blured: true
     },
     {
-      title:
-        environment === 'mainnet' ? t('home:soon') : t('home:feedback_title'),
-      link: '/',
-      image: environment === 'mainnet' ? cardWip : cardFeedback,
-      external: false,
-      blured: environment === 'mainnet'
+      title: t('home:feedback_title'),
+      link: 'https://docs.google.com/forms/d/e/1FAIpQLSc1PKfBjGfBSl1pyiSBckAos9xHPOOy1cYEgeLZGR6Ws1923Q/viewform',
+      image: cardFeedback,
+      external: true
     }
   ];
 

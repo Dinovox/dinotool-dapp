@@ -50,7 +50,6 @@ export const useGetNftInformations = (identifier: string, nonce: string) => {
   // }
 
   const getEsdtInfo = async () => {
-    // console.log('getinfo', identifier, toHex(nonce));
     //using storage to reduce calls
     const expire_test = Number(
       localStorage.getItem(

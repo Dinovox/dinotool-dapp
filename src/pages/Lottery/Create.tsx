@@ -23,6 +23,7 @@ import { useGetNftInformations } from './Transaction/helpers/useGetNftInformatio
 import { max } from 'moment';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
+import { formatAmount } from 'utils';
 // import { DatePicker } from 'antd-mobile';
 
 const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
@@ -43,7 +44,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   const [maxPerWallet, setMaxPerWallet] = useState<number | undefined>(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [feePercentage, setFeePercentage] = useState<number>(0.5);
+  const [feePercentage, setFeePercentage] = useState<number>(1);
   const [prizeType, setPrizeType] = useState<string>('');
   const [prizeIdentifier, setPrizeIdentifier] = useState('');
 
@@ -78,7 +79,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   };
 
   const handlePrizeType = (e: any) => {
-    if (e.target.value === 'NFT') {
+    if (e.target.value === 'Nft') {
       setPrizeType(e.target.value);
       setPrizeIdentifier('');
       setPrizeTicker('');
@@ -298,8 +299,42 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
     setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
     setPriceDisplay(checked ? '100' : '');
     setMaxPerWallet(checked ? 1 : 0);
+    setPriceNonce(0);
   }
 
+  const isValidNumber = (value: any) =>
+    BigNumber.isBigNumber(value) && value.isFinite();
+
+  const totalPrice = new BigNumber(priceAmount.multipliedBy(maxTickets) || 0);
+
+  const platformFee =
+    priceType === 'Nft' || priceType === 'Sft'
+      ? new BigNumber(0)
+      : totalPrice
+          .multipliedBy(new BigNumber(feePercentage || 0))
+          .dividedBy(100)
+          .decimalPlaces(0, BigNumber.ROUND_FLOOR);
+
+  // const platformFee =
+  //   priceType === 'Nft' || priceType === 'Sft'
+  //     ? new BigNumber(0)
+  //     : totalPrice.multipliedBy(feePercentage).dividedBy(100).decimalPlaces(0);
+
+  const royalties =
+    priceType === 'Nft' || priceType === 'Sft'
+      ? new BigNumber(0)
+      : totalPrice
+          .minus(platformFee)
+          .multipliedBy(new BigNumber(prize_nft_information.royalties || 0))
+          .dividedBy(100)
+          .decimalPlaces(0, BigNumber.ROUND_FLOOR);
+
+  const finalAmount = totalPrice
+    .minus(platformFee)
+    .minus(royalties)
+    .decimalPlaces(0, BigNumber.ROUND_FLOOR);
+
+  const auto_draw_fees = new BigNumber(0.0002).multipliedBy(maxTickets);
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <button
@@ -375,8 +410,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       datas?.datas?.decimals ? datas?.datas?.decimals : 0
                     );
                     setPrizeBalance(new BigNumber(datas?.datas?.balance));
-                    setPrizeAmount(new BigNumber(prizeType === 'NFT' ? 1 : 0));
-                    setPrizeDisplay(prizeType === 'NFT' ? '1' : '');
+                    setPrizeAmount(new BigNumber(prizeType === 'Nft' ? 1 : 0));
+                    setPrizeDisplay(prizeType === 'Nft' ? '1' : '');
                   }}
                   showSearch={true}
                   placeholder={t('lotteries:identifier_placeholder')}
@@ -489,7 +524,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
               </Form.Item>
             )}
           </div>
-          {t('lotteries:entry_cost')}
+          {t('lotteries:ticket_price')}
           <div
             style={{
               border: '1px solid rgb(92 129 128)',
@@ -625,10 +660,10 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     </Select>
                   </Form.Item>
                 )}
-                {priceIdentifier && ['SFT'].includes(priceType) && (
+                {/* Photo du PRICE */}
+                {priceIdentifier && ['Nft', 'Sft'].includes(priceType) && (
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
-                )}
-
+                )}{' '}
                 {/* Montant du PRICE */}
                 {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
                   <Form.Item
@@ -681,6 +716,48 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
               priceIdentifier &&
               priceAmount.isGreaterThan(0) && (
                 <>
+                  {' '}
+                  <Form.Item
+                    name='startTime'
+                    label={t('lotteries:start')}
+                    tooltip={t('lotteries:leave_empty_start')}
+                    rules={[
+                      {
+                        required: false,
+                        message: 'Please select the start time!'
+                      }
+                    ]}
+                  >
+                    <DatePicker
+                      showTime
+                      placeholder={t('lotteries:select_date')}
+                      onChange={handleStart}
+                      popupClassName='custom-datepicker'
+                      onFocus={(e) => e.target.blur()}
+                      inputMode='none'
+                      readOnly={true}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name='endTime'
+                    label={t('lotteries:end')}
+                    tooltip={t('lotteries:leave_empty_end')}
+                    rules={[
+                      {
+                        required: false,
+                        message: 'Please select the end time!'
+                      }
+                    ]}
+                  >
+                    <DatePicker
+                      showTime
+                      onChange={handleEnd}
+                      popupClassName='custom-datepicker'
+                      onFocus={(e) => e.target.blur()}
+                      inputMode='none'
+                      readOnly={true}
+                    />
+                  </Form.Item>
                   <Form.Item
                     name='maxTickets'
                     label={t('lotteries:total_tickets')}
@@ -795,62 +872,21 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     />
                   </Form.Item>
                   <Form.Item
-                    name='startTime'
-                    label={t('lotteries:start')}
-                    tooltip={t('lotteries:leave_empty_start')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please select the start time!'
-                      }
-                    ]}
-                  >
-                    <DatePicker
-                      showTime
-                      placeholder={t('lotteries:select_date')}
-                      onChange={handleStart}
-                      popupClassName='custom-datepicker'
-                      onFocus={(e) => e.target.blur()}
-                      inputMode='none'
-                      readOnly={true}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name='endTime'
-                    label={t('lotteries:end')}
-                    tooltip={t('lotteries:leave_empty_end')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please select the end time!'
-                      }
-                    ]}
-                  >
-                    <DatePicker
-                      showTime
-                      onChange={handleEnd}
-                      popupClassName='custom-datepicker'
-                      onFocus={(e) => e.target.blur()}
-                      inputMode='none'
-                      readOnly={true}
-                    />
-                  </Form.Item>
-                  <Form.Item
                     name='feePercentage'
                     label={t('lotteries:fee_percentage')}
                     tooltip={t('lotteries:fee_percentage_tooltip')}
-                    help={t('lotteries:minimum_and_maximum', {
-                      min: '0.5%',
-                      max: '10%'
-                    })}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please input the fee percentage!'
-                      }
-                    ]}
+                    // help={t('lotteries:minimum_and_maximum', {
+                    //   min: '0.5%',
+                    //   max: '0.5%'
+                    // })}
+                    // rules={[
+                    //   {
+                    //     required: false,
+                    //     message: 'Please input the fee percentage!'
+                    //   }
+                    // ]}
                   >
-                    {' '}
+                    {/* {' '}
                     <Input
                       type='number'
                       value={feePercentage}
@@ -877,11 +913,98 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                         setFeePercentage(value);
                       }}
                       disabled={acceptConditions}
-                    />
+                    /> */}{' '}
+                    {isFree ? (
+                      <div>
+                        <p>
+                          {' '}
+                          <p>{t('lotteries:graou_create_fee')}</p>
+                        </p>
+                        {autoDraw && (
+                          <p>
+                            {t('lotteries:auto_draw_fee')}{' '}
+                            {auto_draw_fees.toFixed()} EGLD
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <p>{t('lotteries:graou_create_fee')}</p>
+                        {autoDraw && (
+                          <p>
+                            {t('lotteries:auto_draw_fee')}{' '}
+                            {auto_draw_fees.toFixed()} EGLD
+                          </p>
+                        )}
+                        {}
+                        {/* Total:{' '}
+                        {formatAmount({
+                          input: totalPrice?.toFixed(),
+                          decimals: priceDecimals,
+                          digits: 2,
+                          showLastNonZeroDecimal: true,
+                          addCommas: true
+                        })}{' '} */}
+                        {priceType != 'Sft' && (
+                          <p>
+                            {t('lotteries:platform_fee')} ({feePercentage} %):{' '}
+                            {formatAmount({
+                              input: platformFee.isGreaterThan(0)
+                                ? platformFee.toFixed()
+                                : '0',
+                              decimals: priceDecimals || 0,
+                              digits: 2,
+                              showLastNonZeroDecimal: true,
+                              addCommas: true
+                            })}
+                          </p>
+                        )}{' '}
+                        {prize_nft_information.royalties &&
+                          priceType != 'Sft' && (
+                            <p>
+                              {t('lotteries:royalty_fee')} (
+                              {prize_nft_information.royalties} %):{' '}
+                              {formatAmount({
+                                input: royalties.isGreaterThan(0)
+                                  ? royalties.toFixed()
+                                  : '0',
+                                decimals: priceDecimals || 0,
+                                digits: 2,
+                                showLastNonZeroDecimal: true,
+                                addCommas: true
+                              })}{' '}
+                            </p>
+                          )}{' '}
+                        {/* <br /> totalPrice:
+                        {totalPrice.toFixed()}
+                        <br />
+                        platformFee:
+                        {platformFee.toFixed()}
+                        <br />
+                        royalties: {royalties.toFixed()}
+                        <br />
+                        finalAmount: {finalAmount.toFixed()}
+                        <br /> */}
+                        {t('lotteries:vendor_amount')}:{' '}
+                        {formatAmount({
+                          input: finalAmount.isGreaterThan(0)
+                            ? finalAmount.toFixed()
+                            : '0',
+                          decimals: priceDecimals || 0,
+                          digits: 2,
+                          showLastNonZeroDecimal: true,
+                          addCommas: true
+                        })}{' '}
+                        {priceIdentifier == 'EGLD-000000'
+                          ? 'EGLD'
+                          : priceIdentifier}{' '}
+                      </>
+                    )}
                   </Form.Item>
                 </>
               )}
           </div>
+
           {prizeIdentifier &&
             prizeAmount.isGreaterThan(0) &&
             priceIdentifier &&
@@ -942,6 +1065,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                 </Form.Item>
                 <Form.Item>
                   <ActionCreate
+                    prize_type={prizeType}
                     prize_identifier={prizeTicker}
                     prize_nonce={prizeNonce}
                     prize_decimals={prizeDecimals}

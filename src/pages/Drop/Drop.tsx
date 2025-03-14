@@ -27,7 +27,6 @@ export const Drop = () => {
   const dinobox_holders = useGetDinoHolders('DINOBOX-54d57b');
   const dinovox_holders = useGetDinoHolders('DINOVOX-cb2297');
   const dinovox_stakers = useGetDinoStakers();
-  // console.log('dinovox_stakers', dinovox_stakers);
   const [addresses, setAddresses] = useState('');
   const [validAddresses, setValidAddresses] = useState([]);
   const [invalidAddresses, setInvalidAddresses] = useState([]);
@@ -151,7 +150,6 @@ export const Drop = () => {
           totalQuantity: batchQuantity
         });
       }
-      // console.log(chunks);
       setBatches(chunks);
     });
 
@@ -215,7 +213,6 @@ export const Drop = () => {
     voxHolders
   ]);
 
-  // console.log('userNftBalance', userNftBalance);
   return (
     <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
