@@ -14,6 +14,7 @@ import BigNumber from 'bignumber.js';
 import sold_graout from 'assets/img/sold_graout.jpg';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import formatTime from 'helpers/formatTime';
 
 export const Mint = () => {
   const loading = useLoadTranslations('mint');
@@ -21,19 +22,6 @@ export const Mint = () => {
 
   const [timeStart, setTimeStart] = useState(60 * 60);
   const [timeEnd, setTimeEnd] = useState(60 * 60);
-
-  const formatTime = (seconds: number) => {
-    const j = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (j > 0) {
-      return `${j}j ${h}h ${m}m`;
-    } else {
-      return `${h}h ${m}m ${s}s`;
-    }
-  };
-
   const [currentTime, setCurrentTime] = useState(Date.now() / 1000);
 
   useEffect(() => {

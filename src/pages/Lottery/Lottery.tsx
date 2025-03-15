@@ -29,6 +29,8 @@ import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hoo
 import LotteryWinner from './LotteryWinner';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import formatTime from 'helpers/formatTime';
+import TwitterShareButton from './Transaction/helpers/shareOnX';
 
 export const Lottery = () => {
   const loading = useLoadTranslations('lotteries');
@@ -50,18 +52,6 @@ export const Lottery = () => {
       setLotteryID(0);
     }
   }, [id]);
-
-  const formatTime = (seconds: number) => {
-    const j = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (j > 0) {
-      return `${j}j ${h}h ${m}m`;
-    } else {
-      return `${h}h ${m}m ${s}s`;
-    }
-  };
 
   const [currentTime, setCurrentTime] = useState(Date.now() / 1000);
 
@@ -504,6 +494,7 @@ export const Lottery = () => {
                       disabled={lottery.tickets_sold.isGreaterThan(50)}
                     />
                   )}
+                  <TwitterShareButton lottery_id={lotteryID} />
                 </div>
               )}
               {/* Timer pour tout le monde */}
@@ -515,7 +506,7 @@ export const Lottery = () => {
                     display: 'grid'
                   }}
                 >
-                  {t('lotteries:open_in', { time: formatTime(timeStart) })}:
+                  {t('lotteries:open_in', { time: formatTime(timeStart) })}
                 </div>
               )}
               {timeStart == 0 && lottery.end_time > 0 && timeEnd > 0 && (
@@ -526,7 +517,7 @@ export const Lottery = () => {
                     display: 'grid'
                   }}
                 >
-                  {t('lotteries:end_in', { time: formatTime(timeEnd) })}:
+                  {t('lotteries:end_in', { time: formatTime(timeEnd) })}
                 </div>
               )}
               {/* Actions pour les participants */}

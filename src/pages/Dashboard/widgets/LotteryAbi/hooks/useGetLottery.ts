@@ -7,10 +7,13 @@ import { BigNumber } from 'bignumber.js';
 import { graou_identifier } from 'config';
 import { start } from 'repl';
 import { Address, U64Value } from '@multiversx/sdk-core/out';
+import { useNavigate } from 'react-router-dom';
 
 const resultsParser = new ResultsParser();
 
 export const useGetLottery = (lottery_id: any) => {
+  const navigate = useNavigate();
+
   const { network } = useGetNetworkConfig();
   const [mintable, setMintable] = useState<any>({
     id: 0,
@@ -82,7 +85,8 @@ export const useGetLottery = (lottery_id: any) => {
       const lotteryData = firstValue?.valueOf();
 
       if (!lotteryData) {
-        console.error('No lottery data found' + lottery_id);
+        console.error('Lottery not found in SC: ' + lottery_id);
+        navigate(`/lotteries/`, { replace: true });
         return;
       }
       const { field0, field1, field2 } = lotteryData;

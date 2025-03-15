@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import formatTime from 'helpers/formatTime';
 
 const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   const loading = useLoadTranslations('lotteries');
@@ -36,17 +37,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
           lottery.end_time > 0)
       ? 'draw'
       : 'ongoing';
-  const formatTime = (seconds: number) => {
-    const j = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (j > 0) {
-      return `${j}j ${h}h ${m}m`;
-    } else {
-      return `${h}h ${m}m ${s}s`;
-    }
-  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime = Date.now() / 1000;

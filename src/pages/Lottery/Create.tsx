@@ -20,7 +20,6 @@ import BigNumber from 'bignumber.js';
 import { graou_identifier, xgraou_identifier } from 'config';
 import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
-import { max } from 'moment';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
 import { formatAmount } from 'utils';
@@ -293,8 +292,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
     const checked = e.target.checked;
     setIsFree(checked);
     setPriceType(checked ? 'Esdt' : '');
-    setPriceIdentifier(checked ? xgraou_identifier : '');
-    setPriceTicker(checked ? xgraou_identifier : '');
+    setPriceIdentifier(checked ? graou_identifier : '');
+    setPriceTicker(checked ? graou_identifier : '');
     setPriceDecimals(checked ? 18 : 0);
     setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
     setPriceDisplay(checked ? '100' : '');

@@ -56,6 +56,7 @@ export const useGetLotteries = () => {
         console.error('No lotteries data found' + address);
         return;
       }
+      // console.log('lotteries', lotteries);
       const {
         running_lotteries,
         ended_lotteries,

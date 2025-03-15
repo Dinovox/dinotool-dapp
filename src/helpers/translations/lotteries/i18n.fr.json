@@ -66,5 +66,7 @@
   "auto_draw": "Tirage automatique",
   "auto_draw_tooltip": "Tirer automatiquement le gagnant lorsque la loterie se termine. Applique des frais supplémentaires en egld",
   "winner": "Gagnant",
-  "delete_lottery": "Supprimer la loterie"
+  "delete_lottery": "Supprimer la loterie",
+  "share_on_x": "Partager sur 𝕏",
+  "share_on_x_text": "🎟️ Rejoignez ma loterie #{{lottery_id}} et tentez votre chance! 🚀"
 }

@@ -12,13 +12,14 @@ export const dropContract =
 export const lotteryContractAddress =
   'erd1qqqqqqqqqqqqqpgq6y2t8z7u7rlnkn5qt8fm7vfkjg92v3wuch9slg8ang';
 
-export const graou_identifier = 'GRAOU-c9dd53';
 export const API_URL = 'https://devnet-api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];
 export const environment: EnvironmentsEnum = EnvironmentsEnum.devnet;
 export const metamaskSnapWalletAddress =
   'https://devnet-snap-wallet.multiversx.com';
-
+//Tout le monde peut trnasferer des tokens
+export const graou_identifier = 'GRAOU-c9dd53';
+//Seul le contract peut transferer des tokens
 export const xgraou_identifier = 'GRAOU-96c360';
 
 export const lottery_cost = '10000000000000000000';

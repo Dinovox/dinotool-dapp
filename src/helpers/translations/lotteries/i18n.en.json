@@ -66,5 +66,7 @@
   "auto_draw": "Auto draw",
   "auto_draw_tooltip": "Automatically draw the winner when the lottery ends. Applies additional fees in egld",
   "winner": "Winner",
-  "delete_lottery": "Delete lottery"
+  "delete_lottery": "Delete lottery",
+  "share_on_x": "Share on 𝕏",
+  "share_on_x_text": "🎟️ Join my lottery #{{lottery_id}} and try your luck! 🚀"
 }
