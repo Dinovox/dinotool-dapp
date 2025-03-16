@@ -10,14 +10,14 @@
   "status_ended": "Ended",
   "status_owned": "My lotteries",
   "status_draw": "Draw",
-  "status_participated": "My articipations",
+  "status_participated": "My participations",
   "previous": "Previous",
   "next": "Next",
   "return": "Return",
   "owner": "Owner",
   "start": "Start",
   "end": "End",
-  "entry_cost": "Entry cost",
+  "entry_cost": "Ticket price",
   "ticket_price": "Ticket price",
   "prize": "Prize",
   "you_have_tickets": "You have {{number}} ticket{{s}}",
@@ -26,6 +26,7 @@
   "balance_not_enough": "Balance insufficient",
   "buy_ticket": "Buy ticket",
   "processing": "Processing",
+  "ended": "Lotery ended",
   "draw_lottery": "Draw lotterie",
   "cancel_lottery": "Cancel lottery",
   "free": "Free",
@@ -68,5 +69,6 @@
   "winner": "Winner",
   "delete_lottery": "Delete lottery",
   "share_on_x": "Share on 𝕏",
-  "share_on_x_text": "🎟️ Join my lottery #{{lottery_id}} and try your luck! 🚀"
+  "share_on_x_text": "🎟️ Join my lottery #{{lottery_id}} and try your luck! 🚀",
+  "free_tooltip": "Free lotteries are a great way to engage with your community and reward your followers. Users can claim a free ticket if they hold a minimum balance of ESDT, SFT, or EGLD tokens in their wallet. You may define the required minimum balance to enhance fairness."
 }

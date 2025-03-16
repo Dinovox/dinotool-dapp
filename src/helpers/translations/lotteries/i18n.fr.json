@@ -17,7 +17,7 @@
   "owner": "Créateur",
   "start": "Début",
   "end": "Fin",
-  "entry_cost": "Coût d'entrée",
+  "entry_cost": "Prix du billet",
   "ticket_price": "Prix du billet",
   "prize": "Récompense",
   "you_have_tickets": "Vous avez {{number}} billet{{s}}",
@@ -26,6 +26,7 @@
   "balance_not_enough": "Fonds insuffisants",
   "buy_ticket": "Acheter un billet",
   "processing": "Traitement",
+  "ended": "Lotterie terminée",
   "draw_lottery": "Tirage de la loterie",
   "cancel_lottery": "Annuler la loterie",
   "free": "Gratuit",
@@ -68,5 +69,6 @@
   "winner": "Gagnant",
   "delete_lottery": "Supprimer la loterie",
   "share_on_x": "Partager sur 𝕏",
-  "share_on_x_text": "🎟️ Rejoignez ma loterie #{{lottery_id}} et tentez votre chance! 🚀"
+  "share_on_x_text": "🎟️ Rejoignez ma loterie #{{lottery_id}} et tentez votre chance! 🚀",
+  "free_tooltip": "Les loteries gratuites sont un excellent moyen d'engager votre communauté et de récompenser vos abonnés. Les utilisateurs peuvent réclamer un billet gratuit s'ils détiennent un solde minimum de jetons ESDT, SFT ou EGLD dans leur portefeuille. Vous pouvez définir le solde minimum requis afin d'améliorer l'équité."
 }

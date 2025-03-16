@@ -43,7 +43,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   const [maxPerWallet, setMaxPerWallet] = useState<number | undefined>(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [feePercentage, setFeePercentage] = useState<number>(1);
+  const [feePercentage, setFeePercentage] = useState<number>(10);
   const [prizeType, setPrizeType] = useState<string>('');
   const [prizeIdentifier, setPrizeIdentifier] = useState('');
 

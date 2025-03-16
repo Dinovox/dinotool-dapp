@@ -49,7 +49,13 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
                   showLastNonZeroDecimal: true,
                   addCommas: true
                 })}{' '}
-                EGLD
+                EGLD{' '}
+                {is_free && (
+                  <span className='tooltip'>
+                    (ℹ)
+                    <span className='text'>{t('lotteries:free_tooltip')}</span>
+                  </span>
+                )}
               </span>{' '}
             </div>
           </>
@@ -76,7 +82,13 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
                   showLastNonZeroDecimal: true,
                   addCommas: true
                 })}{' '}
-                {esdtInfo?.identifier}
+                {esdtInfo?.identifier}{' '}
+                {is_free && (
+                  <span className='tooltip'>
+                    (ℹ)
+                    <span className='text'>{t('lotteries:free_tooltip')}</span>
+                  </span>
+                )}
               </span>
             </div>
           </>

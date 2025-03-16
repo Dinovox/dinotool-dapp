@@ -118,7 +118,13 @@
   }
 
   .dinoButton {
-    width: 100%; /* Chaque bouton prend toute la largeur de sa colonne */
+    white-space: normal; /* Permet le retour à la ligne */
+    /* Coupe le mot si nécessaire */
+    text-align: center; /* Centre le texte */
+    display: block; /* Assure un bon comportement sur mobile */
+    height: auto;
+    /* width: 100%; 
     margin: 4px;
+    white-space: nowrap; */
   }
 }

@@ -63,7 +63,13 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
                   color: '#7195df'
                 }}
               />
-            </a>
+            </a>{' '}
+            {is_free && (
+              <span className='tooltip'>
+                (ℹ)
+                <span className='text'>{t('lotteries:free_tooltip')}</span>
+              </span>
+            )}
           </span>
         </div>
       </div>

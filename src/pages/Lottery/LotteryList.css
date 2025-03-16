@@ -10,7 +10,7 @@
   gap: 10px;
 
   position: absolute;
-  width: 64px;
+  max-width: 100px;
   height: 36px;
   right: -2.49px;
   top: -4.51px;

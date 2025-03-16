@@ -151,7 +151,7 @@ export const ActionBuy = ({
             className={'dinoButton'}
           >
             {ended
-              ? 'Lottery ended'
+              ? t('lotteries:ended')
               : balance.isLessThan(fees) ||
                 (price_identifier == 'FREE-000000' &&
                   graou_balance.isLessThan(new BigNumber(price_amount))) ||
