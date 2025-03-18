@@ -23,7 +23,6 @@ import { useGetNftInformations } from './Transaction/helpers/useGetNftInformatio
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
 import { formatAmount } from 'utils';
-// import { DatePicker } from 'antd-mobile';
 
 const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   count,
@@ -34,6 +33,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
 
   const [visible, setVisible] = useState(false);
   const [isFree, setIsFree] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [autoDraw, setAutoDraw] = useState(false);
   const [priceType, setPriceType] = useState('');
   const [priceIdentifier, setPriceIdentifier] = useState('');
@@ -291,6 +291,24 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   function handleIsFree(e: CheckboxChangeEvent): void {
     const checked = e.target.checked;
     setIsFree(checked);
+    setIsLocked(false);
+    setMaxTickets(50);
+    setPriceType(checked ? 'Esdt' : '');
+    setPriceIdentifier(checked ? graou_identifier : '');
+    setPriceTicker(checked ? graou_identifier : '');
+    setPriceDecimals(checked ? 18 : 0);
+    setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
+    setPriceDisplay(checked ? '100' : '');
+    setMaxPerWallet(checked ? 1 : 0);
+    setPriceNonce(0);
+    setMaxTickets(50);
+  }
+
+  function handleIsLocked(e: CheckboxChangeEvent): void {
+    const checked = e.target.checked;
+    setAutoDraw(checked);
+    setIsFree(false);
+    setIsLocked(checked);
     setPriceType(checked ? 'Esdt' : '');
     setPriceIdentifier(checked ? graou_identifier : '');
     setPriceTicker(checked ? graou_identifier : '');
@@ -560,10 +578,22 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     >
                       {t('lotteries:free')}
                     </Checkbox>
+                    <Checkbox
+                      value={isLocked}
+                      checked={isLocked}
+                      onChange={handleIsLocked}
+                    >
+                      {t('lotteries:locked')}
+                    </Checkbox>
                   </Radio.Group>{' '}
                   {isFree && (
                     <div style={{ color: 'red', marginTop: '10px' }}>
                       {t('lotteries:free_warning')}
+                    </div>
+                  )}{' '}
+                  {isLocked && (
+                    <div style={{ color: 'red', marginTop: '10px' }}>
+                      {t('lotteries:locked_warning')}
                     </div>
                   )}
                 </Form.Item>
@@ -755,6 +785,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       onFocus={(e) => e.target.blur()}
                       inputMode='none'
                       readOnly={true}
+                      disabled={isLocked}
                     />
                   </Form.Item>
                   <Form.Item
@@ -762,7 +793,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     label={t('lotteries:total_tickets')}
                     help={t('lotteries:minimum_and_maximum', {
                       min: '4',
-                      max: '100'
+                      max: isLocked ? '50' : '100'
                     })}
                     tooltip={t('lotteries:total_tickets_tooltip')}
                     rules={[
@@ -801,7 +832,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     <Input
                       type='range'
                       min={4}
-                      max={100}
+                      max={isLocked ? 50 : 100}
                       value={maxTickets}
                       defaultValue={maxTickets}
                       onChange={(e) => {
@@ -1049,7 +1080,9 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   </Checkbox>
 
                   <Checkbox
-                    disabled={false}
+                    disabled={isLocked}
+                    value={autoDraw}
+                    checked={autoDraw}
                     onChange={() => setAutoDraw(!autoDraw)}
                   >
                     {' '}
@@ -1082,6 +1115,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     //
                     price_type={priceType}
                     is_free={isFree}
+                    is_locked={isLocked}
                     auto_draw={autoDraw}
                     //
                     fee_percentage={Math.ceil(feePercentage * 100)}

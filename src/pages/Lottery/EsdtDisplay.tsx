@@ -15,12 +15,14 @@ interface EsdtDisplayProps {
   esdtInfo: EsdtInfo[];
   amount: number;
   is_free?: boolean;
+  is_locked?: boolean;
 }
 
 const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
   esdtInfo,
   amount,
-  is_free = false
+  is_free = false,
+  is_locked = false
 }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
@@ -34,6 +36,9 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
               {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
+              {is_locked && (
+                <div className='dinoFree'>{t('lotteries:locked')}</div>
+              )}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound
@@ -56,6 +61,14 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
                     <span className='text'>{t('lotteries:free_tooltip')}</span>
                   </span>
                 )}
+                {is_locked && (
+                  <span className='tooltip'>
+                    (ℹ)
+                    <span className='text'>
+                      {t('lotteries:locked_tooltip')}
+                    </span>
+                  </span>
+                )}
               </span>{' '}
             </div>
           </>
@@ -66,6 +79,9 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
               style={{ margin: 'auto', width: '168px', height: '168px' }}
             >
               {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
+              {is_locked && (
+                <div className='dinoFree'>{t('lotteries:locked')}</div>
+              )}
               <img
                 src={
                   esdtInfo?.assets?.svgUrl ? esdtInfo.assets.svgUrl : notFound
@@ -87,6 +103,14 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
                   <span className='tooltip'>
                     (ℹ)
                     <span className='text'>{t('lotteries:free_tooltip')}</span>
+                  </span>
+                )}{' '}
+                {is_locked && (
+                  <span className='tooltip'>
+                    (ℹ)
+                    <span className='text'>
+                      {t('lotteries:locked_tooltip')}
+                    </span>
                   </span>
                 )}
               </span>

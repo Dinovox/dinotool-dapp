@@ -10,7 +10,6 @@ export default defineConfig({
     port: Number(process.env.PORT) || 3020,
     strictPort: true,
     host: true,
-    https: true,
     watch: {
       usePolling: false,
       useFsEvents: false
@@ -33,7 +32,6 @@ export default defineConfig({
   },
   preview: {
     port: 3002,
-    https: true,
     host: 'localhost',
     strictPort: true
   }

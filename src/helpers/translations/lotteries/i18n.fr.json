@@ -42,6 +42,7 @@
   "enable_keyboard": "Activer le clavier",
   "disable_keyboard": "Désactiver le clavier",
   "free_warning": "⚠️ Attention: Bien que nous ne puissions pas empêcher complètement les bots de participer aux loteries gratuites, nous avons mis en place une protection: les utilisateurs ne peuvent réclamer des billets gratuits que s'ils détiennent un solde minimum de jetons ESDT, SFT ou EGLD dans leur portefeuille. Vous pouvez définir le solde minimum requis pour améliorer l'équité.",
+  "locked_warning": "⚠️ Les loteries verrouillées fonctionnent de manière similaire aux loteries gratuites en ce sens que les utilisateurs ne perdent aucun jeton lorsqu'ils participent. Cependant, au lieu d'être entièrement gratuites, le coût de participation est temporairement verrouillé dans le contrat intelligent pour toute la durée de la loterie.\n\nPour garantir l'équité et éviter le verrouillage indéfini des fonds:\n• Le tirage automatique est obligatoire, ce qui signifie que le gagnant est tiré automatiquement.\n• La durée maximale est de 30 jours.\n• Max billets est de 50.\n\nCe mécanisme garantit une participation sécurisée et limitée dans le temps tout en",
   "settings": "Configuration",
   "total_tickets": "Total des billets",
   "total_tickets_tooltip": "Nombre total de billets disponibles à l'achat",
@@ -70,5 +71,6 @@
   "delete_lottery": "Supprimer la loterie",
   "share_on_x": "Partager sur 𝕏",
   "share_on_x_text": "🎟️ Rejoignez ma loterie #{{lottery_id}} et tentez votre chance! 🚀",
-  "free_tooltip": "Les loteries gratuites sont un excellent moyen d'engager votre communauté et de récompenser vos abonnés. Les utilisateurs peuvent réclamer un billet gratuit s'ils détiennent un solde minimum de jetons ESDT, SFT ou EGLD dans leur portefeuille. Vous pouvez définir le solde minimum requis afin d'améliorer l'équité."
+  "free_tooltip": "Les loteries gratuites sont un excellent moyen d'engager votre communauté et de récompenser vos abonnés. Les utilisateurs peuvent réclamer un billet gratuit s'ils détiennent un solde minimum de jetons ESDT, SFT ou EGLD dans leur portefeuille. Vous pouvez définir le solde minimum requis afin d'améliorer l'équité.",
+  "locked_tooltip": "Les loteries verrouillées permettent aux utilisateurs de participer sans perdre de jetons, car le coût de participation est temporairement verrouillé dans le contrat intelligent. Les fonds sont libérés une fois la loterie terminée."
 }

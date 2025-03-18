@@ -42,6 +42,7 @@
   "enable_keyboard": "Enable keyboard",
   "disable_keyboard": "Disable keyboard",
   "free_warning": "⚠️ Warning: While we cannot completely prevent bots from joining free lotteries, we have implemented a safeguard: users can only claim free tickets if they hold a minimum balance of ESDT, SFT, or EGLD tokens in their wallet. You may define the required minimum balance to enhance fairness.",
+  "locked_warning": "⚠️ Locked lotteries function similarly to free lotteries in that users do not lose any tokens when participating. However, instead of being entirely free, the participation cost is temporarily locked within the smart contract for the entire duration of the lottery.\n\nTo ensure fairness and prevent indefinite locking of funds:\n• Auto-draw is mandatory, meaning the winner is drawn automatically.\n• The maximum duration is 30 days.\n• Max tickets is 50.\n\nThis mechanism ensures a secure and time-limited participation while maintaining transparency for all users.",
   "settings": "Settings",
   "total_tickets": "Total tickets",
   "total_tickets_tooltip": "Total number of tickets available for purchase",
@@ -70,5 +71,6 @@
   "delete_lottery": "Delete lottery",
   "share_on_x": "Share on 𝕏",
   "share_on_x_text": "🎟️ Join my lottery #{{lottery_id}} and try your luck! 🚀",
-  "free_tooltip": "Free lotteries are a great way to engage with your community and reward your followers. Users can claim a free ticket if they hold a minimum balance of ESDT, SFT, or EGLD tokens in their wallet. You may define the required minimum balance to enhance fairness."
+  "free_tooltip": "Free lotteries are a great way to engage with your community and reward your followers. Users can claim a free ticket if they hold a minimum balance of ESDT, SFT, or EGLD tokens in their wallet. You may define the required minimum balance to enhance fairness.",
+  "locked_tooltip": "Locked lotteries allow users to participate without losing tokens, as the participation cost is only temporarily locked within the smart contract. The funds are released once the lottery ends."
 }

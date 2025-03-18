@@ -23,7 +23,11 @@ enum PriceType {
   FreeEgld,
   FreeEsdt,
   FreeSft,
-  FreeNft
+  FreeNft,
+  LockedEgld,
+  LockedEsdt,
+  LockedSft,
+  LockedNft
 }
 
 function getPriceTypeEnum(priceType: string): PriceType | undefined {
@@ -35,7 +39,11 @@ function getPriceTypeEnum(priceType: string): PriceType | undefined {
     FreeEgld: PriceType.FreeEgld,
     FreeEsdt: PriceType.FreeEsdt,
     FreeSft: PriceType.FreeSft,
-    FreeNft: PriceType.FreeNft
+    FreeNft: PriceType.FreeNft,
+    LockedEgld: PriceType.LockedEgld,
+    LockedEsdt: PriceType.LockedEsdt,
+    LockedSft: PriceType.LockedSft,
+    LockedNft: PriceType.LockedNft
   };
 
   return priceTypeMap[priceType] ?? undefined;
@@ -55,6 +63,7 @@ export const ActionCreate = ({
   end_time,
   price_type,
   is_free,
+  is_locked,
   auto_draw,
   fee_percentage,
   disabled
@@ -165,8 +174,13 @@ export const ActionCreate = ({
       '@' +
       bigNumToHex(
         new BigNumber(
-          getPriceTypeEnum(is_free ? 'Free' + price_type : price_type) ??
-            PriceType.Egld
+          getPriceTypeEnum(
+            is_free
+              ? 'Free' + price_type
+              : is_locked
+              ? 'Locked' + price_type
+              : price_type
+          ) ?? PriceType.Egld
         )
       ) +
       '@' +

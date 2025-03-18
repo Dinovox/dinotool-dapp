@@ -224,9 +224,10 @@ export const Lottery = () => {
                     : []
                 }
               />
+              {/* Start pagination */}
               <div className='pagination'>
                 <button
-                  className='dinoButton'
+                  className='pageButton'
                   onClick={() => {
                     if (page > 1) {
                       setPage(page - 1);
@@ -234,7 +235,8 @@ export const Lottery = () => {
                   }}
                   disabled={page <= 1}
                 >
-                  {t('lotteries:previous')}
+                  &lt;
+                  {/* {t('lotteries:previous')} */}
                 </button>
 
                 {lotteriesDisplay.length > 0 &&
@@ -243,7 +245,7 @@ export const Lottery = () => {
                     .map((lottery: any) => (
                       <span
                         key={lottery}
-                        className='dinoButton smhidden'
+                        className='pageButton smhidden'
                         onClick={() => {
                           setLotteryID(lottery);
                           navigate(`/lotteries/${lottery}`, { replace: true });
@@ -260,7 +262,7 @@ export const Lottery = () => {
                       </span>
                     ))}
                 <button
-                  className='dinoButton'
+                  className='pageButton'
                   disabled={lotteriesDisplay.length <= page * 4}
                   onClick={() => {
                     if (lotteriesDisplay.length > page * 4) {
@@ -268,7 +270,7 @@ export const Lottery = () => {
                     }
                   }}
                 >
-                  {t('lotteries:next')}
+                  &gt; {/* {t('lotteries:next')} */}
                 </button>
               </div>
               <CreateLotteryModal
@@ -371,6 +373,15 @@ export const Lottery = () => {
                                 ? true
                                 : false
                             }
+                            is_locked={
+                              [
+                                'LockedEgld',
+                                'LockedSft',
+                                'LockedEsdt'
+                              ].includes(lottery.price_type.name)
+                                ? true
+                                : false
+                            }
                           />
                         ) : (
                           <>
@@ -382,6 +393,15 @@ export const Lottery = () => {
                                 ['FreeEgld', 'FreeSft', 'FreeEsdt'].includes(
                                   lottery.price_type.name
                                 )
+                                  ? true
+                                  : false
+                              }
+                              is_locked={
+                                [
+                                  'LockedEgld',
+                                  'LockedSft',
+                                  'LockedEsdt'
+                                ].includes(lottery.price_type.name)
                                   ? true
                                   : false
                               }

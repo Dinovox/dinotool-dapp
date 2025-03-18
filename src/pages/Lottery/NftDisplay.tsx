@@ -17,12 +17,14 @@ interface NftDisplayProps {
   nftInfo: NftInfo[];
   amount: number;
   is_free?: boolean;
+  is_locked?: boolean;
 }
 
 const NftDisplay: React.FC<NftDisplayProps> = ({
   nftInfo,
   amount,
-  is_free = false
+  is_free = false,
+  is_locked = false
 }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
@@ -35,6 +37,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
           style={{ margin: 'auto', width: '168px', height: '168px' }}
         >
           {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
+          {is_locked && <div className='dinoFree'>{t('lotteries:locked')}</div>}
           {nftInfo?.media?.length > 0 &&
           nftInfo?.media[0]?.fileType === 'video/mp4' ? (
             <video controls autoPlay muted playsInline loop>
@@ -68,6 +71,12 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
               <span className='tooltip'>
                 (ℹ)
                 <span className='text'>{t('lotteries:free_tooltip')}</span>
+              </span>
+            )}{' '}
+            {is_locked && (
+              <span className='tooltip'>
+                (ℹ)
+                <span className='text'>{t('lotteries:locked_tooltip')}</span>
               </span>
             )}
           </span>

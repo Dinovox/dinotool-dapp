@@ -34,6 +34,10 @@
       {
         "name": "blacklisted_identifiers",
         "type": "TokenIdentifier"
+      },
+      {
+        "name": "draw_admin",
+        "type": "Address"
       }
     ],
     "outputs": []
@@ -276,6 +280,16 @@
       ]
     },
     {
+      "name": "getDrawAdmin",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
       "name": "getUserTickets",
       "mutability": "readonly",
       "inputs": [
@@ -452,6 +466,30 @@
           "multi_result": true
         }
       ]
+    },
+    {
+      "name": "pause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "unpause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "isPaused",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
     }
   ],
   "events": [
@@ -484,6 +522,14 @@
           "indexed": true
         }
       ]
+    },
+    {
+      "identifier": "pauseContract",
+      "inputs": []
+    },
+    {
+      "identifier": "unpauseContract",
+      "inputs": []
     }
   ],
   "esdtAttributes": [],
@@ -625,6 +671,22 @@
         {
           "name": "FreeNft",
           "discriminant": 7
+        },
+        {
+          "name": "LockedEgld",
+          "discriminant": 8
+        },
+        {
+          "name": "LockedEsdt",
+          "discriminant": 9
+        },
+        {
+          "name": "LockedSft",
+          "discriminant": 10
+        },
+        {
+          "name": "LockedNft",
+          "discriminant": 11
         }
       ]
     }

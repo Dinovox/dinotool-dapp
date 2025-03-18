@@ -319,3 +319,30 @@
     min-width: 180px;
   }
 }
+
+.pageButton {
+  /* Input */
+
+  box-sizing: border-box;
+
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 14px;
+  gap: 2px;
+
+  width: 33px;
+  height: 22px;
+
+  /* Light Brown */
+  border: 2px solid #e0e6df;
+  filter: drop-shadow(0px 4px 32px rgba(0, 0, 0, 0.03));
+  border-radius: 12px;
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
