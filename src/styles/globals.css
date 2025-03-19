@@ -346,3 +346,27 @@
   order: 0;
   flex-grow: 0;
 }
+
+.lottery-info {
+  background: #fef3c7; /* Jaune pâle pour un effet doux */
+  border-left: 4px solid #d97706; /* Bordure orange foncé */
+  padding: 12px;
+  color: #92400e; /* Texte orange foncé */
+  font-size: 0.95rem;
+  border-radius: 6px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.5;
+}
+
+.lottery-info strong {
+  color: #b45309; /* Accent sur les mots importants */
+}
+
+.lottery-info ul {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.lottery-info li {
+  margin-bottom: 4px;
+}

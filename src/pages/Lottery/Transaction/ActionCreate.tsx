@@ -66,6 +66,7 @@ export const ActionCreate = ({
   is_locked,
   auto_draw,
   fee_percentage,
+  pay_with,
   disabled
 }: any) => {
   const loading = useLoadTranslations('lotteries');
@@ -94,8 +95,12 @@ export const ActionCreate = ({
   }, [transactionSessionId, pendingTransactions]);
 
   const sendFundTransaction = async () => {
-    const graou_identifier = 'GRAOU-c9dd53';
-    const graou_amount = new BigNumber(10000000000000000000);
+    const graou_identifier =
+      pay_with == 'EGLD' ? 'EGLD-000000' : 'GRAOU-c9dd53';
+    const graou_amount =
+      pay_with == 'EGLD'
+        ? new BigNumber('1000000000000000000')
+        : new BigNumber('10000000000000000000');
     let data = '';
     if (auto_draw) {
       //auto draw demande des EGLD en plus en fonction du nombre de tickets

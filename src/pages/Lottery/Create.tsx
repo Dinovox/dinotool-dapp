@@ -58,6 +58,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
   const [prizeTicker, setPrizeTicker] = useState<string>('');
   const [priceTicker, setPriceTicker] = useState<string>('');
   const [prizeBalance, setPrizeBalance] = useState<BigNumber>(new BigNumber(0));
+  const [payWith, setPayWith] = useState('');
 
   const { address, account } = useGetAccountInfo();
   const test = new BigNumber(account?.balance).dividedBy(10 ** 18);
@@ -571,13 +572,13 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     <Radio value='Esdt'>ESDT</Radio>
                     <Radio value='Egld'>EGLD</Radio>
                     <Radio value='Sft'>SFT</Radio>
-                    <Checkbox
+                    {/* <Checkbox
                       value={isFree}
                       checked={isFree}
                       onChange={handleIsFree}
                     >
                       {t('lotteries:free')}
-                    </Checkbox>
+                    </Checkbox> */}
                     <Checkbox
                       value={isLocked}
                       checked={isLocked}
@@ -586,16 +587,19 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       {t('lotteries:locked')}
                     </Checkbox>
                   </Radio.Group>{' '}
-                  {isFree && (
+                  {/* {isFree && (
                     <div style={{ color: 'red', marginTop: '10px' }}>
                       {t('lotteries:free_warning')}
                     </div>
-                  )}{' '}
-                  {isLocked && (
-                    <div style={{ color: 'red', marginTop: '10px' }}>
-                      {t('lotteries:locked_warning')}
+                  )}{' '} */}
+                  {/* {isLocked && (
+                    <div className='lottery-info'>
+                      <Trans
+                        i18nKey='lotteries:locked_warning'
+                        components={{ br: <br /> }}
+                      />
                     </div>
-                  )}
+                  )} */}
                 </Form.Item>
                 {/* Selection du PRICE */}
                 {['Esdt', 'Sft'].includes(priceType) && (
@@ -730,6 +734,19 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     /> */}
                   </Form.Item>
                 )}
+                {isFree && (
+                  <div className='lottery-info'>
+                    {t('lotteries:free_warning')}
+                  </div>
+                )}{' '}
+                {isLocked && (
+                  <div className='lottery-info'>
+                    <Trans
+                      i18nKey='lotteries:locked_warning'
+                      components={{ br: <br /> }}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -765,6 +782,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       onFocus={(e) => e.target.blur()}
                       inputMode='none'
                       readOnly={true}
+                      minDate={dayjs()}
+                      maxDate={dayjs().add(30, 'days')}
                     />
                   </Form.Item>
                   <Form.Item
@@ -785,7 +804,17 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       onFocus={(e) => e.target.blur()}
                       inputMode='none'
                       readOnly={true}
-                      disabled={isLocked}
+                      minDate={startTime > 0 ? dayjs.unix(startTime) : dayjs()}
+                      maxDate={
+                        isLocked
+                          ? startTime > 0
+                            ? dayjs.unix(startTime).add(30, 'day')
+                            : dayjs().add(30, 'day')
+                          : startTime > 0
+                          ? dayjs.unix(startTime).add(6 * 30, 'days')
+                          : dayjs().add(6, 'months')
+                      }
+                      // disabled={isLocked}
                     />
                   </Form.Item>
                   <Form.Item
@@ -1046,8 +1075,11 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   rules={[]}
                 >
                   <Checkbox
-                    disabled={!cost}
-                    onChange={() => setAcceptConditions(!acceptConditions)}
+                    disabled={!cost || payWith == 'EGLD'}
+                    onChange={() => (
+                      setAcceptConditions(!acceptConditions),
+                      setPayWith(payWith == 'GRAOU' ? '' : 'GRAOU')
+                    )}
                   >
                     {' '}
                     {!cost ? (
@@ -1075,10 +1107,51 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                         }}
                       />
                     ) : (
-                      t('lotteries:pay_x_graou_start', { x: 10 })
+                      t('lotteries:pay_x_start', {
+                        x: 10,
+                        token: 'XGRAOU'
+                      })
                     )}
                   </Checkbox>
-
+                  <Checkbox
+                    disabled={payWith == 'GRAOU'}
+                    onChange={() => (
+                      setAcceptConditions(!acceptConditions),
+                      setPayWith(payWith == 'EGLD' ? '' : 'EGLD')
+                    )}
+                  >
+                    {' '}
+                    {!cost ? (
+                      <Trans
+                        i18nKey='lotteries:you_need_x_graou'
+                        values={{ x: 10 }}
+                        components={{
+                          bold: <b />,
+                          link1: (
+                            <a
+                              style={{ color: 'blue' }}
+                              href='https://xoxno.com/collection/DINOVOX-cb2297'
+                              target='_blank'
+                              rel='noopener noreferrer'
+                            />
+                          ),
+                          link2: (
+                            <a
+                              style={{ color: 'blue' }}
+                              href='https://www.dinovox.com/fr/staking'
+                              target='_blank'
+                              rel='noopener noreferrer'
+                            />
+                          )
+                        }}
+                      />
+                    ) : (
+                      t('lotteries:pay_x_start', {
+                        x: 1,
+                        token: 'EGLD'
+                      })
+                    )}
+                  </Checkbox>
                   <Checkbox
                     disabled={isLocked}
                     value={autoDraw}
@@ -1121,6 +1194,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     fee_percentage={Math.ceil(feePercentage * 100)}
                     acceptConditions={acceptConditions}
                     setAcceptConditions={setAcceptConditions}
+                    pay_with={payWith}
                     disabled={!acceptConditions || !cost}
                   />{' '}
                 </Form.Item>
