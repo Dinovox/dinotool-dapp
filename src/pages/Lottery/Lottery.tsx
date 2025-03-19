@@ -151,6 +151,17 @@ export const Lottery = () => {
       ? runningLottery
       : endedLottery;
 
+  //calcul pagination
+  const itemsPerPage = 4;
+  const totalPages = Math.ceil(lotteriesDisplay.length / itemsPerPage);
+  const maxPagesToShow = 5;
+
+  let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
+  let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+  if (endPage - startPage + 1 < maxPagesToShow) {
+    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  }
+
   return (
     <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
@@ -226,52 +237,121 @@ export const Lottery = () => {
               />
               {/* Start pagination */}
               <div className='pagination'>
-                <button
-                  className='pageButton'
-                  onClick={() => {
-                    if (page > 1) {
-                      setPage(page - 1);
-                    }
-                  }}
-                  disabled={page <= 1}
-                >
-                  &lt;
-                  {/* {t('lotteries:previous')} */}
-                </button>
+                {/* Bouton "Précédent" */}
+                {page > 1 && (
+                  <span
+                    className='pageButton'
+                    onClick={() => setPage(page - 1)}
+                    style={{
+                      height: '30px',
+                      width: '30px',
+                      backgroundColor: '#f0f0f0',
+                      border: '1px solid #ccc',
+                      lineHeight: '30px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      margin: '0 5px'
+                    }}
+                  >
+                    ‹
+                  </span>
+                )}
 
-                {lotteriesDisplay.length > 0 &&
-                  lotteriesDisplay
-                    .slice(4 * page - 4, 4 * page)
-                    .map((lottery: any) => (
-                      <span
-                        key={lottery}
-                        className='pageButton smhidden'
-                        onClick={() => {
-                          setLotteryID(lottery);
-                          navigate(`/lotteries/${lottery}`, { replace: true });
-                        }}
-                        style={{
-                          height: '20px',
-                          backgroundColor: '#f0f0f0',
-                          border: '1px solid #ccc',
-                          lineHeight: '20px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {lottery}
-                      </span>
-                    ))}
-                <button
-                  className='pageButton'
-                  disabled={lotteriesDisplay.length <= page * 4}
-                  onClick={() => {
-                    if (lotteriesDisplay.length > page * 4) {
-                      setPage(page + 1);
-                    }
-                  }}
-                >
-                  &gt; {/* {t('lotteries:next')} */}
-                </button>
+                {/* Affichage dynamique des numéros de pages */}
+                {startPage > 1 && (
+                  <>
+                    <span
+                      className='pageButton'
+                      onClick={() => setPage(1)}
+                      style={{
+                        height: '30px',
+                        width: '30px',
+                        backgroundColor: page === 1 ? '#ddd' : '#f0f0f0',
+                        border: '1px solid #ccc',
+                        lineHeight: '30px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        margin: '0 5px',
+                        fontWeight: page === 1 ? 'bold' : 'normal'
+                      }}
+                    >
+                      1
+                    </span>
+                    {startPage > 2 && (
+                      <span style={{ margin: '0 5px' }}>...</span>
+                    )}
+                  </>
+                )}
+
+                {[...Array(endPage - startPage + 1)].map((_, index) => {
+                  const pageNum = startPage + index;
+                  return (
+                    <span
+                      key={pageNum}
+                      className='pageButton'
+                      onClick={() => setPage(pageNum)}
+                      style={{
+                        height: '30px',
+                        width: '30px',
+                        backgroundColor: pageNum === page ? '#ddd' : '#f0f0f0',
+                        border: '1px solid #ccc',
+                        lineHeight: '30px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        margin: '0 5px',
+                        fontWeight: pageNum === page ? 'bold' : 'normal'
+                      }}
+                    >
+                      {pageNum}
+                    </span>
+                  );
+                })}
+
+                {endPage < totalPages && (
+                  <>
+                    {endPage < totalPages - 1 && (
+                      <span style={{ margin: '0 5px' }}>...</span>
+                    )}
+                    <span
+                      className='pageButton'
+                      onClick={() => setPage(totalPages)}
+                      style={{
+                        height: '30px',
+                        width: '30px',
+                        backgroundColor:
+                          page === totalPages ? '#ddd' : '#f0f0f0',
+                        border: '1px solid #ccc',
+                        lineHeight: '30px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        margin: '0 5px',
+                        fontWeight: page === totalPages ? 'bold' : 'normal'
+                      }}
+                    >
+                      {totalPages}
+                    </span>
+                  </>
+                )}
+
+                {/* Bouton "Suivant" */}
+                {page < totalPages && (
+                  <span
+                    className='pageButton'
+                    onClick={() => setPage(page + 1)}
+                    style={{
+                      height: '30px',
+                      width: '30px',
+                      backgroundColor: '#f0f0f0',
+                      border: '1px solid #ccc',
+                      lineHeight: '30px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      margin: '0 5px'
+                    }}
+                  >
+                    ›
+                  </span>
+                )}
               </div>
               <CreateLotteryModal
                 count={lotteries?.user_owned?.length}

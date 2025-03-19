@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import './NavigationCards.css';
 import cardMain from '../../assets/cards/main.png';
 import cardGazette from '../../assets/cards/gazette.png';
-import cardLotteries from '../../assets/cards/Lotteries.png';
+import cardLotteries from '../../assets/cards/lotteries.png';
 import cardDrop from '../../assets/cards/drop.png';
 import cardFeedback from '../../assets/cards/feedback.png';
 import cardWip from '../../assets/cards/wip.png';
