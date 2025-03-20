@@ -99,8 +99,8 @@ export const ActionCreate = ({
       pay_with == 'EGLD' ? 'EGLD-000000' : 'GRAOU-c9dd53';
     const graou_amount =
       pay_with == 'EGLD'
-        ? new BigNumber('1000000000000000000')
-        : new BigNumber('10000000000000000000');
+        ? new BigNumber('250000000000000000')
+        : new BigNumber('500000000000000000000');
     let data = '';
     if (auto_draw) {
       //auto draw demande des EGLD en plus en fonction du nombre de tickets

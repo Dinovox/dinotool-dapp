@@ -11,10 +11,12 @@ import BigNumber from 'bignumber.js';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
+import { useGetAccountInfo } from 'hooks';
 
 const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
+  const { address, account } = useGetAccountInfo();
 
   const [timeStart, setTimeStart] = useState(0);
   const [timeEnd, setTimeEnd] = useState(0);
@@ -32,7 +34,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   const status =
     lottery.winner_id > 0
       ? 'ended'
-      : lottery.tickets_sold.isGreaterThanOrEqualTo(lottery.max_tickets) ||
+      : lottery?.tickets_sold?.isGreaterThanOrEqualTo(lottery.max_tickets) ||
         (lottery?.end_time.isLessThan(Date.now() / 1000) &&
           lottery.end_time > 0)
       ? 'draw'
@@ -106,29 +108,35 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
               {' '}
               {t('lotteries:lottery_number', { number: lottery?.id.toFixed() })}
             </h2>
-            {timeStart > 0 ? (
+
+            <p className='text-sm text-gray-600'>
+              {t('lotteries:tickets')}:{' '}
+              <strong>
+                {lottery?.tickets_sold.toFixed()} /{' '}
+                {lottery?.max_tickets.toFixed()}{' '}
+              </strong>
+            </p>
+            {timeStart > 0 && (
               <div>
                 {t('lotteries:open_in', {
                   time: formatTime(timeStart)
                 })}
               </div>
-            ) : (
-              <p className='text-sm text-gray-600'>
-                {t('lotteries:tickets')}:{' '}
-                <strong>
-                  {lottery?.tickets_sold.toFixed()} /{' '}
-                  {lottery?.max_tickets.toFixed()}{' '}
-                </strong>
-              </p>
             )}
-
             {timeStart == 0 && timeEnd > 0 && (
               <div>
-                {lottery.end_time > 0 && (
+                {lottery.end_time > 0 ? (
                   <>
                     {' '}
                     {t('lotteries:end_in', {
                       time: formatTime(timeEnd)
+                    })}
+                  </>
+                ) : (
+                  <>
+                    {' '}
+                    {t('lotteries:end_in', {
+                      time: '∞'
                     })}
                   </>
                 )}
@@ -144,7 +152,9 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                 navigate(`/lotteries/${lottery.id}`, { replace: false });
               }}
             >
-              {t('lotteries:open_details')}{' '}
+              {lottery?.owner == address || lottery.winner_id > 0
+                ? t('lotteries:view_details')
+                : t('lotteries:open_details')}{' '}
             </button>
           </div>
         </div>

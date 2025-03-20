@@ -37,7 +37,15 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
             >
               {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
               {is_locked && (
-                <div className='dinoFree'>{t('lotteries:locked')}</div>
+                <div className='dinoFree'>
+                  {t('lotteries:locked')}{' '}
+                  <span className='tooltip'>
+                    (ℹ)
+                    <span className='text'>
+                      {t('lotteries:locked_tooltip')}
+                    </span>
+                  </span>
+                </div>
               )}
               <img
                 src={

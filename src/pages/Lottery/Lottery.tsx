@@ -62,31 +62,30 @@ export const Lottery = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const [displayText, setDisplayText] = useState('');
-  const fullText =
-    'Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖';
-  useEffect(() => {
-    const characters = Array.from(fullText); //array for emoji..
-    let index = 0;
+  // const [displayText, setDisplayText] = useState('');
+  // const fullText =
+  //   'Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖';
+  // useEffect(() => {
+  //   const characters = Array.from(fullText); //array for emoji..
+  //   let index = 0;
 
-    const interval = setInterval(() => {
-      if (index < characters.length) {
-        setDisplayText(characters.slice(0, index + 1).join(''));
-        index++;
-      } else {
-        index = 0;
-        setDisplayText('');
-      }
-    }, 300);
-    return () => clearInterval(interval);
-  }, []);
+  //   const interval = setInterval(() => {
+  //     if (index < characters.length) {
+  //       setDisplayText(characters.slice(0, index + 1).join(''));
+  //       index++;
+  //     } else {
+  //       index = 0;
+  //       setDisplayText('');
+  //     }
+  //   }, 300);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const lotteries = useGetLotteries();
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.ended;
   const userLotteries = useGetUserParticipations(filter);
 
-  // const lottery = useGetLottery(lotteryID == 0 ? runningLottery[0] : lotteryID);
   const lottery = useGetLottery(lotteryID);
 
   const { buyed } = useGetUserTickets(lotteryID);
@@ -140,8 +139,8 @@ export const Lottery = () => {
       ?.balance || 0
   );
 
-  const cost = new BigNumber(lottery_cost);
-
+  const graou_cost = new BigNumber(lottery_cost.graou);
+  const egld_cost = new BigNumber(lottery_cost.egld);
   const lotteriesDisplay =
     filter === 'user'
       ? userLotteries
@@ -228,6 +227,7 @@ export const Lottery = () => {
                   </button>
                 )}
               </div>
+              {/* Liste des lotteries */}
               <LotteryList
                 runningLottery={
                   lotteriesDisplay.length > 0
@@ -355,7 +355,10 @@ export const Lottery = () => {
               </div>
               <CreateLotteryModal
                 count={lotteries?.user_owned?.length}
-                cost={userGraouBalance.isGreaterThanOrEqualTo(cost)}
+                cost_graou={userGraouBalance.isGreaterThanOrEqualTo(graou_cost)}
+                cost_egld={new BigNumber(balance).isGreaterThanOrEqualTo(
+                  egld_cost
+                )}
               />
             </>
           ) : (
@@ -536,7 +539,7 @@ export const Lottery = () => {
                             ? true
                             : false
                         }
-                        started={timeStart}
+                        time_start={timeStart}
                         ended={
                           lottery.end_time > 0 && timeEnd <= 0 ? true : false
                         }

@@ -68,6 +68,23 @@ export const useGetLottery = (lottery_id: any) => {
       });
       return;
     }
+
+    try {
+      const response = await fetch(
+        `https://internal.mvx.fr/dinovox/lotteries/${lottery_id}`
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch lottery details: ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      // console.log('data', data);
+      // setMintable(data);
+    } catch (err) {
+      console.error('Unable to call getMintable', err);
+    }
+
     try {
       const query = lotteryContract.createQuery({
         func: new ContractFunction('getLotteryDetails'),

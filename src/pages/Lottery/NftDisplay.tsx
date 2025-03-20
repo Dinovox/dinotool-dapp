@@ -37,7 +37,15 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
           style={{ margin: 'auto', width: '168px', height: '168px' }}
         >
           {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
-          {is_locked && <div className='dinoFree'>{t('lotteries:locked')}</div>}
+          {is_locked && (
+            <div className='dinoFree'>
+              {t('lotteries:locked')}{' '}
+              <span className='tooltip'>
+                (ℹ)
+                <span className='text'>{t('lotteries:locked_tooltip')}</span>
+              </span>
+            </div>
+          )}
           {nftInfo?.media?.length > 0 &&
           nftInfo?.media[0]?.fileType === 'video/mp4' ? (
             <video controls autoPlay muted playsInline loop>

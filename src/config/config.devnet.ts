@@ -22,4 +22,7 @@ export const graou_identifier = 'GRAOU-c9dd53';
 //Seul le contract peut transferer des tokens
 export const xgraou_identifier = 'GRAOU-96c360';
 
-export const lottery_cost = '10000000000000000000';
+export const lottery_cost = {
+  graou: '500000000000000000000',
+  egld: '250000000000000000'
+};

@@ -30,7 +30,7 @@ export const ActionBuy = ({
   esdt_balance,
   graou_balance,
   sft_balance,
-  started,
+  time_start,
   ended
 }: any) => {
   const loading = useLoadTranslations('lotteries');
@@ -130,6 +130,7 @@ export const ActionBuy = ({
         <>
           <button
             disabled={
+              time_start > 0 ||
               ended ||
               balance.isLessThan(fees) ||
               (price_identifier == 'FREE-000000' &&
@@ -150,15 +151,14 @@ export const ActionBuy = ({
             onClick={sendFundTransaction}
             className={'dinoButton'}
           >
-            {ended
+            {time_start > 0
+              ? t('lotteries:not_started')
+              : ended
               ? t('lotteries:ended')
               : balance.isLessThan(fees) ||
-                (price_identifier == 'FREE-000000' &&
-                  graou_balance.isLessThan(new BigNumber(price_amount))) ||
                 (price_identifier == 'EGLD-000000' &&
                   balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
                 (price_identifier != 'EGLD-000000' &&
-                  price_identifier != 'FREE-000000' &&
                   price_nonce == 0 &&
                   esdt_balance.isLessThan(new BigNumber(price_amount))) ||
                 (price_identifier != 'EGLD-000000' &&

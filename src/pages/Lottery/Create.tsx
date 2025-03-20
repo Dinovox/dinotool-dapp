@@ -24,10 +24,11 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
 import { formatAmount } from 'utils';
 
-const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
-  count,
-  cost
-}: any) => {
+const CreateLotteryModal: React.FC<{
+  count: string;
+  cost_graou: boolean;
+  cost_egld: boolean;
+}> = ({ count, cost_graou, cost_egld }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
 
@@ -522,7 +523,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
             {['Esdt', 'Sft', 'Egld'].includes(prizeType) && (
               <Form.Item
                 name='prizeAmount'
-                label={t('lotteries:amount')}
+                label={t('lotteries:quantity')}
                 rules={[
                   {
                     required: false,
@@ -701,7 +702,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                 {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
                   <Form.Item
                     name='priceAmount'
-                    label={t('lotteries:amount')}
+                    label={t('lotteries:quantity')}
                     rules={[
                       {
                         required: false,
@@ -973,7 +974,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       }}
                       disabled={acceptConditions}
                     /> */}{' '}
-                    {isFree ? (
+                    {isLocked ? (
                       <div>
                         <p>
                           {' '}
@@ -1075,17 +1076,17 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                   rules={[]}
                 >
                   <Checkbox
-                    disabled={!cost || payWith == 'EGLD'}
+                    disabled={!cost_graou || payWith == 'EGLD'}
                     onChange={() => (
                       setAcceptConditions(!acceptConditions),
                       setPayWith(payWith == 'GRAOU' ? '' : 'GRAOU')
                     )}
                   >
                     {' '}
-                    {!cost ? (
+                    {!cost_graou ? (
                       <Trans
                         i18nKey='lotteries:you_need_x_graou'
-                        values={{ x: 10 }}
+                        values={{ x: 500 }}
                         components={{
                           bold: <b />,
                           link1: (
@@ -1108,7 +1109,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       />
                     ) : (
                       t('lotteries:pay_x_start', {
-                        x: 10,
+                        x: 500,
                         token: 'XGRAOU'
                       })
                     )}
@@ -1121,10 +1122,10 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     )}
                   >
                     {' '}
-                    {!cost ? (
+                    {!cost_egld ? (
                       <Trans
-                        i18nKey='lotteries:you_need_x_graou'
-                        values={{ x: 10 }}
+                        i18nKey='lotteries:you_need_x_egld'
+                        values={{ x: 0.25 }}
                         components={{
                           bold: <b />,
                           link1: (
@@ -1147,7 +1148,7 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                       />
                     ) : (
                       t('lotteries:pay_x_start', {
-                        x: 1,
+                        x: 0.25,
                         token: 'EGLD'
                       })
                     )}
@@ -1193,9 +1194,8 @@ const CreateLotteryModal: React.FC<{ count: string; cost: boolean }> = ({
                     //
                     fee_percentage={Math.ceil(feePercentage * 100)}
                     acceptConditions={acceptConditions}
-                    setAcceptConditions={setAcceptConditions}
                     pay_with={payWith}
-                    disabled={!acceptConditions || !cost}
+                    disabled={!acceptConditions || (!cost_graou && !cost_egld)}
                   />{' '}
                 </Form.Item>
               </>
