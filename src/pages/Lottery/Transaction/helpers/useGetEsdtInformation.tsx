@@ -53,7 +53,7 @@ export const useGetEsdtInformations = (identifier: string) => {
 
   const url = '/tokens/' + identifier;
   const getEsdtInfo = async () => {
-    if (!identifier || identifier === 'FREE-000000') {
+    if (!identifier) {
       return;
     }
     //using storage to reduce calls

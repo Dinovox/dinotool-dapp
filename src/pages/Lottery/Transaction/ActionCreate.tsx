@@ -20,10 +20,6 @@ enum PriceType {
   Esdt,
   Sft,
   Nft,
-  FreeEgld,
-  FreeEsdt,
-  FreeSft,
-  FreeNft,
   LockedEgld,
   LockedEsdt,
   LockedSft,
@@ -36,10 +32,6 @@ function getPriceTypeEnum(priceType: string): PriceType | undefined {
     Esdt: PriceType.Esdt,
     Sft: PriceType.Sft,
     Nft: PriceType.Nft,
-    FreeEgld: PriceType.FreeEgld,
-    FreeEsdt: PriceType.FreeEsdt,
-    FreeSft: PriceType.FreeSft,
-    FreeNft: PriceType.FreeNft,
     LockedEgld: PriceType.LockedEgld,
     LockedEsdt: PriceType.LockedEsdt,
     LockedSft: PriceType.LockedSft,
@@ -174,8 +166,6 @@ export const ActionCreate = ({
       bigNumToHex(new BigNumber(start_time)) +
       '@' +
       bigNumToHex(new BigNumber(end_time)) +
-      '@' +
-      bigNumToHex(new BigNumber(fee_percentage)) +
       '@' +
       bigNumToHex(
         new BigNumber(

@@ -28,6 +28,18 @@
         "type": "BigUint"
       },
       {
+        "name": "second_token",
+        "type": "TokenIdentifier"
+      },
+      {
+        "name": "second_token_amount",
+        "type": "BigUint"
+      },
+      {
+        "name": "fee_percentage",
+        "type": "u64"
+      },
+      {
         "name": "fee_collector",
         "type": "Address"
       },
@@ -43,7 +55,12 @@
     "outputs": []
   },
   "upgradeConstructor": {
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "fee_percentage",
+        "type": "u64"
+      }
+    ],
     "outputs": []
   },
   "endpoints": [
@@ -82,10 +99,6 @@
         },
         {
           "name": "end_time",
-          "type": "u64"
-        },
-        {
-          "name": "fee_percentage",
           "type": "u64"
         },
         {
@@ -233,6 +246,46 @@
       ]
     },
     {
+      "name": "getMainTokenAmount",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "getSecondToken",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "TokenIdentifier"
+        }
+      ]
+    },
+    {
+      "name": "getSecondTokenAmount",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "getFeePercentage",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "getBlacklistedIdentifiers",
       "mutability": "readonly",
       "inputs": [],
@@ -240,16 +293,6 @@
         {
           "type": "variadic<TokenIdentifier>",
           "multi_result": true
-        }
-      ]
-    },
-    {
-      "name": "getMainTokenAmount",
-      "mutability": "readonly",
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "BigUint"
         }
       ]
     },
@@ -362,18 +405,38 @@
         {
           "name": "main_token",
           "type": "TokenIdentifier"
+        },
+        {
+          "name": "main_token_amount",
+          "type": "BigUint"
         }
       ],
       "outputs": []
     },
     {
-      "name": "setMainTokenAmount",
+      "name": "setSecondToken",
       "onlyOwner": true,
       "mutability": "mutable",
       "inputs": [
         {
-          "name": "main_token_amount",
+          "name": "second_token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "second_token_amount",
           "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "setFeePercentage",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "fee_percentage",
+          "type": "u64"
         }
       ],
       "outputs": []
@@ -628,10 +691,6 @@
           "type": "u64"
         },
         {
-          "name": "fee_percentage",
-          "type": "u64"
-        },
-        {
           "name": "auto_draw",
           "type": "bool"
         }
@@ -657,36 +716,20 @@
           "discriminant": 3
         },
         {
-          "name": "FreeEgld",
+          "name": "LockedEgld",
           "discriminant": 4
         },
         {
-          "name": "FreeEsdt",
+          "name": "LockedEsdt",
           "discriminant": 5
         },
         {
-          "name": "FreeSft",
+          "name": "LockedSft",
           "discriminant": 6
         },
         {
-          "name": "FreeNft",
-          "discriminant": 7
-        },
-        {
-          "name": "LockedEgld",
-          "discriminant": 8
-        },
-        {
-          "name": "LockedEsdt",
-          "discriminant": 9
-        },
-        {
-          "name": "LockedSft",
-          "discriminant": 10
-        },
-        {
           "name": "LockedNft",
-          "discriminant": 11
+          "discriminant": 7
         }
       ]
     }
