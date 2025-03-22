@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks/account/useGetLoginInfo';
+import { internal_api } from 'config';
 
 export const useGetDinoStakers = () => {
   const time = new Date();
@@ -33,7 +34,7 @@ export const useGetDinoStakers = () => {
       const { data } = await axios.get<{ wallets: any[] }>(
         '/stats/dino/stakers',
         {
-          baseURL: 'https://internal.mvx.fr',
+          baseURL: internal_api,
           headers: { Authorization: `Bearer ${tokenLogin.nativeAuthToken}` }
         }
       );

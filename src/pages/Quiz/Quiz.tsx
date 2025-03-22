@@ -14,6 +14,7 @@ import halloweenCard from 'assets/img/halloween-card.png';
 import halloweenBad from 'assets/img/halloween-bad.png';
 import lowLife from 'assets/img/low-life.png';
 import dinovoxLogo from '/dinovox_logo.webp';
+import { internal_api } from 'config';
 
 export const Quiz = () => {
   const [project, setProject] = useState('1');
@@ -35,7 +36,7 @@ export const Quiz = () => {
         //   config
         // );
         const { data } = await axios.post(
-          'https://internal.mvx.fr' + '/quiz/halloween',
+          internal_api + '/quiz/halloween',
           {
             answer: answer
           },

@@ -31,6 +31,8 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
 import TwitterShareButton from './Transaction/helpers/shareOnX';
+import { EditDescription } from './EditDescription';
+import SafeMarkdown from '../../components/SafeMarkdown';
 
 export const Lottery = () => {
   const loading = useLoadTranslations('lotteries');
@@ -42,6 +44,8 @@ export const Lottery = () => {
   const [lotteryID, setLotteryID] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [filter, setFilter] = useState<string>('ongoing');
+  const [editingDescription, setEditingDescription] = useState(false);
+
   const navigate = useNavigate();
 
   const { id } = useParams<{ id: string }>();
@@ -87,7 +91,7 @@ export const Lottery = () => {
   const userLotteries = useGetUserParticipations(filter);
 
   const lottery = useGetLottery(lotteryID);
-
+  console.log(lottery);
   const { buyed } = useGetUserTickets(lotteryID);
   const { balance } = useGetAccount();
   const user_esdt = useGetUserESDT();
@@ -429,6 +433,50 @@ export const Lottery = () => {
                           {blockToTime(lottery?.end_time)}{' '}
                         </div>
                       )}
+                    </>
+                  )}
+
+                  {/* <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  > */}
+                  <div className='info-item'>
+                    <span className='text-label'>
+                      {<SafeMarkdown content={'---\n' + lottery.description} />}
+                    </span>
+                  </div>
+                  {lottery.owner == address && (
+                    <>
+                      <div className='info-item'>
+                        <div className='text-label'>
+                          <button
+                            onClick={() =>
+                              setEditingDescription(!editingDescription)
+                            }
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '0.9rem',
+                              color: '#555'
+                            }}
+                            title='Modifier la description'
+                          >
+                            ✏️
+                          </button>
+                        </div>
+                      </div>{' '}
+                      <div style={{ width: '100%' }}>
+                        {editingDescription && (
+                          <EditDescription
+                            lottery_id={lotteryID}
+                            lottery_description={lottery.description}
+                          />
+                        )}
+                      </div>
                     </>
                   )}
                 </div>

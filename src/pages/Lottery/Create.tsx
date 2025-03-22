@@ -319,6 +319,7 @@ const CreateLotteryModal: React.FC<{
     setPriceDisplay(checked ? '100' : '');
     setMaxPerWallet(checked ? 1 : 0);
     setPriceNonce(0);
+    setMaxTickets(maxTickets > 50 ? 50 : maxTickets);
   }
 
   const isValidNumber = (value: any) =>

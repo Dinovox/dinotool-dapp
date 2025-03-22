@@ -4,7 +4,7 @@ import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
 import { ContractFunction, ResultsParser, ProxyNetworkProvider } from 'utils';
 import { lotteryContract } from 'utils/smartContract';
 import { BigNumber } from 'bignumber.js';
-import { graou_identifier } from 'config';
+import { graou_identifier, internal_api } from 'config';
 import { start } from 'repl';
 import { Address, U64Value } from '@multiversx/sdk-core/out';
 import { useNavigate } from 'react-router-dom';
@@ -34,7 +34,8 @@ export const useGetLottery = (lottery_id: any) => {
     fee_percentage: 0,
     owner: '',
     winner: '',
-    auto_draw: false
+    auto_draw: false,
+    description: ''
   });
 
   const { hasPendingTransactions } = useGetPendingTransactions();
@@ -64,14 +65,17 @@ export const useGetLottery = (lottery_id: any) => {
         fee_percentage: 0,
         owner: '',
         winner: '',
-        auto_draw: false
+        auto_draw: false,
+        description: ''
       });
       return;
     }
 
+    /*off-chain datas*/
+    /*using internal api & cache*/
     try {
       const response = await fetch(
-        `https://internal.mvx.fr/dinovox/lotteries/${lottery_id}`
+        `${internal_api}/dinovox/lotteries/${lottery_id}`
       );
       if (!response.ok) {
         throw new Error(
@@ -79,12 +83,19 @@ export const useGetLottery = (lottery_id: any) => {
         );
       }
       const data = await response.json();
-      // console.log('data', data);
+      if (data.description) {
+        setMintable((prev: any) => ({
+          ...prev,
+          description: data.description
+        }));
+      }
+      console.log('data', data);
       // setMintable(data);
     } catch (err) {
       console.error('Unable to call getMintable', err);
     }
 
+    /*on-chain datas*/
     try {
       const query = lotteryContract.createQuery({
         func: new ContractFunction('getLotteryDetails'),
@@ -110,11 +121,13 @@ export const useGetLottery = (lottery_id: any) => {
       const owner = field1?.bech32?.() || '';
       const winner = field2?.bech32?.() || '';
       if (lotteryData) {
-        setMintable({
+        setMintable((prev: { description: any }) => ({
+          ...prev,
+          description: prev.description, // garde l'existante
           ...field0,
           owner,
           winner
-        });
+        }));
       }
     } catch (err) {
       console.error('Unable to call getMintable', err);

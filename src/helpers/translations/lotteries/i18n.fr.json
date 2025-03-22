@@ -62,7 +62,7 @@
   "fee_percentage_tooltip": "Une partie du montant sera déduite en tant que frais pour soutenir le développement de la plateforme. Le montant du vendeur, après déduction des frais, sera envoyé en fonction du nombre total de billets vendus.",
   "graou_create_fee": "Frais de création: 500 xGraou ou 0.25 EGLD",
   "auto_draw_fee": "Frais de tirage automatique:",
-  "platform_fee": "Frais de platforme",
+  "platform_fee": "Frais de plateforme",
   "royalty_fee": "Frais de royalties",
   "vendor_amount": "Gains espérés",
   "pay_x_start": "Payer {{x}} {{token}} pour démarrer la loterie",

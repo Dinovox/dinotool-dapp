@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetLoginInfo } from 'hooks';
+import { internal_api } from 'config';
 
 export const useGetVouchers = () => {
   const [vouchers, setVouchers] = useState([]);
@@ -18,7 +19,7 @@ export const useGetVouchers = () => {
         };
 
         const { data } = await axios.get(
-          'https://internal.mvx.fr/dinovox/vouchers',
+          `${internal_api}/dinovox/vouchers`,
           config
         );
 
