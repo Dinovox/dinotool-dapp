@@ -123,7 +123,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                 })}
               </div>
             )}
-            {timeStart == 0 && timeEnd > 0 && (
+            {timeStart == 0 && (
               <div>
                 {lottery.end_time > 0 ? (
                   <>
@@ -152,7 +152,7 @@ const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
                 navigate(`/lotteries/${lottery.id}`, { replace: false });
               }}
             >
-              {lottery?.owner == address || lottery.winner_id > 0
+              {lottery?.vm_owner == address || lottery.winner_id > 0
                 ? t('lotteries:view_details')
                 : t('lotteries:open_details')}{' '}
             </button>

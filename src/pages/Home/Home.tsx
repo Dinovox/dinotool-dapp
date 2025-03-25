@@ -48,10 +48,9 @@ export const Home = () => {
       image: mintable?.amount.isGreaterThan(0) ? cardGazette : cardSoldGraout
     },
     {
-      title: environment === 'mainnet' ? 'Soon' : t('home:lotteries_title'),
+      title: t('home:lotteries_title'),
       link: '/lotteries',
-      image: environment === 'mainnet' ? cardWip : cardLotteries,
-      blured: environment === 'mainnet'
+      image: cardLotteries
     },
     {
       title: t('home:drop'),

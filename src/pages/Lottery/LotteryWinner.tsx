@@ -8,16 +8,15 @@ import { useTranslation } from 'react-i18next';
 const LotteryWinner = ({ lottery }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
-
   const [currentWinner, setCurrentWinner] = useState(
-    lottery.winner ||
+    lottery.vm_winner ||
       'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
   );
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     if (lottery.winner_id > 0) {
-      setCurrentWinner(lottery.winner);
+      setCurrentWinner(lottery.vm_winner);
       setShowConfetti(true);
     }
   }, [currentWinner, lottery]);
@@ -106,7 +105,10 @@ const LotteryWinner = ({ lottery }: any) => {
             </div>
           </div>
           <div className='lottery-winner-result'>
-            <ShortenedAddress address={currentWinner} />
+            <ShortenedAddress
+              address={currentWinner}
+              herotag={lottery?.winner?.herotag}
+            />
           </div>
         </motion.div>
       )}

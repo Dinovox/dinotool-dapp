@@ -62,7 +62,7 @@ export const ActionBuy = ({
           'ESDTTransfer@' +
           Buffer.from(graou_identifier, 'utf8').toString('hex') +
           '@' +
-          bigToHex(BigInt(price_amount)) +
+          bigToHex(price_amount.toFixed()) +
           '@' +
           Buffer.from('buy', 'utf8').toString('hex') +
           '@' +
@@ -77,7 +77,7 @@ export const ActionBuy = ({
           'ESDTTransfer@' +
           Buffer.from(price_identifier, 'utf8').toString('hex') +
           '@' +
-          bigToHex(BigInt(price_amount)) +
+          bigToHex(price_amount.toFixed()) +
           '@' +
           Buffer.from('buy', 'utf8').toString('hex') +
           '@' +
@@ -94,7 +94,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(price_nonce)) +
           '@' +
-          bigToHex(BigInt(price_amount)) +
+          bigToHex(price_amount.toFixed()) +
           '@' +
           addressTobech32.hex() +
           '@' +

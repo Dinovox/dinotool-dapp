@@ -73,7 +73,8 @@
   "winner": "Gagnant",
   "delete_lottery": "Supprimer la loterie",
   "share_on_x": "Partager sur 𝕏",
-  "share_on_x_text": "🎟️ Rejoignez ma loterie #{{lottery_id}} et tentez votre chance! 🚀",
+  "share_on_x_text": "🎟️ Hey dino ! Envie de remporter le GRAOU lot ? Viens tenter ta chance sur ma loterie #{{lottery_id}} 🚀",
   "free_tooltip": "Les loteries gratuites sont un excellent moyen d'engager votre communauté et de récompenser vos abonnés. Les utilisateurs peuvent réclamer un billet gratuit s'ils détiennent un solde minimum de jetons ESDT, SFT ou EGLD dans leur portefeuille. Vous pouvez définir le solde minimum requis afin d'améliorer l'équité.",
-  "locked_tooltip": "Les loteries gratuites permettent aux utilisateurs de participer sans perdre de jetons, le coût de participation est temporairement verrouillé dans le contrat. Les fonds sont libérés une fois la loterie terminée."
+  "locked_tooltip": "Les loteries gratuites permettent aux utilisateurs de participer sans perdre de jetons, le coût de participation est temporairement verrouillé dans le contrat. Les fonds sont libérés une fois la loterie terminée.",
+  "check_collection": "Tout le monde peut créer une loterie. Avant de participer, pensez à vérifier la collection de l'artiste."
 }

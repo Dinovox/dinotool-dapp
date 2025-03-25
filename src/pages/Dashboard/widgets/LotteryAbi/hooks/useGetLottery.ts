@@ -32,8 +32,8 @@ export const useGetLottery = (lottery_id: any) => {
     max_per_wallet: new BigNumber(0),
     tickets_sold: new BigNumber(0),
     fee_percentage: 0,
-    owner: '',
-    winner: '',
+    vm_owner: '',
+    vm_winner: '',
     auto_draw: false,
     description: ''
   });
@@ -63,8 +63,8 @@ export const useGetLottery = (lottery_id: any) => {
         max_per_wallet: new BigNumber(0),
         tickets_sold: new BigNumber(0),
         fee_percentage: 0,
-        owner: '',
-        winner: '',
+        vm_owner: '',
+        vm_winner: '',
         auto_draw: false,
         description: ''
       });
@@ -83,13 +83,14 @@ export const useGetLottery = (lottery_id: any) => {
         );
       }
       const data = await response.json();
-      if (data.description) {
+      if (data) {
         setMintable((prev: any) => ({
           ...prev,
-          description: data.description
+          description: data.description,
+          owner: data.owner,
+          winner: data.winner
         }));
       }
-      console.log('data', data);
       // setMintable(data);
     } catch (err) {
       console.error('Unable to call getMintable', err);
@@ -118,15 +119,16 @@ export const useGetLottery = (lottery_id: any) => {
         return;
       }
       const { field0, field1, field2 } = lotteryData;
-      const owner = field1?.bech32?.() || '';
-      const winner = field2?.bech32?.() || '';
+      const vm_owner = field1?.bech32?.() || '';
+      const vm_winner = field2?.bech32?.() || '';
       if (lotteryData) {
         setMintable((prev: { description: any }) => ({
           ...prev,
           description: prev.description, // garde l'existante
           ...field0,
-          owner,
-          winner
+          price: new BigNumber(field0.price_amount),
+          vm_owner,
+          vm_winner
         }));
       }
     } catch (err) {

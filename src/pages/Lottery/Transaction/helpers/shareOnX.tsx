@@ -13,7 +13,7 @@ const TwitterShareButton: React.FC<TwitterShareButtonProps> = ({
   const text = encodeURIComponent(
     t('lotteries:share_on_x_text', { lottery_id })
   );
-  const hashtags = encodeURIComponent('Graou, Dinovox');
+  const hashtags = encodeURIComponent('Graou');
   const via = 'TheDinoVox'; // Remplace par ton compte Twitter
 
   const url = `https://app.dinovox.com/lotteries/${lottery_id}`;

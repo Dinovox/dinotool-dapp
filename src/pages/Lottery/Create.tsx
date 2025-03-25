@@ -23,6 +23,7 @@ import { useGetNftInformations } from './Transaction/helpers/useGetNftInformatio
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
 import { formatAmount } from 'utils';
+import { J } from 'framer-motion/dist/types.d-B50aGbjN';
 
 const CreateLotteryModal: React.FC<{
   count: string;
@@ -421,7 +422,11 @@ const CreateLotteryModal: React.FC<{
                     disableKeyboard();
                     setPrizeIdentifier(value);
                     setPrizeTicker(
-                      datas?.datas?.ticker ? datas?.datas?.ticker : ''
+                      datas?.datas?.collection
+                        ? datas?.datas?.collection
+                        : datas?.datas?.identifier
+                        ? datas?.datas?.identifier
+                        : ''
                     );
                     setPrizeNonce(
                       datas?.datas?.nonce ? datas?.datas?.nonce : 0
@@ -485,6 +490,7 @@ const CreateLotteryModal: React.FC<{
                         ].includes(token.identifier)}
                       >
                         {token.identifier}
+                        {/* {JSON.stringify(token)} */}
                       </Select.Option>
                     ))}{' '}
                   {prizeType === 'Sft' &&
@@ -1171,6 +1177,7 @@ const CreateLotteryModal: React.FC<{
                   </Checkbox>
                 </Form.Item>
                 <Form.Item>
+                  {/* {prizeTicker} */}
                   <ActionCreate
                     prize_type={prizeType}
                     prize_identifier={prizeTicker}

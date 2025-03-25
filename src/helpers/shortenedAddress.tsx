@@ -3,7 +3,7 @@ import './ShortenedAddress.css'; // Assurez-vous de créer un fichier CSS pour l
 import { FaRegCopy } from 'react-icons/fa'; // Utilisez react-icons pour l'icône de copie
 import { useGetNetworkConfig } from 'hooks';
 
-const ShortenedAddress = ({ address }: any) => {
+const ShortenedAddress = ({ address, herotag }: any) => {
   const [copied, setCopied] = useState(false);
   const { network } = useGetNetworkConfig();
 
@@ -26,7 +26,11 @@ const ShortenedAddress = ({ address }: any) => {
           target='_blank'
           rel='noreferrer'
         >
-          {shortenedAddress}
+          {herotag ? (
+            <>@{herotag?.replace('.elrond', '')}</>
+          ) : (
+            <> {shortenedAddress}</>
+          )}
         </a>
       </span>
       <button

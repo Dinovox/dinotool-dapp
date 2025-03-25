@@ -34,7 +34,7 @@ export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
       value: 0,
       data: 'draw@' + bigToHex(BigInt(lottery_id)),
       receiver: addressTobech32,
-      gasLimit: '20000000'
+      gasLimit: '60000000'
     };
 
     await refreshAccount();

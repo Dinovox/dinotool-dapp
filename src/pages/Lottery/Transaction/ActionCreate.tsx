@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { lotteryContractAddress } from 'config';
+import { lotteryContractAddress, xgraou_identifier } from 'config';
 import { Address } from '@multiversx/sdk-core/out';
 import {
   useGetAccountInfo,
@@ -88,7 +88,7 @@ export const ActionCreate = ({
 
   const sendFundTransaction = async () => {
     const graou_identifier =
-      pay_with == 'EGLD' ? 'EGLD-000000' : 'GRAOU-c9dd53';
+      pay_with == 'EGLD' ? 'EGLD-000000' : xgraou_identifier;
     const graou_amount =
       pay_with == 'EGLD'
         ? new BigNumber('250000000000000000')
@@ -120,7 +120,7 @@ export const ActionCreate = ({
         '@' +
         bigNumToHex(new BigNumber(0)) +
         '@' +
-        bigNumToHex(new BigNumber(100000000000000).multipliedBy(max_tickets)) +
+        bigNumToHex(new BigNumber(200000000000000).multipliedBy(max_tickets)) +
         '@' +
         Buffer.from('create', 'utf8').toString('hex');
     } else {

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 export const EditDescription = ({ lottery_id, lottery_description }: any) => {
   const [message, setMessage] = useState('');
   const { tokenLogin, isLoggedIn } = useGetLoginInfo();
-  const [description, setDescription] = useState('lottery_description');
+  const [description, setDescription] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,7 +35,6 @@ export const EditDescription = ({ lottery_id, lottery_description }: any) => {
           },
           config
         );
-        console.log('data', data);
         setMessage(data?.message);
         //todo : refonte de la fonction à prévoir pour eviter le reload de la page
         if (data?.message === 'Updated') {
