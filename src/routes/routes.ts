@@ -1,5 +1,14 @@
 import { RouteNamesEnum } from 'localConstants';
-import { Disclaimer, Home, Mint, Drop, Quiz, Lottery, Vouchers } from 'pages';
+import {
+  Disclaimer,
+  Home,
+  Mint,
+  Drop,
+  Quiz,
+  LotteryList,
+  LotteryDetail,
+  Vouchers
+} from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
 interface RouteWithTitleType extends RouteType {
@@ -37,12 +46,12 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.lotteries,
       title: t('lotteries'),
-      component: Lottery
+      component: LotteryList
     },
     {
       path: `${RouteNamesEnum.lotteries}/:id`,
       title: t('lottery'),
-      component: Lottery
+      component: LotteryDetail
     },
     {
       path: RouteNamesEnum.vouchers,

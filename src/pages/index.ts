@@ -6,5 +6,6 @@ export * from './Disclaimer';
 export * from './Mint';
 export * from './Drop';
 export * from './Quiz';
-export * from './Lottery';
+export * from './LotteryList';
+export * from './LotteryDetail';
 export * from './Vouchers';

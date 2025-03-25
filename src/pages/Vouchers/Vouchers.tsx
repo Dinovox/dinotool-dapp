@@ -14,7 +14,7 @@ import sold_graout from 'assets/img/sold_graout.jpg';
 import { useGetVouchers } from './Transaction/helpers/useGetVouchers';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import TextCopy from 'helpers/textCopy';
-import NftDisplay from 'pages/Lottery/NftDisplay';
+import NftDisplay from 'pages/LotteryDetail/NftDisplay';
 
 export const Vouchers = () => {
   const vouchers = useGetVouchers();

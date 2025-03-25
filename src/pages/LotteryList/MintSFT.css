@@ -1,0 +1,130 @@
+.mint-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 50px auto;
+  background-color: #7de9f2;
+  border: 2px solid #f7ea43;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.mint-title {
+  text-align: center;
+  color: rgb(255 119 75);
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.mint-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: Manrope;
+  line-height: 36px;
+  /* color: rgb(255 119 75); */
+}
+
+.price-input {
+  width: 60px;
+  padding: 5px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #fff;
+}
+
+.text-label {
+  color: rgb(0, 0, 0);
+  margin-right: 10px;
+  text-align: center;
+}
+
+.token-label {
+  margin-left: 10px;
+  color: #f7ea43;
+}
+
+.mint-image {
+  text-align: center;
+  margin: 20px 0;
+  white-space: nowrap; /* Empêche le retour à la ligne */
+  overflow: visible; /* Permet au texte de déborder */
+  text-overflow: clip;
+}
+
+.mint-image img,
+.mint-image video {
+  width: 168px;
+  height: 168px;
+  border: 2px solid #f7ea43;
+  border-radius: 10px;
+}
+
+.mint-button {
+  background-color: #f7ea43;
+  color: #7de9f2;
+  font-size: 18px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.mint-button:hover {
+  background-color: #ffdb31;
+}
+
+.identifier {
+  margin-left: 10px;
+  color: #847f73;
+}
+
+.running-lottery {
+  position: relative;
+  left: 12px;
+  top: 85px;
+  float: left;
+}
+
+.ended-lottery {
+  position: relative;
+  left: 12px;
+  top: 85px;
+  float: left;
+  margin-left: 10px;
+}
+.filter-options {
+  display: grid;
+  grid-template-columns: repeat(4, auto); /* 4 colonnes sur grand écran */
+  gap: 10px; /* Espacement entre les boutons */
+  justify-content: center; /* Centre les boutons */
+  align-items: center;
+}
+
+/* Pour mobile : 2 boutons par ligne */
+@media (max-width: 768px) {
+  .filter-options {
+    grid-template-columns: repeat(2, auto); /* 2 colonnes */
+    gap: 5px; /* Réduit l'espacement */
+  }
+
+  .dinoButton {
+    white-space: normal; /* Permet le retour à la ligne */
+    /* Coupe le mot si nécessaire */
+    text-align: center; /* Centre le texte */
+    display: block; /* Assure un bon comportement sur mobile */
+    height: auto;
+    /* width: 100%; 
+    margin: 4px;
+    white-space: nowrap; */
+  }
+}
