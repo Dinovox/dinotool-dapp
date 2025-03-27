@@ -6,7 +6,10 @@ import BigNumber from 'bignumber.js';
 import CreateLotteryModal from './Create';
 import LotteryCard from './LotteryCard';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
-import { useGetLotteries } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
+import {
+  useGetLotteriesDB,
+  useGetLotteriesVM
+} from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
 import { graou_identifier, lottery_cost } from 'config';
 import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserParticipations';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -18,7 +21,9 @@ export const LotteryList = () => {
   const [page, setPage] = useState<number>(1);
   const [filter, setFilter] = useState<string>('ongoing');
 
-  const lotteries = useGetLotteries();
+  const lotteries = useGetLotteriesVM();
+  const lotteriesDB = useGetLotteriesDB({ page: 1, limit: 10 });
+  // console.log('lotteriesDB', lotteriesDB);
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.ended;
   const userLotteries = useGetUserParticipations(filter);

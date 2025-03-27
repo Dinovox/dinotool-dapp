@@ -78,6 +78,7 @@ export const useGetNftInformations = (
       identifier == '' ||
       identifier == undefined ||
       nonce == '' ||
+      nonce == '0' ||
       identifier == 'EGLD-000000' ||
       type == 'ESDT'
     ) {

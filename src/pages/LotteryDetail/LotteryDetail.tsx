@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { ActionCancel } from './Transaction/ActionCancel';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
-import { useGetLotteries } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
+import { useGetLotteriesVM } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
 import { graou_identifier, lottery_cost } from 'config';
 import { ActionDelete } from './Transaction/ActionDelete';
 import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserParticipations';
@@ -62,7 +62,7 @@ export const LotteryDetail = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const lotteries = useGetLotteries();
+  const lotteries = useGetLotteriesVM();
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.ended;
   const userLotteries = useGetUserParticipations(filter);

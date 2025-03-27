@@ -46,6 +46,10 @@ export const ActionBuy = ({
   const addressTobech32 = new Address(lotteryContractAddress);
   const { address } = useGetAccountInfo();
 
+  //note :
+  // 20000000 gas limit for buy should be enough for lotterie with 100 participants
+  //with the max_per_wallet test
+  // ~6000000 should be ok for lotteries with no limit per wallet
   const sendFundTransaction = async () => {
     let fundTransaction;
     if (price_identifier == 'EGLD-000000') {
@@ -53,7 +57,7 @@ export const ActionBuy = ({
         value: price_amount,
         data: 'buy@' + bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     } else if (price_identifier == 'FREE-000000') {
       fundTransaction = {
@@ -68,7 +72,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     } else if (price_nonce == 0) {
       fundTransaction = {
@@ -83,7 +87,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     } else {
       fundTransaction = {
@@ -102,7 +106,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(lottery_id)),
         receiver: address,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     }
     await refreshAccount();

@@ -13,12 +13,39 @@ import { BigNumber } from 'bignumber.js';
 import { lotteryContract } from 'utils/smartContract';
 import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
 import axios from 'axios';
-import { graou_identifier } from 'config';
+import { graou_identifier, internal_api } from 'config';
 import { to } from 'react-spring';
 
 const resultsParser = new ResultsParser();
+export const useGetLotteriesDB = ({ page, limit }: any) => {
+  const [lotteries, setLotteries] = useState<any[]>([]);
+  const getDbData = async () => {
+    try {
+      const response = await fetch(
+        `${internal_api}/dinovox/lotteries/?page${page}&limit=${limit}`
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch lotteries list: ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      if (data) {
+        setLotteries(data);
+      }
+      // setMintable(data);
+    } catch (err) {
+      console.error('Unable to call getMintable', err);
+    }
+  };
+  useEffect(() => {
+    getDbData();
+  }, [page, limit]);
 
-export const useGetLotteries = () => {
+  return lotteries;
+};
+
+export const useGetLotteriesVM = () => {
   const { network } = useGetNetworkConfig();
   const { address } = useGetAccount();
 

@@ -51,11 +51,11 @@ export const useGetEsdtInformations = (identifier: string) => {
   //   ]
   // }
 
-  const url = '/tokens/' + identifier;
   const getEsdtInfo = async () => {
     if (!identifier) {
       return;
     }
+
     //using storage to reduce calls
     const expire_test = Number(
       localStorage.getItem('esdt_' + identifier + '_expire')
@@ -65,10 +65,12 @@ export const useGetEsdtInformations = (identifier: string) => {
     );
     setEsdtInfo(storage);
     if (time.getTime() < expire_test) {
-      return;
+      return esdtInfo;
     }
 
     try {
+      const url = '/tokens/' + identifier;
+
       const { data } = await axios.get<[]>(url, {
         baseURL: network.apiAddress,
         params: {}

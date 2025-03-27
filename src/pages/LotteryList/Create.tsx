@@ -24,6 +24,8 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
 import { formatAmount } from 'utils';
 import { J } from 'framer-motion/dist/types.d-B50aGbjN';
+import { a } from 'react-spring';
+import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
 
 const CreateLotteryModal: React.FC<{
   count: string;
@@ -61,6 +63,9 @@ const CreateLotteryModal: React.FC<{
   const [priceTicker, setPriceTicker] = useState<string>('');
   const [prizeBalance, setPrizeBalance] = useState<BigNumber>(new BigNumber(0));
   const [payWith, setPayWith] = useState('');
+
+  // test for manual input (not from dropdown)
+  const [priceValid, setPriceValid] = useState(true);
 
   const { address, account } = useGetAccountInfo();
   const test = new BigNumber(account?.balance).dividedBy(10 ** 18);
@@ -158,6 +163,27 @@ const CreateLotteryModal: React.FC<{
     priceNonce.toString(),
     priceType
   );
+
+  const price_esdt_information = useGetEsdtInformations(priceIdentifier);
+
+  useEffect(() => {
+    const fetchPriceEsdtInformation = async () => {
+      if (priceNonce == 0 && ['Esdt'].includes(priceType)) {
+        if (
+          priceIdentifier &&
+          priceValid &&
+          price_esdt_information?.type == 'FungibleESDT'
+        ) {
+          setPriceDecimals(price_esdt_information.decimals);
+          setPriceValid(true);
+        } else {
+          setPriceValid(false);
+        }
+      }
+    };
+
+    fetchPriceEsdtInformation();
+  }, [price_esdt_information]);
 
   const handleStart = (date: dayjs.Dayjs | null) => {
     setStartTime(date ? date.unix() : 0); // Convertit en timestamp Unix (secondes)
@@ -291,35 +317,21 @@ const CreateLotteryModal: React.FC<{
     return null;
   }
 
-  function handleIsFree(e: CheckboxChangeEvent): void {
-    const checked = e.target.checked;
-    setIsFree(checked);
-    setIsLocked(false);
-    setMaxTickets(50);
-    setPriceType(checked ? 'Esdt' : '');
-    setPriceIdentifier(checked ? graou_identifier : '');
-    setPriceTicker(checked ? graou_identifier : '');
-    setPriceDecimals(checked ? 18 : 0);
-    setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
-    setPriceDisplay(checked ? '100' : '');
-    setMaxPerWallet(checked ? 1 : 0);
-    setPriceNonce(0);
-    setMaxTickets(50);
-  }
-
   function handleIsLocked(e: CheckboxChangeEvent): void {
     const checked = e.target.checked;
     setAutoDraw(checked);
-    setIsFree(false);
+    // setIsFree(false);
     setIsLocked(checked);
-    setPriceType(checked ? 'Esdt' : '');
-    setPriceIdentifier(checked ? graou_identifier : '');
-    setPriceTicker(checked ? graou_identifier : '');
-    setPriceDecimals(checked ? 18 : 0);
-    setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
-    setPriceDisplay(checked ? '100' : '');
+    if (!priceIdentifier) {
+      setPriceType(checked ? 'Esdt' : '');
+      setPriceIdentifier(checked ? graou_identifier : '');
+      setPriceTicker(checked ? graou_identifier : '');
+      setPriceDecimals(checked ? 18 : 0);
+      setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
+      setPriceDisplay(checked ? '100' : '');
+      setPriceNonce(0);
+    }
     setMaxPerWallet(checked ? 1 : 0);
-    setPriceNonce(0);
     setMaxTickets(maxTickets > 50 ? 50 : maxTickets);
   }
 
@@ -356,6 +368,32 @@ const CreateLotteryModal: React.FC<{
     .decimalPlaces(0, BigNumber.ROUND_FLOOR);
 
   const auto_draw_fees = new BigNumber(0.0002).multipliedBy(maxTickets);
+
+  function splitIdentifier(identifier: string) {
+    const parts = identifier.split('-');
+
+    if (parts.length === 3) {
+      const [prefix, mid, suffix] = parts;
+      return {
+        ticker: `${prefix}-${mid}`,
+        nonce: parseInt(suffix, 16),
+        is_valid: mid.length == 6 ? true : false
+      };
+    }
+    if (parts.length === 2) {
+      const [prefix, mid] = parts;
+      return {
+        ticker: `${prefix}-${mid}`,
+        nonce: 0,
+        is_valid: mid.length == 6 ? true : false
+      };
+    }
+    return {
+      ticker: identifier,
+      nonce: 0,
+      is_valid: false
+    };
+  }
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <button
@@ -612,6 +650,7 @@ const CreateLotteryModal: React.FC<{
                 {/* Selection du PRICE */}
                 {['Esdt', 'Sft'].includes(priceType) && (
                   <Form.Item
+                    validateStatus={!priceValid ? 'error' : ''}
                     name={'priceIdentifier' + priceType}
                     label={t('lotteries:identifier')}
                     rules={[
@@ -629,6 +668,7 @@ const CreateLotteryModal: React.FC<{
                       disabled={acceptConditions}
                       onDropdownVisibleChange={handleDropdownChange}
                       onChange={(value, datas: any) => {
+                        setPriceValid(true);
                         disableKeyboard();
                         setPriceIdentifier(value);
                         setPriceTicker(
@@ -673,8 +713,25 @@ const CreateLotteryModal: React.FC<{
                               const value = (e.target as HTMLInputElement)
                                 .value;
                               setPriceIdentifier(value);
-                              setPriceNonce(0);
-                              setPriceDecimals(0);
+                              const splited = splitIdentifier(value);
+                              if (splited.is_valid) {
+                                setPriceTicker(splited.ticker);
+                                setPriceNonce(splited.nonce);
+                                setPriceDecimals(0); // 🚧 A définir
+                                setPriceValid(true);
+                                if (['Esdt'].includes(priceType)) {
+                                  // alert(
+                                  //   '🚧 cannot read decimals from manual input'
+                                  // );
+                                } else {
+                                }
+                              } else {
+                                // 🛑 Si le format est incorrect
+                                setPriceValid(false);
+                                setPriceTicker('');
+                                setPriceNonce(0);
+                                setPriceDecimals(0);
+                              }
                             }}
                           />
                         </>
@@ -692,7 +749,7 @@ const CreateLotteryModal: React.FC<{
                           disabled={
                             [xgraou_identifier, graou_identifier].includes(
                               token.identifier
-                            ) && !isFree
+                            ) && !isLocked
                           }
                         >
                           {token.identifier}
@@ -701,6 +758,7 @@ const CreateLotteryModal: React.FC<{
                     </Select>
                   </Form.Item>
                 )}
+                {/* {priceIdentifier} : {priceNonce} {parseInt('08', 16)} */}
                 {/* Photo du PRICE */}
                 {priceIdentifier && ['Nft', 'Sft'].includes(priceType) && (
                   <NftDisplay nftInfo={price_nft_information} amount={0} />
@@ -742,6 +800,8 @@ const CreateLotteryModal: React.FC<{
                     /> */}
                   </Form.Item>
                 )}
+                {priceAmount.isGreaterThan(1) &&
+                  ['Sft'].includes(priceType) && <>WARNING</>}
                 {isFree && (
                   <div className='lottery-info'>
                     {t('lotteries:free_warning')}
@@ -768,7 +828,8 @@ const CreateLotteryModal: React.FC<{
             {prizeIdentifier &&
               prizeAmount.isGreaterThan(0) &&
               priceIdentifier &&
-              priceAmount.isGreaterThan(0) && (
+              priceAmount.isGreaterThan(0) &&
+              priceValid && (
                 <>
                   {' '}
                   <Form.Item
@@ -1075,7 +1136,8 @@ const CreateLotteryModal: React.FC<{
           {prizeIdentifier &&
             prizeAmount.isGreaterThan(0) &&
             priceIdentifier &&
-            priceAmount.isGreaterThan(0) && (
+            priceAmount.isGreaterThan(0) &&
+            priceValid && (
               <>
                 <Form.Item
                   name='acceptConditions'
