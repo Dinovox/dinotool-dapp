@@ -63,7 +63,7 @@ const CreateLotteryModal: React.FC<{
   const [priceTicker, setPriceTicker] = useState<string>('');
   const [prizeBalance, setPrizeBalance] = useState<BigNumber>(new BigNumber(0));
   const [payWith, setPayWith] = useState('');
-
+  const [checked, setChecked] = useState(false);
   // test for manual input (not from dropdown)
   const [priceValid, setPriceValid] = useState(true);
 
@@ -168,7 +168,8 @@ const CreateLotteryModal: React.FC<{
 
   useEffect(() => {
     const fetchPriceEsdtInformation = async () => {
-      if (priceNonce == 0 && ['Esdt'].includes(priceType)) {
+      if (priceNonce == 0 && ['Esdt'].includes(priceType) && checked) {
+        console.log('price_esdt_information', priceIdentifier);
         if (
           priceIdentifier &&
           priceValid &&
@@ -183,7 +184,7 @@ const CreateLotteryModal: React.FC<{
     };
 
     fetchPriceEsdtInformation();
-  }, [price_esdt_information]);
+  }, [price_esdt_information, checked]);
 
   const handleStart = (date: dayjs.Dayjs | null) => {
     setStartTime(date ? date.unix() : 0); // Convertit en timestamp Unix (secondes)
@@ -372,6 +373,7 @@ const CreateLotteryModal: React.FC<{
   function splitIdentifier(identifier: string) {
     const parts = identifier.split('-');
 
+    console.log('parts', parts);
     if (parts.length === 3) {
       const [prefix, mid, suffix] = parts;
       return {
@@ -382,6 +384,7 @@ const CreateLotteryModal: React.FC<{
     }
     if (parts.length === 2) {
       const [prefix, mid] = parts;
+      setPriceValid(mid.length == 6 ? true : false);
       return {
         ticker: `${prefix}-${mid}`,
         nonce: 0,
@@ -672,7 +675,11 @@ const CreateLotteryModal: React.FC<{
                         disableKeyboard();
                         setPriceIdentifier(value);
                         setPriceTicker(
-                          datas?.datas?.ticker ? datas?.datas?.ticker : ''
+                          priceType === 'Esdt'
+                            ? datas?.datas?.identifier
+                            : datas?.datas?.ticker
+                            ? datas?.datas?.ticker
+                            : ''
                         );
                         setPriceNonce(
                           datas?.datas?.nonce > 0 ? datas?.datas?.nonce : 0
@@ -715,6 +722,7 @@ const CreateLotteryModal: React.FC<{
                               setPriceIdentifier(value);
                               const splited = splitIdentifier(value);
                               if (splited.is_valid) {
+                                setChecked(true);
                                 setPriceTicker(splited.ticker);
                                 setPriceNonce(splited.nonce);
                                 setPriceDecimals(0); // 🚧 A définir
@@ -727,6 +735,7 @@ const CreateLotteryModal: React.FC<{
                                 }
                               } else {
                                 // 🛑 Si le format est incorrect
+                                console.log('splited', splited);
                                 setPriceValid(false);
                                 setPriceTicker('');
                                 setPriceNonce(0);

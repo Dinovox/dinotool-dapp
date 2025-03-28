@@ -53,7 +53,7 @@ export const ActionBuy = ({
         value: price_amount,
         data: 'buy@' + bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     } else if (price_identifier == 'FREE-000000') {
       fundTransaction = {
@@ -68,7 +68,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     } else if (price_nonce == 0) {
       fundTransaction = {
@@ -83,7 +83,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(lottery_id)),
         receiver: addressTobech32,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     } else {
       fundTransaction = {
@@ -102,7 +102,7 @@ export const ActionBuy = ({
           '@' +
           bigToHex(BigInt(lottery_id)),
         receiver: address,
-        gasLimit: '14000000'
+        gasLimit: '20000000'
       };
     }
     await refreshAccount();
