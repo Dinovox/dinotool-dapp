@@ -143,7 +143,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
 
   return (
     <div 
-      className={`cardMesNFT relative bg-white !border-2 ${borderColor} !important transition-all duration-300 rounded-xl overflow-hidden d-nav-card`}
+      className={`cardMesNFT relative bg-white !border-2 ${borderColor} !important transition-all duration-300 rounded-xl overflow-hidden d-nav-card hover:shadow-lg`}
       style={{ 
         cursor: 'pointer',
         height: '350px',
@@ -152,6 +152,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         borderStyle: 'solid',
         borderWidth: '2px'
       }}
+      onClick={() => navigate(`/lotteries/${data.id}`, { replace: false })}
     >
       {/* Section haute - Badge et Image */}
       <div className="relative">
@@ -256,13 +257,12 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
           </div>
         </div>
 
-        {/* Participate Button */}
-        <button 
-          className="lotteryParticipateButton"
-          onClick={() => navigate(`/lotteries/${data.id}`, { replace: false })}
+        {/* Remove the Participate Button since the whole card is now clickable */}
+        <div 
+          className="lotteryParticipateButton pointer-events-none"
         >
           {t('lotteries:participate')}
-        </button>
+        </div>
       </div>
     </div>
   );
