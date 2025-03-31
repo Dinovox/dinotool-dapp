@@ -4,7 +4,7 @@ import { useGetAccount } from 'hooks';
 import { useState } from 'react';
 import BigNumber from 'bignumber.js';
 import CreateLotteryModal from './Create';
-import LotteryCard2 from '../../components/LotteryCard2';
+import LotteryCard2 from './LotteryCard2';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import {
   useGetLotteriesDB,

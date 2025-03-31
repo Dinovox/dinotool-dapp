@@ -12,6 +12,7 @@
   "status_owned": "My lotteries",
   "status_draw": "Draw",
   "status_participated": "My participations",
+  "status_soon": "Soon",
   "previous": "Previous",
   "next": "Next",
   "return": "Return",
@@ -59,7 +60,7 @@
   "select_date": "Select date",
   "leave_empty_end": "Leave empty for no end",
   "fee_percentage": "Fee Deduction & Vendor Payment",
-  "fee_percentage_tooltip": "A portion of the creator’s pool will be deducted as fees to support platform development. The vendor amount, after fee deduction, will be sent based on the total number of tickets sold.",
+  "fee_percentage_tooltip": "A portion of the creator's pool will be deducted as fees to support platform development. The vendor amount, after fee deduction, will be sent based on the total number of tickets sold.",
 
   "graou_create_fee": "Creation fee: 500 xGraou or 0.25 EGLD",
   "auto_draw_fee": "Auto draw fee:",
@@ -78,5 +79,8 @@
   "share_on_x_text": "🎟️ Play GRAOU game, win GRAOU prizes ! Come and play my lottery #{{lottery_id}} 🚀",
   "free_tooltip": "Free lotteries are a great way to engage with your community and reward your followers. Users can claim a free ticket if they hold a minimum balance of ESDT, SFT, or EGLD tokens in their wallet. You may define the required minimum balance to enhance fairness.",
   "locked_tooltip": "Locked lotteries allow users to participate without losing tokens, as the participation cost is only temporarily locked within the smart contract. The funds are released once the lottery ends.",
-  "check_collection": "Everyone can create a lottery. Before participating, make sure to check the artist's collection."
+  "check_collection": "Everyone can create a lottery. Before participating, make sure to check the artist's collection.",
+  "participate": "Participate",
+  "price": "Price",
+  "no_end_date": "No end date"
 }

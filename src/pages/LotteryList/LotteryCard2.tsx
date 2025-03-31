@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+import './LotteryList.css';
 
 // Types
 interface LotteryData {
@@ -14,6 +17,7 @@ interface LotteryData {
   price_amount: number;
   price_identifier: string;
   image_url: string;
+  winner_id?: number;
 }
 
 interface LotteryCard2Props {
@@ -21,6 +25,8 @@ interface LotteryCard2Props {
 }
 
 const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
+  const loading = useLoadTranslations('lotteries');
+  const { t } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [timerColor, setTimerColor] = useState<string>('text-gray-500');
   const [borderColor, setBorderColor] = useState<string>('border-green-500');
@@ -28,6 +34,21 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
 
   // Calculate ticket progress percentage
   const ticketProgress = (data.tickets_sold / data.max_tickets) * 100;
+
+  // Get status
+  const now = Math.floor(Date.now() / 1000);
+  const start = parseInt(data.start_time);
+  
+  const status = 
+    (data.winner_id && data.winner_id > 0)
+      ? 'ended'
+      : start > now
+        ? 'soon'
+        : data.tickets_sold >= data.max_tickets ||
+          (parseInt(data.end_time) > 0 && parseInt(data.end_time) < now)
+          ? 'draw'
+          : 'ongoing';
+
 
   // Get progress bar color based on percentage
   const getProgressColor = () => {
@@ -42,15 +63,20 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
     const start = parseInt(data.start_time);
     
     if (now < start) {
-      return 'border-gray-300';
+      return 'border-gray-400';
     }
     
     if (timerColor === 'text-red-500' || ticketProgress >= 90) {
-      return 'border-red-500';
+      return 'border-red-600';
     } else if (timerColor === 'text-orange-500' || ticketProgress >= 50) {
-      return 'border-orange-500';
+      return 'border-orange-600';
     }
-    return 'border-green-500';
+    return 'border-green-600';
+  };
+
+  // Format price identifier to keep only the first part
+  const formatPriceIdentifier = (identifier: string) => {
+    return identifier.split('-')[0];
   };
 
   // Update timer and colors
@@ -64,31 +90,31 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         // Not started yet
         const diff = start - now;
         setTimeRemaining(`${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`);
-        setHoverTime(`Starts in ${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`);
+        setHoverTime(t('lotteries:open_in', { time: `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m` }));
         setTimerColor('text-gray-500');
       } else if (end === 0) {
         // Infinite duration
         setTimeRemaining('∞');
-        setHoverTime('No end date');
+        setHoverTime(t('lotteries:no_end_date'));
         setTimerColor('text-green-500');
       } else {
         // Running lottery
         const diff = end - now;
         if (diff <= 0) {
-          setTimeRemaining('Ended');
-          setHoverTime('Lottery ended');
+          setTimeRemaining(t('lotteries:expired'));
+          setHoverTime(t('lotteries:expired'));
           setTimerColor('text-red-500');
         } else if (diff <= 300) { // Less than 5 minutes
           setTimeRemaining(`${Math.floor(diff / 60)}m ${diff % 60}s`);
-          setHoverTime(`Ends in ${Math.floor(diff / 60)}m ${diff % 60}s`);
+          setHoverTime(t('lotteries:end_in', { time: `${Math.floor(diff / 60)}m ${diff % 60}s` }));
           setTimerColor('text-red-500');
         } else if (diff <= 3600) { // Less than 1 hour
           setTimeRemaining(`${Math.floor(diff / 60)}m`);
-          setHoverTime(`Ends in ${Math.floor(diff / 60)}m`);
+          setHoverTime(t('lotteries:end_in', { time: `${Math.floor(diff / 60)}m` }));
           setTimerColor('text-orange-500');
         } else {
           setTimeRemaining(`${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`);
-          setHoverTime(`Ends in ${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`);
+          setHoverTime(t('lotteries:end_in', { time: `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m` }));
           setTimerColor('text-green-500');
         }
       }
@@ -97,48 +123,71 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
     updateTimer();
     const timer = setInterval(updateTimer, 1000);
     return () => clearInterval(timer);
-  }, [data.start_time, data.end_time]);
+  }, [data.start_time, data.end_time, t]);
 
   // Update border color based on urgency
   useEffect(() => {
-    setBorderColor(getBorderColor());
-  }, [timerColor, ticketProgress]);
+    const updateBorderColor = () => {
+      const newBorderColor = getBorderColor();
+      setBorderColor(newBorderColor);
+    };
+
+    updateBorderColor();
+    // Met à jour la couleur toutes les secondes
+    const interval = setInterval(updateBorderColor, 1000);
+    return () => clearInterval(interval);
+  }, [timerColor, data.tickets_sold, data.max_tickets, data.start_time, data.end_time]);
 
   return (
     <div 
-      className={`relative cardMesNFT bg-white border-2 transition-colors duration-300`}
+      className={`cardMesNFT relative bg-white !border-2 ${borderColor} !important transition-all duration-300 rounded-xl overflow-hidden d-nav-card`}
       style={{ 
-        borderColor: borderColor.replace('border-', '').replace('-500', ''),
-        minHeight: '340px'
+        cursor: 'pointer',
+        height: '350px',
+        display: 'flex',
+        flexDirection: 'column',
+        borderStyle: 'solid',
+        borderWidth: '2px'
       }}
     >
-      {/* Status Badge */}
-      <span className={`buttonStatus ${timerColor === 'text-red-500' ? 'bg-orange-500' : 'bg-yellow-400'}`}>
-        Active
-      </span>
-
-      {/* Image */}
-      <div className="flex justify-center items-center" style={{ width: '168px', height: '168px', margin: '0 auto' }}>
+      {/* Section haute - Badge et Image */}
+      <div className="relative">
+        <span
+          className={`buttonStatus ${
+            status === 'soon' ? '!bg-gray-400' :
+            status === 'ongoing' ? '!bg-yellow-400' : 
+            '!bg-orange-500'
+          }`}
+          style={{
+            fontFamily: 'Bit Cell',
+            fontSize: '16px',
+            letterSpacing: '-0.02em',
+            lineHeight: '120%',
+            backgroundColor: status === 'soon' ? '#9CA3AF' : undefined
+          }}
+        >
+          {t('lotteries:status_' + status.toLowerCase())}
+        </span>
         <img 
           src={data.image_url} 
           alt={data.lottery_name}
-          className="w-full h-full object-cover"
+          className="w-full h-[168px] object-cover"
         />
       </div>
 
-      {/* Content */}
-      <div className="subCard flex flex-col flex-grow p-2">
+      {/* Section basse - Informations */}
+      <div className="flex-1 flex flex-col p-3 w-full">
         {/* Lottery ID */}
-        <h2 className="text-base font-bold mb-1">
-          Lottery #{data.id}
+        <h2 className="text-base font-bold mb-2">
+          {t('lotteries:lottery_number', { number: data.id })}
         </h2>
 
         {/* Ticket Progress */}
-        <div className="mb-1.5">
+        <div className="mb-2 w-full">
           <div className="flex justify-between text-xs mb-1">
-            <span>Tickets: {data.tickets_sold}/{data.max_tickets}</span>
+            <span>{t('lotteries:tickets')}: {data.tickets_sold}/{data.max_tickets}</span>
           </div>
-          <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-1 bg-gray-200 rounded-full overflow-hidden w-full">
             <div 
               className={`h-full ${getProgressColor()} transition-all duration-300`}
               style={{ width: `${ticketProgress}%` }}
@@ -147,16 +196,16 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         </div>
 
         {/* Price Information */}
-        <div className="flex items-center justify-between text-xs mb-1.5">
-          <span className="text-gray-600">Price:</span>
+        <div className="flex items-center justify-between text-xs mb-2 w-full">
+          <span className="text-gray-600">{t('lotteries:price')}:</span>
           <span className="font-medium">
-            {data.price_amount} {data.price_identifier}
+            {data.price_amount} {formatPriceIdentifier(data.price_identifier)}
           </span>
         </div>
 
         {/* Timer with icon */}
-        <div className={`flex items-center justify-center mb-2 ${timerColor}`}>
-          <div className={`group relative flex items-center px-3 py-1 rounded ${
+        <div className={`flex items-center justify-center mb-3 ${timerColor}`}>
+          <div className={`group relative inline-flex items-center px-3 py-1 rounded ${
             timerColor === 'text-red-500' ? 'bg-red-100' :
             timerColor === 'text-orange-500' ? 'bg-orange-100' :
             timerColor === 'text-gray-500' ? 'bg-gray-100' :
@@ -190,7 +239,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
                 />
               </svg>
             </div>
-            <span className="font-mono text-xs">{timeRemaining}</span>
+            <span className="font-mono text-xs whitespace-nowrap">{timeRemaining}</span>
             
             {/* Tooltip */}
             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 text-xs text-white rounded bg-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
@@ -201,15 +250,12 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         </div>
 
         {/* Participate Button */}
-        <div className="mt-auto flex justify-center w-full">
-          <button 
-            className="smallDinoButton text-sm"
-            style={{ width: "calc(100% - 16px)" }}
-            onClick={() => console.log('Participate in lottery:', data.id)}
-          >
-            Participate
-          </button>
-        </div>
+        <button 
+          className="lotteryParticipateButton"
+          onClick={() => console.log('Participate in lottery:', data.id)}
+        >
+          {t('lotteries:participate')}
+        </button>
       </div>
     </div>
   );
