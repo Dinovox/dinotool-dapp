@@ -17,7 +17,7 @@ interface LotteryData {
   price_type: string;
   price_amount: number;
   price_identifier: string;
-  image_url: string;
+  image_url?: string;
   winner_id?: number;
 }
 
@@ -172,9 +172,13 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
           {t('lotteries:status_' + status.toLowerCase())}
         </span>
         <img 
-          src={data.image_url} 
-          alt={data.lottery_name}
+          src={data.image_url ? data.image_url : 'https://app.dinovox.com/assets/lotteries-CgkojzQT.png'} 
+          alt={data.lottery_name || 'Lottery image'}
           className="w-full h-[168px] object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://app.dinovox.com/assets/lotteries-CgkojzQT.png';
+          }}
         />
       </div>
 
