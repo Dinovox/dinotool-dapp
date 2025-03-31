@@ -15,29 +15,30 @@ import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hoo
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 
-// Données simulées pour le test
-const mockLotteryData = {
-  id: 50,
-  lottery_name: "Vintage Collection",
-  prize_identifier: "TITART-fdfe96",
-  prize_nonce: 8,
-  tickets_sold: 2,
-  max_tickets: 50,
-  start_time: "1743350400",
-  end_time: "0",
-  price_type: "Sft",
-  price_amount: 100,
-  price_identifier: "TITART-fdfe96",
-  image_url: "https://devnet-media.elrond.com/nfts/asset/QmXLFfqgXFv8cUzmkyFFA9MJP74ndZHdWa6xkpazyqsuVJ"
-};
+// Interface pour les loteries de la DB
+interface DBLottery {
+  id: number;
+  description: string;
+  end_time: string;
+  max_tickets: number;
+  price_type: string;
+  prize_identifier: string;
+  prize_nonce: number;
+  start_time: string;
+  tickets_sold: number;
+  image_url: string;
+  price_amount: number;
+  price_identifier: string;
+  winner_id?: number;
+}
 
-// Pour le test, créons un tableau avec plusieurs instances
-const mockLotteries = [
-  {...mockLotteryData, id: 50, tickets_sold: 2, start_time: (Math.floor(Date.now() / 1000) + 7 * 3600).toString()}, // Commence dans 7 heures
-  {...mockLotteryData, id: 51, tickets_sold: 25, end_time: (Math.floor(Date.now() / 1000) + 300).toString()}, // Se termine dans 5 minutes
-  {...mockLotteryData, id: 52, tickets_sold: 45, end_time: "0"}, // Durée infinie
-  {...mockLotteryData, id: 53, tickets_sold: 2, end_time: (Math.floor(Date.now() / 1000) + 18 * 3600).toString()} // Se termine dans 18 heures
-];
+// Interface pour la réponse de l'API
+interface LotteriesResponse {
+  lotteries: DBLottery[];
+  total: number;
+  page: number;
+  limit: number;
+}
 
 export const LotteryList = () => {
   const loading = useLoadTranslations('lotteries');
@@ -46,7 +47,8 @@ export const LotteryList = () => {
   const [filter, setFilter] = useState<string>('ongoing');
 
   const lotteries = useGetLotteriesVM();
-  const lotteriesDB = useGetLotteriesDB({ page: 1, limit: 10 });
+  const { lotteries: lotteriesDB, isLoading } = useGetLotteriesDB({ page, limit: 4 }) as { lotteries: DBLottery[], isLoading: boolean };
+  //console.log('LotteriesDB:', lotteriesDB);
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.ended;
   const userLotteries = useGetUserParticipations(filter);
@@ -61,13 +63,36 @@ export const LotteryList = () => {
 
   const graou_cost = new BigNumber(lottery_cost.graou);
   const egld_cost = new BigNumber(lottery_cost.egld);
-  
-  // Pour le test, nous utilisons les données simulées
-  const lotteriesDisplay = mockLotteries;
+
+  // Sélectionner les loteries à afficher selon le filtre
+  const getLotteriesToDisplay = () => {
+    if (!Array.isArray(lotteriesDB)) {
+      return [];
+    }
+    
+    const now = Math.floor(Date.now() / 1000);
+    
+    switch (filter) {
+      case 'ended':
+        return lotteriesDB.filter((lottery: DBLottery) => 
+          lottery.winner_id || 
+          (lottery.end_time !== "0" && parseInt(lottery.end_time) < now)
+        );
+      case 'ongoing':
+      default:
+        return lotteriesDB.filter((lottery: DBLottery) => 
+          !lottery.winner_id && 
+          (lottery.end_time === "0" || parseInt(lottery.end_time) > now) &&
+          parseInt(lottery.start_time) <= now
+        );
+    }
+  };
+
+  const lotteriesDisplay = getLotteriesToDisplay();
 
   //calcul pagination
   const itemsPerPage = 4;
-  const totalPages = Math.ceil(lotteriesDisplay.length / itemsPerPage);
+  const totalPages = Math.ceil((lotteriesDisplay?.length || 0) / itemsPerPage);
   const maxPagesToShow = 5;
 
   let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
@@ -94,16 +119,14 @@ export const LotteryList = () => {
                 {t('lotteries:status_ongoing')}
               </button>
 
-              {lotteries.ended.length > 0 && (
-                <button
-                  className={`dinoButton ${filter !== 'ended' ? 'reverse' : ''}`}
-                  name='filter'
-                  value='ended'
-                  onClick={() => (setFilter('ended'), setPage(1))}
-                >
-                  {t('lotteries:status_ended')}
-                </button>
-              )}
+              <button
+                className={`dinoButton ${filter !== 'ended' ? 'reverse' : ''}`}
+                name='filter'
+                value='ended'
+                onClick={() => (setFilter('ended'), setPage(1))}
+              >
+                {t('lotteries:status_ended')}
+              </button>
 
               {lotteries.user_owned.length > 0 && (
                 <button
@@ -129,11 +152,32 @@ export const LotteryList = () => {
             
             {/* Affichage des cartes de loterie */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
-              {lotteriesDisplay
-                .slice((page - 1) * itemsPerPage, page * itemsPerPage)
-                .map((lottery) => (
-                  <LotteryCard2 key={lottery.id} data={lottery} />
-                ))}
+              {loading || isLoading ? (
+                <div>Chargement...</div>
+              ) : lotteriesDisplay && lotteriesDisplay.length > 0 ? (
+                lotteriesDisplay.map((lottery: DBLottery) => (
+                  <LotteryCard2 
+                    key={lottery.id} 
+                    data={{
+                      id: lottery.id,
+                      lottery_name: 'N/A',
+                      prize_identifier: lottery.prize_identifier || 'N/A',
+                      prize_nonce: lottery.prize_nonce || 0,
+                      tickets_sold: lottery.tickets_sold || 0,
+                      max_tickets: lottery.max_tickets || 0,
+                      start_time: lottery.start_time || '0',
+                      end_time: lottery.end_time || '0',
+                      price_type: lottery.price_type || 'N/A',
+                      price_amount: lottery.price_amount || 0,
+                      price_identifier: lottery.price_identifier || 'N/A',
+                      image_url: lottery.image_url || '/default-lottery-image.png',
+                      winner_id: lottery.winner_id
+                    }} 
+                  />
+                ))
+              ) : (
+                <div>Aucune loterie disponible</div>
+              )}
             </div>
 
             {/* Pagination */}

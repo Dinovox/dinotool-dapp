@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import './LotteryList.css';
+import { useNavigate } from 'react-router-dom';
 
 // Types
 interface LotteryData {
@@ -27,6 +28,7 @@ interface LotteryCard2Props {
 const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [timerColor, setTimerColor] = useState<string>('text-gray-500');
   const [borderColor, setBorderColor] = useState<string>('border-green-500');
@@ -75,7 +77,8 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
   };
 
   // Format price identifier to keep only the first part
-  const formatPriceIdentifier = (identifier: string) => {
+  const formatPriceIdentifier = (identifier: string | undefined) => {
+    if (!identifier) return '';
     return identifier.split('-')[0];
   };
 
@@ -252,7 +255,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         {/* Participate Button */}
         <button 
           className="lotteryParticipateButton"
-          onClick={() => console.log('Participate in lottery:', data.id)}
+          onClick={() => navigate(`/lotteries/${data.id}`, { replace: false })}
         >
           {t('lotteries:participate')}
         </button>

@@ -19,10 +19,13 @@ import { to } from 'react-spring';
 const resultsParser = new ResultsParser();
 export const useGetLotteriesDB = ({ page, limit }: any) => {
   const [lotteries, setLotteries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const getDbData = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
-        `${internal_api}/dinovox/lotteries/?page${page}&limit=${limit}`
+        `${internal_api}/dinovox/lotteries/?page=${page}&limit=${limit}`
       );
       if (!response.ok) {
         throw new Error(
@@ -30,19 +33,25 @@ export const useGetLotteriesDB = ({ page, limit }: any) => {
         );
       }
       const data = await response.json();
-      if (data) {
-        setLotteries(data);
+      if (data?.lotteries) {
+        setLotteries(data.lotteries);
+      } else {
+        console.error('No lotteries found in response:', data);
+        setLotteries([]);
       }
-      // setMintable(data);
     } catch (err) {
       console.error('Unable to call getMintable', err);
+      setLotteries([]);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   useEffect(() => {
     getDbData();
   }, [page, limit]);
 
-  return lotteries;
+  return { lotteries, isLoading };
 };
 
 export const useGetLotteriesVM = () => {
