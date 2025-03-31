@@ -40,6 +40,11 @@ interface LotteriesResponse {
   limit: number;
 }
 
+interface FilteredLotteries {
+  lotteries: DBLottery[];
+  total: number;
+}
+
 export const LotteryList = () => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
@@ -47,7 +52,7 @@ export const LotteryList = () => {
   const [filter, setFilter] = useState<string>('ongoing');
 
   const lotteries = useGetLotteriesVM();
-  const { lotteries: lotteriesDB, isLoading } = useGetLotteriesDB({ page, limit: 4 }) as { lotteries: DBLottery[], isLoading: boolean };
+  const { lotteries: lotteriesDB, isLoading } = useGetLotteriesDB({ page, limit: 12 }) as { lotteries: DBLottery[], isLoading: boolean };
   //console.log('LotteriesDB:', lotteriesDB);
   const runningLottery = lotteries.running;
   const endedLottery = lotteries.ended;
@@ -65,34 +70,40 @@ export const LotteryList = () => {
   const egld_cost = new BigNumber(lottery_cost.egld);
 
   // Sélectionner les loteries à afficher selon le filtre
-  const getLotteriesToDisplay = () => {
+  const getLotteriesToDisplay = (): FilteredLotteries => {
     if (!Array.isArray(lotteriesDB)) {
-      return [];
+      return { lotteries: [], total: 0 };
     }
     
     const now = Math.floor(Date.now() / 1000);
     
-    switch (filter) {
-      case 'ended':
-        return lotteriesDB.filter((lottery: DBLottery) => 
+    // Filtrer d'abord selon le statut
+    const filteredLotteries = filter === 'ended'
+      ? lotteriesDB.filter((lottery: DBLottery) => 
           lottery.winner_id || 
           (lottery.end_time !== "0" && parseInt(lottery.end_time) < now)
-        );
-      case 'ongoing':
-      default:
-        return lotteriesDB.filter((lottery: DBLottery) => 
+        )
+      : lotteriesDB.filter((lottery: DBLottery) => 
           !lottery.winner_id && 
           (lottery.end_time === "0" || parseInt(lottery.end_time) > now) &&
           parseInt(lottery.start_time) <= now
         );
-    }
+
+    // Calculer le nombre total de pages basé sur les loteries filtrées
+    const filteredTotal = filteredLotteries.length;
+    
+    // Appliquer la pagination
+    const startIndex = (page - 1) * 4;
+    const endIndex = startIndex + 4;
+    return {
+      lotteries: filteredLotteries.slice(startIndex, endIndex),
+      total: filteredTotal
+    };
   };
 
-  const lotteriesDisplay = getLotteriesToDisplay();
-
-  //calcul pagination
+  const { lotteries: lotteriesDisplay, total: filteredTotal } = getLotteriesToDisplay();
   const itemsPerPage = 4;
-  const totalPages = Math.ceil((lotteriesDisplay?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil(filteredTotal / itemsPerPage);
   const maxPagesToShow = 5;
 
   let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));

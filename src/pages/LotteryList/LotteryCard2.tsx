@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import './LotteryList.css';
 import { useNavigate } from 'react-router-dom';
+import TicketProgressBar from '../../components/TicketProgressBar';
 
 // Types
 interface LotteryData {
@@ -192,15 +193,11 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
 
         {/* Ticket Progress */}
         <div className="mb-2 w-full">
-          <div className="flex justify-between text-xs mb-1">
-            <span>{t('lotteries:tickets')}: {data.tickets_sold}/{data.max_tickets}</span>
-          </div>
-          <div className="h-1 bg-gray-200 rounded-full overflow-hidden w-full">
-            <div 
-              className={`h-full ${getProgressColor()} transition-all duration-300`}
-              style={{ width: `${ticketProgress}%` }}
-            />
-          </div>
+          <TicketProgressBar
+            ticketsSold={data.tickets_sold}
+            maxTickets={data.max_tickets}
+            height="h-1"
+          />
         </div>
 
         {/* Price Information */}

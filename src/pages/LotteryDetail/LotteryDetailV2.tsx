@@ -21,6 +21,7 @@ import TwitterShareButton from './Transaction/helpers/shareOnX';
 import { EditDescription } from './EditDescription';
 import SafeMarkdown from '../../components/SafeMarkdown';
 import ShortenedAddress from 'helpers/shortenedAddress';
+import TicketProgressBar from '../../components/TicketProgressBar';
 
 interface LotteryData {
   field0: {
@@ -292,7 +293,7 @@ const LotteryDetailV2 = () => {
 
               {/* Description */}
               {lottery.description && (
-                <div>
+                <div className="text-center">
                   <SafeMarkdown content={lottery.description} />
                   {lottery.owner.address === address && (
                     <button
@@ -326,17 +327,12 @@ const LotteryDetailV2 = () => {
             {/* Progression et Timer sur la même ligne */}
             <div className="flex items-center gap-8">
               {/* Barre de progression - prend l'espace restant */}
-              <div className="flex-1 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>{t('lotteries:tickets')}</span>
-                  <span className="font-medium">{lottery.field0.tickets_sold} / {lottery.field0.max_tickets}</span>
-                </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full ${getProgressColor()} transition-all duration-300`}
-                    style={{ width: `${ticketProgress}%` }}
-                  />
-                </div>
+              <div className="flex-1">
+                <TicketProgressBar
+                  ticketsSold={Number(lottery.field0.tickets_sold)}
+                  maxTickets={Number(lottery.field0.max_tickets)}
+                  height="h-2"
+                />
               </div>
 
               {/* Timer - taille fixe */}
