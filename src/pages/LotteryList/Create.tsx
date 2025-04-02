@@ -569,26 +569,32 @@ const CreateLotteryModal: React.FC<{
             )}{' '}
             {/* Montant du PRIZE */}{' '}
             {['Esdt', 'Sft', 'Egld'].includes(prizeType) && (
-              <Form.Item
-                name='prizeAmount'
-                label={t('lotteries:quantity')}
-                rules={[
-                  {
-                    required: false,
-                    message: 'Please input the price amount!'
-                  }
-                ]}
-              >
-                {' '}
-                <Input
-                  type='number' // Utilisation de `text` pour éviter les restrictions des `number`
-                  inputMode='decimal' // Active le clavier numérique sur mobile
-                  onWheel={(e) => (e.target as HTMLInputElement).blur()} // Désactive le scroll
-                  value={prizeDisplay} // Valeur affichée
-                  onChange={handlePrizeAmountChange} // Gestion de la saisie
-                  disabled={prizeType === 'Nft' || acceptConditions}
-                />
-              </Form.Item>
+              <>
+                <Form.Item
+                  name='prizeAmount'
+                  label={t('lotteries:quantity')}
+                  rules={[
+                    {
+                      required: false,
+                      message: 'Please input the price amount!'
+                    }
+                  ]}
+                >
+                  {' '}
+                  <Input
+                    type='number' // Utilisation de `text` pour éviter les restrictions des `number`
+                    inputMode='decimal' // Active le clavier numérique sur mobile
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()} // Désactive le scroll
+                    value={prizeDisplay} // Valeur affichée
+                    onChange={handlePrizeAmountChange} // Gestion de la saisie
+                    disabled={prizeType === 'Nft' || acceptConditions}
+                  />
+                </Form.Item>
+                {prizeAmount.isGreaterThan(1) &&
+                  ['Sft'].includes(prizeType) && (
+                    <>{t('lotteries:only_one_winner_warning')}</>
+                  )}
+              </>
             )}
           </div>
           {t('lotteries:ticket_price')}
@@ -809,8 +815,6 @@ const CreateLotteryModal: React.FC<{
                     /> */}
                   </Form.Item>
                 )}
-                {priceAmount.isGreaterThan(1) &&
-                  ['Sft'].includes(priceType) && <>WARNING</>}
                 {isFree && (
                   <div className='lottery-info'>
                     {t('lotteries:free_warning')}

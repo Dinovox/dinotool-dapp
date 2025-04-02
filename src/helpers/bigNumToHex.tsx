@@ -10,4 +10,4 @@ const bigNumToHex = (bn: BigNumber) => {
   return hex.length % 2 !== 0 ? '0' + hex : hex;
 };
 
-export default bigNumToHex;
+export { bigNumToHex };

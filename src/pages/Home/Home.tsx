@@ -23,6 +23,7 @@ import useLoadTranslations from '../../hooks/useLoadTranslations';
 import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import BigNumber from 'bignumber.js';
+import { ActionCreateSFT } from './ActionCreateSFT';
 
 export const Home = () => {
   const loading = useLoadTranslations('home');
@@ -178,6 +179,18 @@ export const Home = () => {
               </div>{' '}
             </a>
           </div>
+          {/* <ActionCreateSFT
+            collection='DINOCOLLEC-723119'
+            name='DinoVox Special Edition Neverless'
+            quantity={new BigNumber(250)}
+            royalties={500}
+            hash=''
+            attributes='metadata:bafybeiddil7rnefv5idwqycaca7xaavo5747pdtxvofycz6bjxe7xmkfkm/1.json;tags:DinoVox,Graou'
+            uris={[
+              'https://ipfs.io/ipfs/bafybeiddil7rnefv5idwqycaca7xaavo5747pdtxvofycz6bjxe7xmkfkm/1.mp4',
+              'https://ipfs.io/ipfs/bafybeiddil7rnefv5idwqycaca7xaavo5747pdtxvofycz6bjxe7xmkfkm/1.json'
+            ]}
+          /> */}
         </div>
       </PageWrapper>
     </AuthRedirectWrapper>

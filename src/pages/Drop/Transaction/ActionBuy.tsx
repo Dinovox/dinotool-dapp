@@ -12,7 +12,7 @@ import {
 } from '@multiversx/sdk-dapp/hooks';
 import { Button } from './Button';
 import { BigNumber } from 'bignumber.js';
-import bigNumToHex from 'helpers/bigNumToHex';
+import { bigNumToHex } from 'helpers/bigNumToHex';
 import { useNavigate } from 'react-router-dom';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';

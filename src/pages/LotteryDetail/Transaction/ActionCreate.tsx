@@ -11,7 +11,7 @@ import {
   useGetNetworkConfig
 } from '@multiversx/sdk-dapp/hooks';
 import BigNumber from 'bignumber.js';
-import bigNumToHex from 'helpers/bigNumToHex';
+import { bigNumToHex } from 'helpers/bigNumToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 

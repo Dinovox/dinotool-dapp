@@ -216,6 +216,19 @@ export const LotteryDetail = () => {
                           {blockToTime(lottery?.end_time)}{' '}
                         </div>
                       )}
+                      {lottery.auto_draw ? (
+                        <div className='info-item'>
+                          <span className='text-label'>
+                            {t('lotteries:auto_draw')}
+                          </span>{' '}
+                        </div>
+                      ) : (
+                        <div className='info-item'>
+                          <span className='text-label'>
+                            {t('lotteries:manual_draw')}
+                          </span>{' '}
+                        </div>
+                      )}
                     </>
                   )}
 
@@ -260,7 +273,7 @@ export const LotteryDetail = () => {
                         </div>
                       </div>{' '}
                       <div style={{ width: '100%' }}>
-                        {editingDescription && (
+                        {(editingDescription || lottery.description == '') && (
                           <EditDescription
                             lottery_id={lotteryID}
                             lottery_description={lottery.description}

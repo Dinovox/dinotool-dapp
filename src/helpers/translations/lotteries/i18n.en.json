@@ -71,6 +71,7 @@
   "you_need_x_graou": "You need <bold>{{x}}</bold> XGRAOU to start the lottery. Get some by staking a <link1>DINOVOX</link1> at <link2>dinovox.com</link2>",
   "you_need_x_egld": "You need <bold>{{x}}</bold> EGLD to start the lottery.",
   "auto_draw": "Auto draw",
+  "manual_draw": "Manual draw",
   "auto_draw_tooltip": "Automatically draw the winner when the lottery ends. Applies additional fees in egld",
   "winner": "Winner",
   "delete_lottery": "Delete lottery",
@@ -78,5 +79,6 @@
   "share_on_x_text": "🎟️ Play GRAOU game, win GRAOU prizes ! Come and play my lottery #{{lottery_id}} 🚀",
   "free_tooltip": "Free lotteries are a great way to engage with your community and reward your followers. Users can claim a free ticket if they hold a minimum balance of ESDT, SFT, or EGLD tokens in their wallet. You may define the required minimum balance to enhance fairness.",
   "locked_tooltip": "Locked lotteries allow users to participate without losing tokens, as the participation cost is only temporarily locked within the smart contract. The funds are released once the lottery ends.",
-  "check_collection": "Everyone can create a lottery. Before participating, make sure to check the artist's collection."
+  "check_collection": "Everyone can create a lottery. Before participating, make sure to check the artist's collection.",
+  "only_one_winner_warning": "Only one winner will be selected and receive the prize. If you want to select multiple winners, you can create a new lottery."
 }
