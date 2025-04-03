@@ -169,7 +169,6 @@ const CreateLotteryModal: React.FC<{
   useEffect(() => {
     const fetchPriceEsdtInformation = async () => {
       if (priceNonce == 0 && ['Esdt'].includes(priceType) && checked) {
-        console.log('price_esdt_information', priceIdentifier);
         if (
           priceIdentifier &&
           priceValid &&
@@ -373,7 +372,6 @@ const CreateLotteryModal: React.FC<{
   function splitIdentifier(identifier: string) {
     const parts = identifier.split('-');
 
-    console.log('parts', parts);
     if (parts.length === 3) {
       const [prefix, mid, suffix] = parts;
       return {
@@ -741,7 +739,6 @@ const CreateLotteryModal: React.FC<{
                                 }
                               } else {
                                 // 🛑 Si le format est incorrect
-                                console.log('splited', splited);
                                 setPriceValid(false);
                                 setPriceTicker('');
                                 setPriceNonce(0);

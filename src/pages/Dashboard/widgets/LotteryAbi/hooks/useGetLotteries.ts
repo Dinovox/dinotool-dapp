@@ -16,13 +16,18 @@ import axios from 'axios';
 import { graou_identifier, internal_api } from 'config';
 import { to } from 'react-spring';
 
-const resultsParser = new ResultsParser();
-export const useGetLotteriesDB = ({ page, limit }: any) => {
+export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
   const [lotteries, setLotteries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [total_count, setTotalCount] = useState<number>(0);
   const getDbData = async () => {
     try {
+      // console.log('ids', ids);
+      setIsLoading(true);
       const response = await fetch(
-        `${internal_api}/dinovox/lotteries/?page${page}&limit=${limit}`
+        `${internal_api}/dinovox/lotteries/?page=${page}&limit=${limit}&status=${status}` +
+          (ids.length > 0 ? `&ids=${ids}` : '') +
+          (price ? `&price=${price}` : '')
       );
       if (!response.ok) {
         throw new Error(
@@ -30,21 +35,29 @@ export const useGetLotteriesDB = ({ page, limit }: any) => {
         );
       }
       const data = await response.json();
-      if (data) {
-        setLotteries(data);
+      if (data?.lotteries) {
+        setLotteries(data.lotteries);
+        setTotalCount(data.total_count);
+      } else {
+        console.error('No lotteries found in response:', data);
+        setLotteries([]);
       }
-      // setMintable(data);
     } catch (err) {
       console.error('Unable to call getMintable', err);
+      setLotteries([]);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   useEffect(() => {
     getDbData();
-  }, [page, limit]);
+  }, [page, limit, status, price]);
 
-  return lotteries;
+  return { lotteries, total_count, isLoading };
 };
 
+const resultsParser = new ResultsParser();
 export const useGetLotteriesVM = () => {
   const { network } = useGetNetworkConfig();
   const { address } = useGetAccount();

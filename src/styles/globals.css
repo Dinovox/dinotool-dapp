@@ -268,7 +268,7 @@
   /* ✅ Fix largeur et retour à la ligne automatique */
   width: max-content;
   max-width: 300px; /* ⬅️ Augmente la largeur max */
-  min-width: 200px; /* ⬅️ Empêche d’être trop étroit */
+  min-width: 200px; /* ⬅️ Empêche d'être trop étroit */
   word-wrap: break-word;
   white-space: normal;
 
@@ -279,7 +279,7 @@
   left: 50%;
   transform: translateX(-50%);
 
-  /* ✅ Effet d’apparition fluide */
+  /* ✅ Effet d'apparition fluide */
   opacity: 0;
   transition:
     opacity 0.2s ease-in-out,
@@ -476,4 +476,34 @@
 .markdown-content a:hover {
   color: #0056b3;
   text-decoration: underline;
+}
+
+.lotteryParticipateButton {
+  /* Hérite des styles de base de smallDinoButton */
+  font-family: BitCell;
+  font-size: 1.25rem;
+  background: #f7ea43;
+  color: black;
+  border-radius: 4px;
+
+  /* Ajustements spécifiques */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  width: 142px;
+  height: 28px;
+  margin: 0 auto;
+  cursor: pointer;
+  border: none;
+}
+
+.lotteryParticipateButton:hover {
+  background-color: var(--my-yellow-hover);
+}
+
+.lotteryParticipateButton:disabled {
+  background-color: var(--primary-disabled);
+  color: #000;
+  cursor: not-allowed;
 }
