@@ -18,10 +18,8 @@ import { useNavigate } from 'react-router-dom';
 import { ActionCancel } from './Transaction/ActionCancel';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
-import { useGetLotteriesVM } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetLotteries';
-import { graou_identifier, lottery_cost } from 'config';
+import { graou_identifier } from 'config';
 import { ActionDelete } from './Transaction/ActionDelete';
-import { useGetUserParticipations } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserParticipations';
 import LotteryWinner from './LotteryWinner';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
@@ -38,8 +36,8 @@ export const LotteryDetail = () => {
   const [timeEnd, setTimeEnd] = useState(60 * 60);
   const { address } = useGetAccount();
   const [lotteryID, setLotteryID] = useState<number>(0);
-  const [page, setPage] = useState<number>(1);
-  const [filter, setFilter] = useState<string>('ongoing');
+  // const [page, setPage] = useState<number>(1);
+  // const [filter, setFilter] = useState<string>('ongoing');
   const [editingDescription, setEditingDescription] = useState(false);
 
   const navigate = useNavigate();
@@ -62,10 +60,10 @@ export const LotteryDetail = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const lotteries = useGetLotteriesVM();
-  const runningLottery = lotteries.running;
-  const endedLottery = lotteries.ended;
-  const userLotteries = useGetUserParticipations(filter);
+  // const lotteries = useGetLotteriesVM();
+  // const runningLottery = lotteries.running;
+  // const endedLottery = lotteries.ended;
+  // const userLotteries = useGetUserParticipations(filter);
 
   const lottery = useGetLottery(lotteryID);
 
@@ -120,27 +118,27 @@ export const LotteryDetail = () => {
       ?.balance || 0
   );
 
-  const graou_cost = new BigNumber(lottery_cost.graou);
-  const egld_cost = new BigNumber(lottery_cost.egld);
-  const lotteriesDisplay =
-    filter === 'user'
-      ? userLotteries
-      : filter === 'owned'
-      ? lotteries.user_owned
-      : filter === 'ongoing'
-      ? runningLottery
-      : endedLottery;
+  // const graou_cost = new BigNumber(lottery_cost.graou);
+  // const egld_cost = new BigNumber(lottery_cost.egld);
+  // const lotteriesDisplay =
+  //   filter === 'user'
+  //     ? userLotteries
+  //     : filter === 'owned'
+  //     ? lotteries.user_owned
+  //     : filter === 'ongoing'
+  //     ? runningLottery
+  //     : endedLottery;
 
   //calcul pagination
-  const itemsPerPage = 4;
-  const totalPages = Math.ceil(lotteriesDisplay.length / itemsPerPage);
-  const maxPagesToShow = 5;
+  // const itemsPerPage = 4;
+  // const totalPages = Math.ceil(lotteriesDisplay.length / itemsPerPage);
+  // const maxPagesToShow = 5;
 
-  let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
-  let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-  if (endPage - startPage + 1 < maxPagesToShow) {
-    startPage = Math.max(1, endPage - maxPagesToShow + 1);
-  }
+  // let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
+  // let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+  // if (endPage - startPage + 1 < maxPagesToShow) {
+  //   startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  // }
 
   return (
     <AuthRedirectWrapper requireAuth={false}>
@@ -180,10 +178,10 @@ export const LotteryDetail = () => {
                         <span className='text-label'>
                           {t('lotteries:owner')}:{' '}
                         </span>
-                        {lottery.vm_owner && (
+                        {lottery.owner.address && (
                           <>
                             <ShortenedAddress
-                              address={lottery.vm_owner}
+                              address={lottery.owner.address}
                               herotag={lottery?.owner?.herotag}
                             />
                           </>
@@ -251,7 +249,7 @@ export const LotteryDetail = () => {
                     </div>
                   )}
 
-                  {lottery.vm_owner == address && (
+                  {lottery.owner.address == address && (
                     <>
                       <div className='info-item'>
                         <div className='text-label'>
@@ -296,7 +294,7 @@ export const LotteryDetail = () => {
                         <span className='text-label'>
                           {t('lotteries:entry_cost')}{' '}
                         </span>
-                        {lottery.price_nonce.isGreaterThan(0) ? (
+                        {lottery.price_nonce > 0 ? (
                           <NftDisplay
                             nftInfo={price_nft_information}
                             amount={lottery.price_amount}
@@ -368,7 +366,10 @@ export const LotteryDetail = () => {
                 </div>{' '}
                 {/* Il reste des tickets à vendre */}
                 {lottery &&
-                  lottery.vm_owner != address &&
+                  !lottery.cancelled &&
+                  !lottery.drawn &&
+                  !lottery.deleted &&
+                  lottery.owner.address != address &&
                   lottery.max_tickets.isGreaterThan(lottery.tickets_sold) && (
                     <div
                       style={{
@@ -430,6 +431,13 @@ export const LotteryDetail = () => {
                       )}
                     </div>
                   )}
+                {lottery.cancelled && (
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button className='dinoButton' disabled>
+                      {t('lotteries:status_cancelled')}
+                    </button>
+                  </div>
+                )}
               </div>
               {/* Tout est vendu ou la lotterie est terminée */}
               {lottery &&
@@ -441,14 +449,14 @@ export const LotteryDetail = () => {
                   </div>
                 )}
               {/* Actions pour l'owner */}
-              {lottery.vm_owner == address && (
+              {lottery.owner.address == address && !lottery.deleted && (
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   {lottery.winner_id == 0 ? (
                     <ActionDraw
                       lottery_id={lotteryID}
                       disabled={
                         lottery.tickets_sold.isLessThan(1) ||
-                        (lottery.end_time.isGreaterThan(0) &&
+                        (lottery.end_time > 0 &&
                           timeEnd > 0 &&
                           lottery.tickets_sold.isLessThan(lottery.max_tickets))
                       }
@@ -467,31 +475,43 @@ export const LotteryDetail = () => {
                 </div>
               )}
               {/* Timer pour tout le monde */}
-              {timeStart > 0 && (
-                <div
-                  style={{
-                    width: '100%',
-                    justifyContent: 'center',
-                    display: 'grid'
-                  }}
-                >
-                  {t('lotteries:open_in', { time: formatTime(timeStart) })}
-                </div>
-              )}
-              {timeStart == 0 && lottery.end_time > 0 && timeEnd > 0 && (
-                <div
-                  style={{
-                    width: '100%',
-                    justifyContent: 'center',
-                    display: 'grid'
-                  }}
-                >
-                  {t('lotteries:end_in', { time: formatTime(timeEnd) })}
-                </div>
-              )}
+              {timeStart > 0 &&
+                lottery.start_time > 0 &&
+                !lottery.cancelled &&
+                !lottery.deleted &&
+                !lottery.drawn && (
+                  <div
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      display: 'grid'
+                    }}
+                  >
+                    {t('lotteries:open_in', { time: formatTime(timeStart) })}
+                  </div>
+                )}
+              {timeStart == 0 &&
+                lottery.end_time > 0 &&
+                timeEnd > 0 &&
+                !lottery.cancelled &&
+                !lottery.deleted &&
+                !lottery.drawn && (
+                  <div
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      display: 'grid'
+                    }}
+                  >
+                    {t('lotteries:end_in', { time: formatTime(timeEnd) })}
+                  </div>
+                )}
               {/* Actions pour les participants */}
               {(timeStart == 0 || lottery.start_time == 0) &&
-                lottery.vm_owner != address && (
+                lottery.owner.address != address &&
+                !lottery.cancelled &&
+                !lottery.deleted &&
+                !lottery.drawn && (
                   <div
                     style={{
                       width: '100%',

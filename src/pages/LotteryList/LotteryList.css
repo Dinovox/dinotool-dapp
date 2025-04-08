@@ -39,6 +39,8 @@
 
 /* Card - Mes NFT */
 .cardMesNFT {
+  padding: 2px;
+  margin: auto;
   overflow: hidden;
   box-sizing: border-box;
 

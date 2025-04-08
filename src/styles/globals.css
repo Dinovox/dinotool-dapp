@@ -430,6 +430,9 @@
 .markdown-content {
   font-family: 'Inter', sans-serif;
   line-height: 1.5;
+
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .markdown-content h1,
@@ -506,4 +509,26 @@
   background-color: var(--primary-disabled);
   color: #000;
   cursor: not-allowed;
+}
+
+.dinoButton {
+  background-color: var(--my-yellow);
+  font-family: Bit Cell;
+  font-size: 1.5rem;
+
+  /* 🔧 Ajustement */
+  line-height: 1.5; /* ou 1.6 */
+  height: auto; /* on laisse respirer */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+
+  padding-right: 1.5rem;
+  padding-left: 1.5rem;
+  border-radius: 12px;
+  color: var(--primary-foreground);
+  border: 1px solid #e0e6df;
+  margin: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

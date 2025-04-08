@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetNetworkConfig } from 'hooks';
-export const useGetEsdtInformations = (identifier: string) => {
+export const useGetEsdtInformations = (
+  identifier: string,
+  priceType?: string
+) => {
   const { network } = useGetNetworkConfig();
   const time = new Date();
   const [esdtInfo, setEsdtInfo] = useState<any>({});
@@ -52,9 +55,10 @@ export const useGetEsdtInformations = (identifier: string) => {
   // }
 
   const getEsdtInfo = async () => {
-    if (!identifier) {
+    if (!identifier || priceType == 'Sft') {
       return;
     }
+    console.log('priceType filter', priceType);
 
     //using storage to reduce calls
     const expire_test = Number(

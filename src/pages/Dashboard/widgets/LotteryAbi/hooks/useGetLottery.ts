@@ -35,45 +35,64 @@ export const useGetLottery = (lottery_id: any) => {
     vm_owner: '',
     vm_winner: '',
     auto_draw: false,
-    description: ''
+    description: '',
+    drawn: false,
+    cancelled: false,
+    deleted: false,
+    winner: {
+      address: '',
+      id: 0,
+      herotag: ''
+    },
+    owner: {
+      address: '',
+      id: 0,
+      herotag: ''
+    },
+    loading: true
   });
 
   const { hasPendingTransactions } = useGetPendingTransactions();
 
   const proxy = new ProxyNetworkProvider(network.apiAddress);
 
-  const getMintable = async () => {
+  const getMintableOffChain = async () => {
     if (hasPendingTransactions) {
       return;
     }
     if (!lottery_id || lottery_id === 0) {
-      setMintable({
-        id: 0,
-        owner_id: 0,
-        winner_id: 0,
-        start_time: 0,
-        end_time: 0,
-        prize_identifier: '',
-        prize_nonce: 0,
-        prize_amount: new BigNumber(0),
-        price_identifier: '',
-        price_nonce: 0,
-        price_amount: new BigNumber(0),
-        max_tickets: new BigNumber(0),
-        max_per_wallet: new BigNumber(0),
-        tickets_sold: new BigNumber(0),
-        fee_percentage: 0,
-        vm_owner: '',
-        vm_winner: '',
-        auto_draw: false,
-        description: ''
-      });
+      // setMintable({
+      //   id: 0,
+      //   owner_id: 0,
+      //   winner_id: 0,
+      //   start_time: 0,
+      //   end_time: 0,
+      //   prize_identifier: '',
+      //   prize_nonce: 0,
+      //   prize_amount: new BigNumber(0),
+      //   price_identifier: '',
+      //   price_nonce: 0,
+      //   price_amount: new BigNumber(0),
+      //   max_tickets: new BigNumber(0),
+      //   max_per_wallet: new BigNumber(0),
+      //   tickets_sold: new BigNumber(0),
+      //   fee_percentage: 0,
+      //   vm_owner: '',
+      //   vm_winner: '',
+      //   auto_draw: false,
+      //   description: '',
+      //   loading: false
+      // });
       return;
     }
 
     /*off-chain datas*/
     /*using internal api & cache*/
     try {
+      if (!mintable.loading) {
+        console.log('Lottery loaded');
+        return;
+      }
       const response = await fetch(
         `${internal_api}/dinovox/lotteries/${lottery_id}`
       );
@@ -86,18 +105,49 @@ export const useGetLottery = (lottery_id: any) => {
       if (data) {
         setMintable((prev: any) => ({
           ...prev,
+          id: data.id,
+          cancelled: data.cancelled,
+          deleted: data.deleted,
+          drawn: data.drawn,
+
+          winner_id: data.winner_id,
+          prize_identifier: data.prize_identifier,
+          prize_nonce: data.prize_nonce,
+          prize_amount: new BigNumber(data.prize_amount),
+          price_identifier: data.price_identifier,
+          price_nonce: data.price_nonce,
+          price_amount: new BigNumber(data.price_amount),
+          tickets_sold: new BigNumber(data.tickets_sold),
+          max_tickets: new BigNumber(data.max_tickets),
+          start_time: Number(data.start_time),
+          end_time: Number(data.end_time),
+          price_type: data.price_type,
+
           description: data.description,
           owner: data.owner,
-          winner: data.winner
+          winner: data.winner,
+          loading: false
         }));
       }
       // setMintable(data);
     } catch (err) {
       console.error('Unable to call getMintable', err);
     }
+  };
 
+  const getMintableOnChain = async () => {
     /*on-chain datas*/
+
     try {
+      if (mintable.deleted) {
+        // console.log('Lottery deleted ignore vm');
+        return;
+      }
+      if (mintable.loading) {
+        // console.log('Lottery loading ignore vm');
+        return;
+      }
+      // console.log('Lottery not deleted get vm');
       const query = lotteryContract.createQuery({
         func: new ContractFunction('getLotteryDetails'),
         args: [new U64Value(lottery_id)]
@@ -137,8 +187,9 @@ export const useGetLottery = (lottery_id: any) => {
   };
 
   useEffect(() => {
-    getMintable();
-  }, [hasPendingTransactions, lottery_id]);
+    getMintableOnChain();
+    getMintableOffChain();
+  }, [hasPendingTransactions, lottery_id, mintable.loading]);
 
   return mintable;
 };

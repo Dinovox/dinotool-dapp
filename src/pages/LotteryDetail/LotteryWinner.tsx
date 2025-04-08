@@ -9,14 +9,14 @@ const LotteryWinner = ({ lottery }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
   const [currentWinner, setCurrentWinner] = useState(
-    lottery.vm_winner ||
+    lottery.winner?.address ||
       'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
   );
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     if (lottery.winner_id > 0) {
-      setCurrentWinner(lottery.vm_winner);
+      setCurrentWinner(lottery.winner.address);
       setShowConfetti(true);
     }
   }, [currentWinner, lottery]);

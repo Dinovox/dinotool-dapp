@@ -85,8 +85,13 @@ export const LotteryList = () => {
 
   useEffect(() => {
     searchParams.set('page', page.toString());
+    if (price) {
+      searchParams.set('price', price.toString());
+    } else {
+      searchParams.delete('price');
+    }
     setSearchParams(searchParams);
-  }, [page]);
+  }, [page, price]);
 
   const lotteriesVM = useGetLotteriesVM();
   const {
@@ -188,15 +193,15 @@ export const LotteryList = () => {
               className='filter-options'
               style={{ margin: '3px', width: '100%' }}
             >
-              <button
+              {/* <button
                 className={`dinoButton ${status !== 'all' ? 'reverse' : ''}`}
                 name='filter'
                 value='all'
                 onClick={() => (setStatus('all'), setPage(1))}
               >
                 {t('lotteries:status_all')}
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 className={`dinoButton ${
                   status !== 'ongoing' ? 'reverse' : ''
                 }`}
@@ -205,18 +210,18 @@ export const LotteryList = () => {
                 onClick={() => (setStatus('ongoing'), setPage(1))}
               >
                 {t('lotteries:status_ongoing')}
-              </button>
+              </button> */}
 
-              <button
+              {/* <button
                 className={`dinoButton ${status !== 'ended' ? 'reverse' : ''}`}
                 name='filter'
                 value='ended'
                 onClick={() => (setStatus('ended'), setPage(1))}
               >
                 {t('lotteries:status_ended')}
-              </button>
+              </button> */}
 
-              {lotteriesVM.user_owned.length > 0 && (
+              {/* {lotteriesVM.user_owned.length > 0 && (
                 <button
                   className={`dinoButton ${
                     status !== 'owned' ? 'reverse' : ''
@@ -227,8 +232,8 @@ export const LotteryList = () => {
                 >
                   {t('lotteries:status_owned')}
                 </button>
-              )}
-              {lotteriesVM.user_tickets.length > 0 && (
+              )} */}
+              {/* {lotteriesVM.user_tickets.length > 0 && (
                 <button
                   className={`dinoButton ${status !== 'user' ? 'reverse' : ''}`}
                   name='filter'
@@ -237,11 +242,49 @@ export const LotteryList = () => {
                 >
                   {t('lotteries:status_participated')}
                 </button>
-              )}
+              )} */}
+
+              <select
+                className='dinoButton dropdownButton'
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value='ongoing'>{t('lotteries:status_ongoing')}</option>
+                <option value='all'>{t('lotteries:status_all')}</option>
+                <option value='ended'>{t('lotteries:status_ended')}</option>
+                {lotteriesVM.user_tickets.length > 0 && (
+                  <option value='user'>
+                    {t('lotteries:status_participated')}
+                  </option>
+                )}
+                {lotteriesVM.user_owned.length > 0 && (
+                  <option value='owned'>{t('lotteries:status_owned')}</option>
+                )}
+              </select>
+
+              <select
+                className='dinoButton dropdownButton'
+                value={price}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value=''>{t('lotteries:all_price_types')}</option>
+                <option value='xgraou'>XGRAOU</option>
+                <option value='bee'>BEE</option>
+                <option value='egld'>EGLD</option>
+                <option value='kwak'>KWAK</option>
+                <option value='poxp'>POXP</option>
+                <option value='qwt'>QWT</option>
+              </select>
             </div>
 
             {/* Affichage des cartes de loterie */}
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6'>
+            <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6 p-3'>
               {loading || isLoading ? (
                 <div>Chargement...</div>
               ) : lotteriesDB && lotteriesDB.length > 0 ? (
@@ -374,7 +417,7 @@ export const LotteryList = () => {
               )}
 
               {/* Bouton "Suivant" */}
-              {page < totalPages && (
+              {page < totalPages && totalPages > 1 && (
                 <span
                   className='pageButton'
                   onClick={() => setPage(page + 1)}

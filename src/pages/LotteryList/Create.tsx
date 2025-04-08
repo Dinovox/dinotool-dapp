@@ -38,7 +38,7 @@ const CreateLotteryModal: React.FC<{
   const [visible, setVisible] = useState(false);
   const [isFree, setIsFree] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [autoDraw, setAutoDraw] = useState(false);
+  const [autoDraw, setAutoDraw] = useState(true);
   const [priceType, setPriceType] = useState('');
   const [priceIdentifier, setPriceIdentifier] = useState('');
   const [priceNonce, setPriceNonce] = useState<number>(0);
@@ -164,7 +164,10 @@ const CreateLotteryModal: React.FC<{
     priceType
   );
 
-  const price_esdt_information = useGetEsdtInformations(priceIdentifier);
+  const price_esdt_information = useGetEsdtInformations(
+    priceIdentifier,
+    priceType
+  );
 
   useEffect(() => {
     const fetchPriceEsdtInformation = async () => {
@@ -191,6 +194,7 @@ const CreateLotteryModal: React.FC<{
 
   const handleEnd = (date: dayjs.Dayjs | null) => {
     setEndTime(date ? date.unix() : 0); // Convertit en timestamp Unix (secondes)
+    setAutoDraw(true);
   };
 
   const handlePrizeAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -399,7 +403,12 @@ const CreateLotteryModal: React.FC<{
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <button
         onClick={showModal}
-        disabled={!address || count >= 4}
+        disabled={
+          !address ||
+          (count >= 4 &&
+            address !=
+              'erd1x5zq82l0whpawgr53k6y63xh5jq2649k99q49s0508s82w25ytsq7f89my')
+        }
         className='dinoButton'
       >
         {t('lotteries:create_lottery_count', { count: count })}
@@ -743,6 +752,44 @@ const CreateLotteryModal: React.FC<{
                                 setPriceTicker('');
                                 setPriceNonce(0);
                                 setPriceDecimals(0);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation(); //on ne veux pas que enter remonte à la liste select
+                                const value = (e.target as HTMLInputElement)
+                                  .value;
+                                setPriceIdentifier(value);
+                                const splited = splitIdentifier(value);
+                                if (splited.is_valid) {
+                                  console.log('splited', splited);
+
+                                  setChecked(true);
+                                  setPriceTicker(splited.ticker);
+                                  setPriceNonce(splited.nonce);
+                                  setPriceDecimals(0); // 🚧 A définir
+                                  setPriceValid(true);
+                                  if (['Esdt'].includes(priceType)) {
+                                    // alert(
+                                    //   '🚧 cannot read decimals from manual input'
+                                    // );
+                                  } else {
+                                  }
+                                  //force la fermeture du focus sur enter valide
+                                  if (
+                                    document.activeElement instanceof
+                                    HTMLElement
+                                  ) {
+                                    document.activeElement.blur();
+                                  }
+                                } else {
+                                  // 🛑 Si le format est incorrect
+                                  setPriceValid(false);
+                                  setPriceTicker('');
+                                  setPriceNonce(0);
+                                  setPriceDecimals(0);
+                                }
                               }
                             }}
                           />
@@ -1233,7 +1280,7 @@ const CreateLotteryModal: React.FC<{
                     )}
                   </Checkbox>
                   <Checkbox
-                    disabled={isLocked}
+                    disabled={isLocked || endTime > 0}
                     value={autoDraw}
                     checked={autoDraw}
                     onChange={() => setAutoDraw(!autoDraw)}
@@ -1280,7 +1327,7 @@ const CreateLotteryModal: React.FC<{
                 </Form.Item>
               </>
             )}
-        </Form>
+        </Form>{' '}
       </Modal>
     </div>
   );

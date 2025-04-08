@@ -61,7 +61,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
   const getProgressColor = () => {
     if (ticketProgress < 50) return 'bg-green-500';
     if (ticketProgress < 90) return 'bg-orange-500';
-    return 'bg-red-500';
+    return 'bg-orange-500';
   };
 
   // Get border color based on urgency and status
@@ -73,8 +73,8 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
       return 'border-gray-400';
     }
 
-    if (timerColor === 'text-red-500' || ticketProgress >= 100) {
-      return 'border-red-600';
+    if (timerColor === 'text-orange-500' || ticketProgress >= 100) {
+      return 'border-orange-600';
     } else if (timerColor === 'text-orange-500') {
       return 'border-orange-600';
     }
@@ -127,7 +127,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
               ? t('lotteries:status_cancelled')
               : t('lotteries:expired')
           );
-          setTimerColor('text-red-500');
+          setTimerColor('text-orange-500');
         } else if (diff <= 300) {
           // Less than 5 minutes
           setTimeRemaining(`${Math.floor(diff / 60)}m ${diff % 60}s`);
@@ -136,7 +136,7 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
               time: `${Math.floor(diff / 60)}m ${diff % 60}s`
             })
           );
-          setTimerColor('text-red-500');
+          setTimerColor('text-orange-500');
         } else if (diff <= 3600) {
           // Less than 1 hour
           setTimeRemaining(`${Math.floor(diff / 60)}m`);
@@ -272,8 +272,8 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         <div className={`flex items-center justify-center mb-3 ${timerColor}`}>
           <div
             className={`group relative inline-flex items-center px-3 py-1 rounded ${
-              timerColor === 'text-red-500'
-                ? 'bg-red-100'
+              timerColor === 'text-orange-500'
+                ? 'bg-orange-100'
                 : timerColor === 'text-orange-500'
                 ? 'bg-orange-100'
                 : timerColor === 'text-gray-500'
