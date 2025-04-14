@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react';
 
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
-import { ContractFunction, ResultsParser, ProxyNetworkProvider } from 'utils';
-import { lotteryContract } from 'utils/smartContract';
-import { BigNumber } from 'bignumber.js';
-import { graou_identifier, internal_api } from 'config';
-import { start } from 'repl';
-import { Address, U64Value } from '@multiversx/sdk-core/out';
-import { useNavigate } from 'react-router-dom';
+import { Abi, Address, DevnetEntrypoint, U64Value } from '@multiversx/sdk-core';
+import { lotteryContractAddress } from 'config';
+import { useGetNetworkConfig } from 'hooks';
+import abi_json from 'contracts/dinodraw.abi.json';
 
-const resultsParser = new ResultsParser();
+import { useGetPendingTransactions } from 'hooks';
+import { BigNumber } from 'bignumber.js';
+import { internal_api } from 'config';
+import { useNavigate } from 'react-router-dom';
 
 export const useGetLottery = (lottery_id: any) => {
   const navigate = useNavigate();
 
-  const { network } = useGetNetworkConfig();
   const [mintable, setMintable] = useState<any>({
     id: 0,
     owner_id: 0,
@@ -51,10 +49,13 @@ export const useGetLottery = (lottery_id: any) => {
     },
     loading: true
   });
+  const { network } = useGetNetworkConfig();
+  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const contractAddress = Address.newFromBech32(lotteryContractAddress);
+  const abi = Abi.create(abi_json);
+  const controller = entrypoint.createSmartContractController(abi);
 
   const { hasPendingTransactions } = useGetPendingTransactions();
-
-  const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getMintableOffChain = async () => {
     // if (hasPendingTransactions) {
@@ -148,30 +149,39 @@ export const useGetLottery = (lottery_id: any) => {
         return;
       }
       // console.log('Lottery not deleted get vm');
-      const query = lotteryContract.createQuery({
-        func: new ContractFunction('getLotteryDetails'),
-        args: [new U64Value(lottery_id)]
+
+      const response = await controller.query({
+        contract: contractAddress,
+        function: 'getLotteryDetails',
+        arguments: [new U64Value(lottery_id)]
       });
-      const queryResponse = await proxy.queryContract(query);
 
-      const endpointDefinition =
-        lotteryContract.getEndpoint('getLotteryDetails');
-
-      const { firstValue } = resultsParser.parseQueryResponse(
-        queryResponse,
-        endpointDefinition
-      );
-      const lotteryData = firstValue?.valueOf();
-
-      if (!lotteryData) {
+      if (!response || response.length === 0) {
         console.error('Lottery not found in SC: ' + lottery_id);
+
+        // lottery not found in SC == probably deleted run the last action call
+        try {
+          const lastActionsResponse = await fetch(
+            `${internal_api}/dinovox/lotteries/last-actions`
+          );
+          if (!lastActionsResponse.ok) {
+            throw new Error(
+              `Failed to fetch last actions: ${lastActionsResponse.statusText}`
+            );
+          }
+          const lastActionsData = await lastActionsResponse.json();
+          console.log('Last actions:', lastActionsData);
+        } catch (err) {
+          console.error('Unable to fetch last actions', err);
+        }
+
         navigate(`/lotteries/`, { replace: true });
         return;
       }
-      const { field0, field1, field2 } = lotteryData;
-      const vm_owner = field1?.bech32?.() || '';
-      const vm_winner = field2?.bech32?.() || '';
-      if (lotteryData) {
+      const { field0, field1, field2 } = response[0];
+      const vm_owner = field1?.toBech32?.() || '';
+      const vm_winner = field2?.toBech32?.() || '';
+      if (response && response.length > 0) {
         setMintable((prev: { description: any }) => ({
           ...prev,
           description: prev.description, // garde l'existante
@@ -182,7 +192,7 @@ export const useGetLottery = (lottery_id: any) => {
         }));
       }
     } catch (err) {
-      console.error('Unable to call getMintable', err);
+      console.error('Unable to call getLotteryDetails', err);
     }
   };
 

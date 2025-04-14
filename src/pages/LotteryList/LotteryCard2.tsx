@@ -28,9 +28,17 @@ interface LotteryData {
 
 interface LotteryCard2Props {
   data: LotteryData;
+  page_number?: number;
+  status_filter?: string;
+  price_filter?: string;
 }
 
-const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
+const LotteryCard2: React.FC<LotteryCard2Props> = ({
+  data,
+  page_number,
+  status_filter,
+  price_filter
+}) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -195,7 +203,16 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({ data }) => {
         borderStyle: 'solid',
         borderWidth: '2px'
       }}
-      onClick={() => navigate(`/lotteries/${data.id}`, { replace: false })}
+      onClick={() =>
+        navigate(`/lotteries/${data.id}`, {
+          state: {
+            page_number: page_number,
+            status: status_filter,
+            price: price_filter
+          },
+          replace: false
+        })
+      }
     >
       {/* Section haute - Badge et Image */}
       <div className='relative'>

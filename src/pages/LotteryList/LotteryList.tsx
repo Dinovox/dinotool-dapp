@@ -70,12 +70,17 @@ export const LotteryList = () => {
 
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(12);
-  const [status, setStatus] = useState<string>('ongoing');
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = searchParams.get('page');
   const priceParam = searchParams.get('price');
+  const statusParam = searchParams.get('status');
+
   const [page, setPage] = useState<number>(pageParam ? parseInt(pageParam) : 1);
+  const [status, setStatus] = useState<string>(
+    statusParam ? statusParam : 'ongoing'
+  );
   const [price, setPrice] = useState<string>(priceParam || '');
+
   useEffect(() => {
     const pageParam = searchParams.get('page');
     if (pageParam) {
@@ -85,13 +90,14 @@ export const LotteryList = () => {
 
   useEffect(() => {
     searchParams.set('page', page.toString());
+    searchParams.set('status', status);
     if (price) {
       searchParams.set('price', price.toString());
     } else {
       searchParams.delete('price');
     }
     setSearchParams(searchParams);
-  }, [page, price]);
+  }, [page, price, status]);
 
   const lotteriesVM = useGetLotteriesVM();
   const {
@@ -291,6 +297,9 @@ export const LotteryList = () => {
                 lotteriesDB.map((lottery: DBLottery) => (
                   <LotteryCard2
                     key={lottery.id}
+                    page_number={page}
+                    status_filter={status}
+                    price_filter={price}
                     data={{
                       id: lottery.id,
                       lottery_name: 'N/A',

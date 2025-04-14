@@ -1,31 +1,34 @@
 import { useEffect, useState } from 'react';
 import {
+  Abi,
   Address,
   AddressValue,
-  ContractFunction,
-  ResultsParser,
-  TokenIdentifierValue,
+  DevnetEntrypoint,
   U64Value
-} from '@multiversx/sdk-core/out';
+} from '@multiversx/sdk-core';
+import { lotteryContractAddress } from 'config';
+import { useGetNetworkConfig } from 'hooks';
+import abi_json from 'contracts/dinodraw.abi.json';
+
 import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
 import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers';
 import { BigNumber } from 'bignumber.js';
-import { lotteryContract } from 'utils/smartContract';
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
-import axios from 'axios';
-import { graou_identifier } from 'config';
-
-const resultsParser = new ResultsParser();
+import { useGetPendingTransactions } from 'hooks';
 
 export const useGetUserTickets = (lottery_id: any) => {
   const [buyed, setHasBuyed] = useState(0);
-  const [esdtAmount, setEsdtAmount] = useState(new BigNumber(0));
+  // const [esdtAmount, setEsdtAmount] = useState(new BigNumber(0));
+
   const { network } = useGetNetworkConfig();
+  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const contractAddress = Address.newFromBech32(lotteryContractAddress);
+  const abi = Abi.create(abi_json);
+  const controller = entrypoint.createSmartContractController(abi);
 
   const { address } = useGetAccount();
 
   const { hasPendingTransactions } = useGetPendingTransactions();
-  const proxy = new ProxyNetworkProvider(network.apiAddress);
+  // const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getHasBuyed = async () => {
     if (!address || hasPendingTransactions || !lottery_id) {
@@ -33,18 +36,15 @@ export const useGetUserTickets = (lottery_id: any) => {
     }
 
     try {
-      const query = lotteryContract.createQuery({
-        func: new ContractFunction('getUserTickets'),
-        args: [new U64Value(lottery_id), new AddressValue(new Address(address))]
+      const response = await controller.query({
+        contract: contractAddress,
+        function: 'getUserTickets',
+        arguments: [
+          new U64Value(lottery_id),
+          new AddressValue(new Address(address))
+        ]
       });
-
-      const queryResponse = await proxy.queryContract(query);
-      const endpointDefinition = lotteryContract.getEndpoint('getUserTickets');
-      const { firstValue: position } = resultsParser.parseQueryResponse(
-        queryResponse,
-        endpointDefinition
-      );
-      setHasBuyed(position?.valueOf());
+      setHasBuyed(response[0]);
     } catch (err) {
       console.error('Unable to call getAllUserRewards', err);
     }

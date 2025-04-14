@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
-
+import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
+import { mintcontractAddress } from 'config';
 import { useGetNetworkConfig } from 'hooks';
-import { ContractFunction, ResultsParser, ProxyNetworkProvider } from 'utils';
-import { mintContract } from 'utils/smartContract';
+import mintgaz_json from 'contracts/mintgaz.abi.json';
+
 import { BigNumber } from 'bignumber.js';
 import { graou_identifier } from 'config';
-import { start } from 'repl';
-
-const resultsParser = new ResultsParser();
 
 export const useGetMintable = () => {
-  const { network } = useGetNetworkConfig();
   const [mintable, setMintable] = useState<any>({
     token_identifier: '',
     amount: new BigNumber(0),
@@ -22,25 +19,22 @@ export const useGetMintable = () => {
     paused: false
   });
 
-  const proxy = new ProxyNetworkProvider(network.apiAddress);
+  const { network } = useGetNetworkConfig();
+  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const contractAddress = Address.newFromBech32(mintcontractAddress);
+  const abi = Abi.create(mintgaz_json);
+  const controller = entrypoint.createSmartContractController(abi);
 
   const getMintable = async () => {
     try {
-      const query = mintContract.createQuery({
-        func: new ContractFunction('mintable')
+      const response = await controller.query({
+        contract: contractAddress,
+        function: 'mintable',
+        arguments: []
       });
-      const queryResponse = await proxy.queryContract(query);
 
-      const endpointDefinition = mintContract.getEndpoint('mintable');
-
-      const { firstValue: position } = resultsParser.parseQueryResponse(
-        queryResponse,
-        endpointDefinition
-      );
-
-      const tab = position?.valueOf();
-      if (tab) {
-        setMintable(tab);
+      if (response && response.length > 0) {
+        setMintable(response[0]);
       }
     } catch (err) {
       console.error('Unable to call getMintable', err);

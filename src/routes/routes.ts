@@ -1,6 +1,5 @@
 import { RouteNamesEnum } from 'localConstants';
 import {
-  Disclaimer,
   Home,
   Mint,
   Drop,
@@ -23,11 +22,11 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       title: t('home'),
       component: Home
     },
-    {
-      path: RouteNamesEnum.disclaimer,
-      title: t('disclaimer'),
-      component: Disclaimer
-    },
+    // {
+    //   path: RouteNamesEnum.disclaimer,
+    //   title: t('disclaimer'),
+    //   component: Disclaimer
+    // },
     {
       path: RouteNamesEnum.mint,
       title: t('mint'),

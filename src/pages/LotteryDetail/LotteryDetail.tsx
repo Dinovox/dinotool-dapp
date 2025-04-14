@@ -27,10 +27,26 @@ import formatTime from 'helpers/formatTime';
 import TwitterShareButton from './Transaction/helpers/shareOnX';
 import { EditDescription } from './EditDescription';
 import SafeMarkdown from '../../components/SafeMarkdown';
+import { useLocation } from 'react-router-dom';
 
 export const LotteryDetail = () => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
+
+  const location = useLocation();
+  const page = location.state?.page_number;
+  const status_filter = location.state?.status;
+  const price_filter = location.state?.price;
+  let return_url = `/lotteries?page=${page ? page : 1}`;
+
+  if (status_filter) {
+    return_url += `&status=${status_filter}`;
+  }
+  if (price_filter) {
+    return_url += `&price=${price_filter}`;
+  }
+
+  console.log('return_url', return_url);
 
   const [timeStart, setTimeStart] = useState(60 * 60);
   const [timeEnd, setTimeEnd] = useState(60 * 60);
@@ -59,11 +75,6 @@ export const LotteryDetail = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // const lotteries = useGetLotteriesVM();
-  // const runningLottery = lotteries.running;
-  // const endedLottery = lotteries.ended;
-  // const userLotteries = useGetUserParticipations(filter);
 
   const lottery = useGetLottery(lotteryID);
 
@@ -153,7 +164,7 @@ export const LotteryDetail = () => {
             }}
           >
             {' '}
-            <button onClick={() => navigate('/lotteries')}>
+            <button onClick={() => navigate(return_url)}>
               {t('lotteries:return')}
             </button>
           </div>

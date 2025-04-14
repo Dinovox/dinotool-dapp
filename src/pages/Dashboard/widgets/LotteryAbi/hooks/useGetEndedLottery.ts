@@ -1,44 +1,38 @@
 import { useEffect, useState } from 'react';
-import {
-  Address,
-  AddressValue,
-  ContractFunction,
-  ResultsParser,
-  TokenIdentifierValue,
-  U64Value
-} from '@multiversx/sdk-core/out';
-import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
-import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers';
-import { BigNumber } from 'bignumber.js';
-import { lotteryContract } from 'utils/smartContract';
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
-import axios from 'axios';
-import { graou_identifier } from 'config';
-
-const resultsParser = new ResultsParser();
+import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
+import { lotteryContractAddress } from 'config';
+import { useGetNetworkConfig } from 'hooks';
+import lottery_json from 'contracts/dinodraw.abi.json';
 
 export const useGetEndedLottery = () => {
-  const [scData, setScData] = useState([]);
+  const [scData, setScData] = useState<any[]>([]);
+
   const { network } = useGetNetworkConfig();
+  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const contractAddress = Address.newFromBech32(lotteryContractAddress);
+  const abi = Abi.create(lottery_json);
+  const controller = entrypoint.createSmartContractController(abi);
 
-  const { address } = useGetAccount();
+  // const api = entrypoint.createNetworkProvider();
 
-  const proxy = new ProxyNetworkProvider(network.apiAddress);
+  // const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getScData = async () => {
     try {
-      const query = lotteryContract.createQuery({
-        func: new ContractFunction('getEndedLottery')
+      const response = await controller.query({
+        contract: contractAddress,
+        function: 'getEndedLottery',
+        arguments: []
       });
-      //         args: [new U64Value(lottery_id), new AddressValue(new Address(address))]
 
-      const queryResponse = await proxy.queryContract(query);
-      const endpointDefinition = lotteryContract.getEndpoint('getEndedLottery');
-      const { firstValue: position } = resultsParser.parseQueryResponse(
-        queryResponse,
-        endpointDefinition
-      );
-      setScData(position?.valueOf().toString(10).split(','));
+      // const queryResponse = await proxy.queryContract(query);
+      // const endpointDefinition = lotteryContract.getEndpoint('getEndedLottery');
+      // const { firstValue: position } = resultsParser.parseDeploy(
+      //   queryResponse,
+      //   endpointDefinition
+      // );
+      // setScData(position?.valueOf().toString(10).split(','));
+      setScData(response);
     } catch (err) {
       console.error('Unable to call getEndedLottery', err);
     }

@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
+  Abi,
   Address,
   AddressValue,
-  ContractFunction,
-  ResultsParser,
-  TokenIdentifierValue,
-  U64Value
-} from '@multiversx/sdk-core/out';
+  DevnetEntrypoint
+} from '@multiversx/sdk-core';
+import { lotteryContractAddress } from 'config';
+import { useGetNetworkConfig } from 'hooks';
+import abi_json from 'contracts/dinodraw.abi.json';
 import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
-import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers';
-import { BigNumber } from 'bignumber.js';
-import { lotteryContract } from 'utils/smartContract';
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
-import axios from 'axios';
-import { graou_identifier, internal_api } from 'config';
-import { to } from 'react-spring';
+import { internal_api } from 'config';
 
 export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
   const [lotteries, setLotteries] = useState<any[]>([]);
@@ -57,11 +52,7 @@ export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
   return { lotteries, total_count, isLoading };
 };
 
-const resultsParser = new ResultsParser();
 export const useGetLotteriesVM = () => {
-  const { network } = useGetNetworkConfig();
-  const { address } = useGetAccount();
-
   const [lotteries, setLotteries] = useState({
     running: <any>[],
     ended: <any>[],
@@ -70,7 +61,13 @@ export const useGetLotteriesVM = () => {
     user_tickets: <any>[]
   });
 
-  const proxy = new ProxyNetworkProvider(network.apiAddress);
+  const { network } = useGetNetworkConfig();
+  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const contractAddress = Address.newFromBech32(lotteryContractAddress);
+  const abi = Abi.create(abi_json);
+  const controller = entrypoint.createSmartContractController(abi);
+
+  const { address } = useGetAccount();
 
   const getScData = async () => {
     try {
@@ -79,31 +76,23 @@ export const useGetLotteriesVM = () => {
         sc_args = [new AddressValue(new Address(address))];
       }
 
-      const query = lotteryContract.createQuery({
-        func: new ContractFunction('getLotteries'),
-        args: sc_args
+      const response = await controller.query({
+        contract: contractAddress,
+        function: 'getLotteries',
+        arguments: sc_args
       });
-      //         args: [new U64Value(lottery_id), new AddressValue(new Address(address))]
 
-      const queryResponse = await proxy.queryContract(query);
-      const endpointDefinition = lotteryContract.getEndpoint('getLotteries');
-      const { firstValue } = resultsParser.parseQueryResponse(
-        queryResponse,
-        endpointDefinition
-      );
-      const lotteries = firstValue?.valueOf();
-      if (!lotteries) {
+      if (!response || response.length === 0) {
         console.error('No lotteries data found' + address);
         return;
       }
-      // console.log('lotteries', lotteries);
       const {
         running_lotteries,
         ended_lotteries,
         to_draw_lotteries,
         user_lotteries,
         user_tickets
-      } = lotteries;
+      } = response[0];
       setLotteries({
         running: running_lotteries
           ? running_lotteries
@@ -132,7 +121,7 @@ export const useGetLotteriesVM = () => {
           : []
       });
     } catch (err) {
-      console.error('Unable to call getRunningLottery', err);
+      console.error('Unable to call getLotteriesVMlist', err);
     }
   };
 

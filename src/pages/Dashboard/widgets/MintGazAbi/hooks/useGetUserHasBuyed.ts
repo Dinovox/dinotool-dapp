@@ -1,25 +1,30 @@
 import { useEffect, useState } from 'react';
 import {
+  Abi,
   Address,
   AddressValue,
-  ContractFunction,
-  ResultsParser,
-  TokenIdentifierValue
-} from '@multiversx/sdk-core/out';
+  DevnetEntrypoint
+} from '@multiversx/sdk-core';
+import { mintcontractAddress } from 'config';
+import { useGetNetworkConfig } from 'hooks';
+import abi_json from 'contracts/mintgaz.abi.json';
+
 import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
 import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers';
 import { BigNumber } from 'bignumber.js';
-import { mintContract } from 'utils/smartContract';
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
+import { useGetPendingTransactions } from 'hooks';
 import axios from 'axios';
 import { graou_identifier } from 'config';
-
-const resultsParser = new ResultsParser();
 
 export const useGetUserHasBuyed = () => {
   const [hasBuyed, setHasBuyed] = useState(false);
   const [esdtAmount, setEsdtAmount] = useState(new BigNumber(0));
+
   const { network } = useGetNetworkConfig();
+  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const contractAddress = Address.newFromBech32(mintcontractAddress);
+  const abi = Abi.create(abi_json);
+  const controller = entrypoint.createSmartContractController(abi);
 
   const { address } = useGetAccount();
 
@@ -32,18 +37,13 @@ export const useGetUserHasBuyed = () => {
     }
 
     try {
-      const query = mintContract.createQuery({
-        func: new ContractFunction('hasBuyed'),
-        args: [new AddressValue(new Address(address))]
+      const response = await controller.query({
+        contract: contractAddress,
+        function: 'hasBuyed',
+        arguments: [new AddressValue(new Address(address))]
       });
 
-      const queryResponse = await proxy.queryContract(query);
-      const endpointDefinition = mintContract.getEndpoint('hasBuyed');
-      const { firstValue: position } = resultsParser.parseQueryResponse(
-        queryResponse,
-        endpointDefinition
-      );
-      setHasBuyed(position?.valueOf());
+      setHasBuyed(Array.isArray(response) && response.length > 0);
     } catch (err) {
       console.error('Unable to call getAllUserRewards', err);
     }

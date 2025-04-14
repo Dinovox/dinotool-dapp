@@ -32,7 +32,6 @@ export const Home = () => {
   const [displayText, setDisplayText] = useState('🦖');
   const [isShaking, setIsShaking] = useState(false);
   const mintable = useGetMintable();
-
   const fullText = '🦖 . . . #GRAOU!';
 
   // Images are 210px 150px

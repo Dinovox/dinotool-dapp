@@ -39,7 +39,7 @@ export const ActionCreateSFT: React.FC<{
       )}@${Buffer.from(attributes).toString('hex')}${uris
         .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
         .join('')}`,
-      receiver: new Address(address).bech32(),
+      receiver: new Address(address).toBech32(),
       gasLimit: 60000000
     };
 
