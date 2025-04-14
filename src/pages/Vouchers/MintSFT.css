@@ -83,25 +83,38 @@
   gap: 10px;
   justify-content: center;
 }
-
 .voucher-card {
-  background: #fff3cd;
-  padding: 15px;
-  border-radius: 8px;
-  width: 180px;
+  background: #fff175;
+  padding: 16px;
+  border-radius: 12px;
+  width: 220px;
   text-align: center;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  /* font-family: 'Bit Cell', monospace; */
+  border: 2px solid #d4b100;
+  margin: 12px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .voucher-title {
   font-weight: bold;
-  color: #856404;
+  color: #2d1c01;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .voucher-value {
-  font-size: 14px;
-  color: #666;
-  margin-top: 5px;
+  color: #333;
+  font-weight: bold;
+  font-size: 18px;
 }
 
 /* Message quand aucun voucher n'est disponible */

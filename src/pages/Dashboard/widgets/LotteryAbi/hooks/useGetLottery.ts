@@ -57,9 +57,9 @@ export const useGetLottery = (lottery_id: any) => {
   const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getMintableOffChain = async () => {
-    if (hasPendingTransactions) {
-      return;
-    }
+    // if (hasPendingTransactions) {
+    //   return;
+    // }
     if (!lottery_id || lottery_id === 0) {
       // setMintable({
       //   id: 0,

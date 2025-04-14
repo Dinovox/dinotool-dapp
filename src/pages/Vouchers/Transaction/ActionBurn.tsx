@@ -13,12 +13,14 @@ import {
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const ActionBurn = ({ identifier, nonce, quantity }: any) => {
   const { hasPendingTransactions } = useGetPendingTransactions();
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
   const fees = new BigNumber(140669180000000);
+  const { t } = useTranslation();
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
       string | null
@@ -61,13 +63,13 @@ export const ActionBurn = ({ identifier, nonce, quantity }: any) => {
       {!hasPendingTransactions ? (
         <>
           <button className='dinoButton dinoDanger' onClick={sendTransaction}>
-            Burn 🔥
+            {t('vouchers:burn')}
           </button>
         </>
       ) : (
         <>
           <button className='dinoButton' disabled>
-            Processing
+            {t('vouchers:processing')}
           </button>
         </>
       )}

@@ -449,31 +449,36 @@ export const LotteryDetail = () => {
                   </div>
                 )}
               {/* Actions pour l'owner */}
-              {lottery.owner.address == address && !lottery.deleted && (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  {lottery.winner_id == 0 ? (
-                    <ActionDraw
-                      lottery_id={lotteryID}
-                      disabled={
-                        lottery.tickets_sold.isLessThan(1) ||
-                        (lottery.end_time > 0 &&
-                          timeEnd > 0 &&
-                          lottery.tickets_sold.isLessThan(lottery.max_tickets))
-                      }
-                      tickets={lottery.tickets_sold}
-                    />
-                  ) : (
-                    <ActionDelete lottery_id={lotteryID} />
-                  )}
-                  {lottery.winner_id == 0 && (
-                    <ActionCancel
-                      lottery_id={lotteryID}
-                      disabled={lottery.tickets_sold.isGreaterThan(50)}
-                    />
-                  )}
-                  <TwitterShareButton lottery_id={lotteryID} />
-                </div>
-              )}
+              {(lottery.owner.address == address ||
+                address ==
+                  'erd1x5zq82l0whpawgr53k6y63xh5jq2649k99q49s0508s82w25ytsq7f89my') &&
+                !lottery.deleted && (
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    {lottery.winner_id == 0 ? (
+                      <ActionDraw
+                        lottery_id={lotteryID}
+                        disabled={
+                          lottery.tickets_sold.isLessThan(1) ||
+                          (lottery.end_time > 0 &&
+                            timeEnd > 0 &&
+                            lottery.tickets_sold.isLessThan(
+                              lottery.max_tickets
+                            ))
+                        }
+                        tickets={lottery.tickets_sold}
+                      />
+                    ) : (
+                      <ActionDelete lottery_id={lotteryID} />
+                    )}
+                    {lottery.winner_id == 0 && (
+                      <ActionCancel
+                        lottery_id={lotteryID}
+                        disabled={lottery.tickets_sold.isGreaterThan(50)}
+                      />
+                    )}
+                    <TwitterShareButton lottery_id={lotteryID} />
+                  </div>
+                )}
               {/* Timer pour tout le monde */}
               {timeStart > 0 &&
                 lottery.start_time > 0 &&

@@ -18,13 +18,17 @@ interface NftDisplayProps {
   amount: number;
   is_free?: boolean;
   is_locked?: boolean;
+  showLink?: boolean;
+  showAmount?: boolean;
 }
 
 const NftDisplay: React.FC<NftDisplayProps> = ({
   nftInfo,
   amount,
   is_free = false,
-  is_locked = false
+  is_locked = false,
+  showLink = true,
+  showAmount = true
 }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
@@ -58,36 +62,38 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
               <img src={nftInfo?.media[0]?.url} alt='SFT' />
             )
           )}
-          {amount > 0 && new BigNumber(amount).toFixed()}{' '}
-          <span className='identifier'>
-            <a
-              href={`${network.explorerAddress}/nfts/${nftInfo?.identifier}`}
-              target='_blank'
-              rel='noreferrer'
-            >
-              {nftInfo?.identifier}{' '}
-              <FontAwesomeIcon
-                icon={faLink}
-                style={{
-                  fontSize: '12px',
-                  marginLeft: '5px',
-                  color: '#7195df'
-                }}
-              />
-            </a>{' '}
-            {is_free && (
-              <span className='tooltip'>
-                (ℹ)
-                <span className='text'>{t('lotteries:free_tooltip')}</span>
-              </span>
-            )}{' '}
-            {is_locked && (
-              <span className='tooltip'>
-                (ℹ)
-                <span className='text'>{t('lotteries:locked_tooltip')}</span>
-              </span>
-            )}
-          </span>
+          {showAmount && amount > 0 && new BigNumber(amount).toFixed()}{' '}
+          {showLink && (
+            <span className='identifier'>
+              <a
+                href={`${network.explorerAddress}/nfts/${nftInfo?.identifier}`}
+                target='_blank'
+                rel='noreferrer'
+              >
+                {nftInfo?.identifier}{' '}
+                <FontAwesomeIcon
+                  icon={faLink}
+                  style={{
+                    fontSize: '12px',
+                    marginLeft: '5px',
+                    color: '#7195df'
+                  }}
+                />
+              </a>{' '}
+              {is_free && (
+                <span className='tooltip'>
+                  (ℹ)
+                  <span className='text'>{t('lotteries:free_tooltip')}</span>
+                </span>
+              )}{' '}
+              {is_locked && (
+                <span className='tooltip'>
+                  (ℹ)
+                  <span className='text'>{t('lotteries:locked_tooltip')}</span>
+                </span>
+              )}
+            </span>
+          )}
         </div>
       </div>
     </div>
