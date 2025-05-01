@@ -10,13 +10,15 @@ import {
 } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { Button } from './Button';
+import {
+  useGetAccountInfo,
+  useGetIsLoggedIn
+} from '@multiversx/sdk-dapp/hooks';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
-import { lotteryContract } from 'utils/smartContract';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 // import './../../Mint/MintSFT.css';
 
@@ -25,6 +27,7 @@ export const ActionBuy = ({
   price_identifier,
   price_nonce,
   price_amount,
+  price_decimals,
   buyed,
   balance,
   esdt_balance,
@@ -34,6 +37,9 @@ export const ActionBuy = ({
   ended
 }: any) => {
   const loading = useLoadTranslations('lotteries');
+  const isLoggedIn = useGetIsLoggedIn();
+  const navigate = useNavigate();
+
   const { t } = useTranslation();
   const { hasPendingTransactions } = useGetPendingTransactions();
 
@@ -120,61 +126,118 @@ export const ActionBuy = ({
       setTransactionSessionId(sessionId);
     }
   };
-  if (!address) {
-    return null;
-  }
+  // if (!address) {
+  //   return null;
+  // }
 
   return (
     <>
-      {!hasPendingTransactions ? (
+      {!isLoggedIn ? (
         <>
-          <button
-            disabled={
-              time_start > 0 ||
-              ended ||
-              balance.isLessThan(fees) ||
-              (price_identifier == 'FREE-000000' &&
-                graou_balance.isLessThan(new BigNumber(price_amount))) ||
-              buyed ||
-              (price_identifier == 'EGLD-000000' &&
-                balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
-              (price_identifier != 'EGLD-000000' &&
-                price_identifier != 'FREE-000000' &&
-                price_nonce == 0 &&
-                esdt_balance.isLessThan(new BigNumber(price_amount))) ||
-              (price_identifier != 'EGLD-000000' &&
-                price_nonce > 0 &&
-                sft_balance.isLessThan(new BigNumber(price_amount)))
-                ? true
-                : false
-            }
-            onClick={sendFundTransaction}
-            className={'dinoButton'}
-          >
-            {time_start > 0
-              ? t('lotteries:not_started')
-              : ended
-              ? t('lotteries:ended')
-              : balance.isLessThan(fees) ||
-                (price_identifier == 'EGLD-000000' &&
-                  balance.isLessThan(new BigNumber(price_amount).plus(fees))) ||
-                (price_identifier != 'EGLD-000000' &&
-                  price_nonce == 0 &&
-                  esdt_balance.isLessThan(new BigNumber(price_amount))) ||
-                (price_identifier != 'EGLD-000000' &&
-                  price_nonce != 0 &&
-                  sft_balance.isLessThan(new BigNumber(price_amount)))
-              ? t('lotteries:balance_not_enough')
-              : buyed
-              ? t('lotteries:max_buy_reached')
-              : t('lotteries:buy_ticket')}
+          {' '}
+          <button className='dinoButton' onClick={() => navigate('/unlock')}>
+            {t('global:connect')}
           </button>
         </>
       ) : (
         <>
-          <button className='dinoButton' disabled={true}>
-            {t('lotteries:processing')}
-          </button>
+          {' '}
+          {!hasPendingTransactions ? (
+            <>
+              <button
+                disabled={
+                  time_start > 0 ||
+                  ended ||
+                  balance.isLessThan(fees) ||
+                  (price_identifier == 'FREE-000000' &&
+                    graou_balance.isLessThan(new BigNumber(price_amount))) ||
+                  buyed ||
+                  (price_identifier == 'EGLD-000000' &&
+                    balance.isLessThan(
+                      new BigNumber(price_amount).plus(fees)
+                    )) ||
+                  (price_identifier != 'EGLD-000000' &&
+                    price_identifier != 'FREE-000000' &&
+                    price_nonce == 0 &&
+                    esdt_balance.isLessThan(new BigNumber(price_amount))) ||
+                  (price_identifier != 'EGLD-000000' &&
+                    price_nonce > 0 &&
+                    sft_balance.isLessThan(new BigNumber(price_amount)))
+                    ? true
+                    : false
+                }
+                onClick={sendFundTransaction}
+                className={'dinoButton'}
+              >
+                {time_start > 0
+                  ? t('lotteries:not_started')
+                  : ended
+                  ? t('lotteries:ended')
+                  : balance.isLessThan(fees) ||
+                    (price_identifier == 'EGLD-000000' &&
+                      balance.isLessThan(
+                        new BigNumber(price_amount).plus(fees)
+                      )) ||
+                    (price_identifier != 'EGLD-000000' &&
+                      price_nonce == 0 &&
+                      esdt_balance.isLessThan(new BigNumber(price_amount))) ||
+                    (price_identifier != 'EGLD-000000' &&
+                      price_nonce != 0 &&
+                      sft_balance.isLessThan(new BigNumber(price_amount)))
+                  ? t('lotteries:balance_not_enough')
+                  : buyed
+                  ? t('lotteries:max_buy_reached')
+                  : t('lotteries:buy_ticket')}
+
+                {/* Pay with EGLD ? */}
+                {balance.isLessThan(fees) ||
+                  (price_identifier == 'EGLD-000000' &&
+                    balance.isLessThan(
+                      new BigNumber(price_amount).plus(fees)
+                    ) && (
+                      <>
+                        {' '}
+                        {balance.multipliedBy(10 ** 18).toFixed()} /{' '}
+                        {price_amount
+                          .multipliedBy(10 ** price_decimals)
+                          .toFixed()}{' '}
+                      </>
+                    ))}
+
+                {/* Pay with ESDT ? */}
+                {price_identifier != 'EGLD-000000' &&
+                  price_nonce == 0 &&
+                  esdt_balance.isLessThan(new BigNumber(price_amount)) && (
+                    <>
+                      {' '}
+                      {esdt_balance
+                        .multipliedBy(10 ** price_decimals)
+                        .toFixed()}{' '}
+                      /{' '}
+                      {price_amount
+                        .multipliedBy(10 ** price_decimals)
+                        .toFixed()}{' '}
+                    </>
+                  )}
+
+                {/* Pay with SFT ? */}
+                {price_identifier != 'EGLD-000000' &&
+                  price_nonce != 0 &&
+                  sft_balance.isLessThan(new BigNumber(price_amount)) && (
+                    <>
+                      {' '}
+                      {sft_balance.toFixed()} / {price_amount.toFixed()}{' '}
+                    </>
+                  )}
+              </button>
+            </>
+          ) : (
+            <>
+              <button className='dinoButton' disabled={true}>
+                {t('lotteries:processing')}
+              </button>
+            </>
+          )}
         </>
       )}
     </>

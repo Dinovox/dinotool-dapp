@@ -1306,10 +1306,10 @@
   resolved "https://registry.yarnpkg.com/@multiversx/sdk-dapp-utils/-/sdk-dapp-utils-2.0.0.tgz#15cae568ae5d25ea2ac12c3793d52d18db5ac1fe"
   integrity sha512-NcaQUgXrjDqjKJgbUj1eM11ID7sDJRVFamjEA/VO4qquP8jBOrSeW0ltvppHElZGC/A14tNDERPbZQkrLIa2KQ==
 
-"@multiversx/sdk-dapp@4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@multiversx/sdk-dapp/-/sdk-dapp-4.1.0.tgz#081d3d0058d5a3b6c1d2c96421b530d2d605fa13"
-  integrity sha512-maQnlmKYKs7E59GImceeXtkkZ3YwYmiWRfJGC84OHx/gVKzXZD0TWAzcoV8lwT/DQyTfQmIiFOIYNJ2eTL64tg==
+"@multiversx/sdk-dapp@4.1.2":
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@multiversx/sdk-dapp/-/sdk-dapp-4.1.2.tgz#4e828ef7a18b006fc102044b5b5f08ed69484074"
+  integrity sha512-Ow5Vred7ln7ytnEhN72sV0IWItrZfgmz+P2ZufUodctXFYSOAgd+KLAmMtnKiCHIa4lo9lLWSESMRdTCBU924Q==
   dependencies:
     "@lifeomic/axios-fetch" "3.0.1"
     "@metamask/providers" "16.0.0"
@@ -1319,7 +1319,7 @@
     "@multiversx/sdk-metamask-provider" "2.0.0"
     "@multiversx/sdk-native-auth-client" "1.0.9"
     "@multiversx/sdk-opera-provider" "1.0.0-alpha.1"
-    "@multiversx/sdk-passkey-provider" "3.0.0"
+    "@multiversx/sdk-passkey-provider" "3.0.2"
     "@multiversx/sdk-wallet-connect-provider" "6.0.1"
     "@multiversx/sdk-web-wallet-cross-window-provider" "3.0.0"
     "@multiversx/sdk-web-wallet-iframe-provider" "3.0.0"
@@ -1399,10 +1399,10 @@
   resolved "https://registry.yarnpkg.com/@multiversx/sdk-opera-provider/-/sdk-opera-provider-1.0.0-alpha.1.tgz#2beebd5423fdc2e667b33660f17cbff325449097"
   integrity sha512-5hrqn+kNpuy/S6eV5wh5mE4lvQo0PduZ7fLsh/2Srcaz3K5kM5lE1VyQmWk4DTxToZSldrGbgWz/olezoC6fPg==
 
-"@multiversx/sdk-passkey-provider@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@multiversx/sdk-passkey-provider/-/sdk-passkey-provider-3.0.0.tgz#03a77dd8e555820dcac919fdc56b7f768a721a3d"
-  integrity sha512-Lu350XbaPX5ErRgA7Vjs9hjtSzqay3mbL71UJiGIoYJnTwV3ekSZYH+9EM/uMmugTJRrqv97GTZYvHBjPByXPA==
+"@multiversx/sdk-passkey-provider@3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@multiversx/sdk-passkey-provider/-/sdk-passkey-provider-3.0.2.tgz#5fdaaeb553f3bd2fabaad32c27259ea3e3bd1aa8"
+  integrity sha512-JW0EKEKzw0gyOc/dXzhkFJuTdpYyWdD6Qs0GFeFI90DhSydsyTKJoMC8gkWtx9dlOyuTAW152qc+llkIgLCOyA==
   dependencies:
     "@noble/ed25519" "2.1.0"
     "@types/jest" "29.5.11"

@@ -244,8 +244,9 @@ const CreateLotteryModal: React.FC<{
   };
 
   const handlePriceAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let rawValue = e.target.value;
+    let rawValue = e.target.value.replace(',', '.');
 
+    console.log('rawValue', rawValue);
     // Permet la saisie vide sans réinitialisation
     if (rawValue === '') {
       setPriceDisplay('');

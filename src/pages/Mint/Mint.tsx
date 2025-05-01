@@ -15,6 +15,7 @@ import sold_graout from 'assets/img/sold_graout.jpg';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
+import { h } from 'framer-motion/dist/types.d-B50aGbjN';
 
 export const Mint = () => {
   const loading = useLoadTranslations('mint');
@@ -52,6 +53,7 @@ export const Mint = () => {
 
   const mintable = useGetMintable();
   const { hasBuyed, esdtAmount } = useGetUserHasBuyed();
+
   const { balance, address } = useGetAccount();
 
   // console.log('egld:', balance);

@@ -46,8 +46,6 @@ export const LotteryDetail = () => {
     return_url += `&price=${price_filter}`;
   }
 
-  console.log('return_url', return_url);
-
   const [timeStart, setTimeStart] = useState(60 * 60);
   const [timeEnd, setTimeEnd] = useState(60 * 60);
   const { address } = useGetAccount();
@@ -399,6 +397,13 @@ export const LotteryDetail = () => {
                           price_identifier={lottery?.price_identifier}
                           price_nonce={lottery.price_nonce}
                           price_amount={new BigNumber(lottery.price_amount)}
+                          price_decimals={
+                            new BigNumber(
+                              lottery?.price_decimals
+                                ? lottery?.price_decimals
+                                : 0
+                            )
+                          }
                           balance={new BigNumber(balance)}
                           esdt_balance={
                             new BigNumber(userEsdtBalance ? userEsdtBalance : 0)

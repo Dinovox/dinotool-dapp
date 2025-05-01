@@ -42,8 +42,9 @@ export const useGetUserHasBuyed = () => {
         function: 'hasBuyed',
         arguments: [new AddressValue(new Address(address))]
       });
-
-      setHasBuyed(Array.isArray(response) && response.length > 0);
+      console.log('hasBuyed', response);
+      // setHasBuyed(Array.isArray(response) && response.length > 0);
+      setHasBuyed(response[0] ? response[0] : false);
     } catch (err) {
       console.error('Unable to call getAllUserRewards', err);
     }
