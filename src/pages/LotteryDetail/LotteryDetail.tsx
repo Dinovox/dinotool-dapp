@@ -309,7 +309,7 @@ export const LotteryDetail = () => {
                             amount={lottery.price_amount}
                             is_free={
                               ['FreeEgld', 'FreeSft', 'FreeEsdt'].includes(
-                                lottery.price_type.name
+                                lottery.price_type
                               )
                                 ? true
                                 : false
@@ -319,7 +319,7 @@ export const LotteryDetail = () => {
                                 'LockedEgld',
                                 'LockedSft',
                                 'LockedEsdt'
-                              ].includes(lottery.price_type.name)
+                              ].includes(lottery.price_type)
                                 ? true
                                 : false
                             }
@@ -332,7 +332,7 @@ export const LotteryDetail = () => {
                               amount={lottery.price_amount}
                               is_free={
                                 ['FreeEgld', 'FreeSft', 'FreeEsdt'].includes(
-                                  lottery.price_type.name
+                                  lottery.price_type
                                 )
                                   ? true
                                   : false
@@ -342,7 +342,7 @@ export const LotteryDetail = () => {
                                   'LockedEgld',
                                   'LockedSft',
                                   'LockedEsdt'
-                                ].includes(lottery.price_type.name)
+                                ].includes(lottery.price_type)
                                   ? true
                                   : false
                               }

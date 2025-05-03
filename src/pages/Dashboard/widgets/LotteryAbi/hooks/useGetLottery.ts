@@ -187,6 +187,7 @@ export const useGetLottery = (lottery_id: any) => {
           description: prev.description, // garde l'existante
           ...field0,
           price: new BigNumber(field0.price_amount),
+          price_type: field0?.price_type?.name,
           vm_owner,
           vm_winner
         }));
