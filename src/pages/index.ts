@@ -9,3 +9,5 @@ export * from './Quiz';
 export * from './LotteryList';
 export * from './LotteryDetail';
 export * from './Vouchers';
+export * from './Collections';
+export * from './CollectionDetail';

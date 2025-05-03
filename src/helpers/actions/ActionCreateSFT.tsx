@@ -1,16 +1,15 @@
 import React from 'react';
-import { Button } from 'antd';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { Address } from '@multiversx/sdk-core/out';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import BigNumber from 'bignumber.js';
-import { bigNumToHex } from '../../helpers/bigNumToHex';
+import { bigNumToHex } from '../bigNumToHex';
 export const ActionCreateSFT: React.FC<{
   collection: string;
   name: string;
   quantity: BigNumber;
-  royalties: number;
+  royalties: BigNumber;
   hash: string;
   attributes: string;
   uris: string[];
@@ -34,7 +33,7 @@ export const ActionCreateSFT: React.FC<{
         'hex'
       )}@${bigNumToHex(quantity)}@${Buffer.from(name).toString(
         'hex'
-      )}@${bigNumToHex(new BigNumber(royalties))}@${Buffer.from(hash).toString(
+      )}@${bigNumToHex(royalties)}@${Buffer.from(hash).toString(
         'hex'
       )}@${Buffer.from(attributes).toString('hex')}${uris
         .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
@@ -57,23 +56,22 @@ export const ActionCreateSFT: React.FC<{
 
   return (
     <>
-      {[
-        'erd10p0ke87tg4g2wnpah6ngmqmmlv604avfqwrlw7f3a7xpl8p3ugws7t3828',
-        'erd1yfxtk0s7eu9eq8zzwsvgsnuq85xrj0yysjhsp28tc2ldrps25mwqztxgph'
-      ].includes(address) && (
+      {collection && (
         <>
           {' '}
           <div>Collection:{collection}</div>
           <div>Name:{name}</div>
           <div>Quantity:{quantity.toFixed()}</div>
-          <div>Royalties:{royalties}</div>
+          <div>Royalties:{royalties.toFixed()}</div>
           <div>Attributes:{attributes}</div>
-          {uris.map((uri) => (
-            <div>{`${uri}`}</div>
-          ))}
-          <Button type='primary' onClick={handleSend} disabled={disabled}>
+          {uris && uris.map((uri) => <div>{`${uri}`}</div>)}
+          <button
+            className='dinoButton'
+            onClick={handleSend}
+            disabled={disabled || uris.length === 0 || !name}
+          >
             Create SFT
-          </Button>
+          </button>
         </>
       )}
     </>

@@ -23,8 +23,7 @@ import useLoadTranslations from '../../hooks/useLoadTranslations';
 import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import BigNumber from 'bignumber.js';
-import { ActionCreateSFT } from './ActionCreateSFT';
-
+import { ActionCreateSFT } from '../../helpers/actions/ActionCreateSFT';
 export const Home = () => {
   const loading = useLoadTranslations('home');
   const { t } = useTranslation();
@@ -178,6 +177,7 @@ export const Home = () => {
               </div>{' '}
             </a>
           </div>
+
           {/* <ActionCreateSFT
             collection='DINOCOLLEC-723119'
             name='DinoVox Special Edition Neverless'

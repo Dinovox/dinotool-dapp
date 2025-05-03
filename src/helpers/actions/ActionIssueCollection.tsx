@@ -1,29 +1,33 @@
 import React from 'react';
-import { useGetAccountInfo } from '../../hooks/useGetAccountInfo';
-import { Transaction } from '@multiversx/sdk-core';
-import { gasLimit } from '../../config/gasLimit';
-import { chainID } from '../../config/chainID';
-import { Button } from '../../components/Button';
+import { Button } from 'antd';
+import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { sendTransactions } from '@multiversx/sdk-dapp/services';
+import { Address } from '@multiversx/sdk-core/out';
+import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import BigNumber from 'bignumber.js';
+import { bigNumToHex } from '../bigNumToHex';
 import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 
 interface ActionIssueProps {
+  type: string;
   name: string;
   ticker: string;
   disabled?: boolean;
 }
 
-export const ActionIssue: React.FC<ActionIssueProps> = ({
+export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
+  type,
   name,
   ticker,
   disabled = false
 }) => {
   const { address, account } = useGetAccountInfo();
-  const { sendTransaction } = useTransaction();
   const { t } = useTranslation();
+  const loading = useLoadTranslations('actions');
 
   const handleIssue = async () => {
     if (!address) return;
-
     const nameHex = Buffer.from(name).toString('hex');
     const tickerHex = Buffer.from(ticker).toString('hex');
     const canFreezeHex = Buffer.from('canFreeze').toString('hex');
@@ -39,28 +43,37 @@ export const ActionIssue: React.FC<ActionIssueProps> = ({
     const trueHex = Buffer.from('true').toString('hex');
     const falseHex = Buffer.from('false').toString('hex');
 
-    const data = `issueSemiFungible@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+    const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
+    const data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
 
-    const issueTransaction = new Transaction({
+    const createTransaction = {
       value: '50000000000000000', // 0.05 EGLD
-      data: new Uint8Array(Buffer.from(data)),
+      data: data,
       gasLimit: 60000000,
       receiver:
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-      sender: address,
-      chainID: chainID
-    });
+      sender: address
+    };
 
-    await sendTransaction(issueTransaction);
+    await refreshAccount();
+
+    const { sessionId, error } = await sendTransactions({
+      transactions: createTransaction,
+      transactionsDisplayInfo: {
+        processingMessage: 'Processing SFT creation transaction',
+        errorMessage: 'An error occurred during SFT creation',
+        successMessage: 'SFT creation transaction successful'
+      }
+    });
   };
 
   return (
-    <Button
+    <button
       onClick={handleIssue}
       disabled={disabled || !address}
       className='dinoButton'
     >
-      {t('home:issue_token')}
-    </Button>
+      {t('actions:issue_token_sft')}
+    </button>
   );
 };
