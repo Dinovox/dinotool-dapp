@@ -25,7 +25,6 @@ export const ActionCreateSFT: React.FC<{
   disabled
 }) => {
   const { address } = useGetAccountInfo();
-
   const handleSend = async () => {
     const createTransaction = {
       value: '0',

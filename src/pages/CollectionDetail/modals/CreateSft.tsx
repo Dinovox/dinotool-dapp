@@ -3,6 +3,8 @@ import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
 import { ActionCreateSFT } from 'helpers/actions/ActionCreateSFT';
 import { CollectionRole } from 'helpers/api/accounts/getRolesCollections';
+import { useGetLoginInfo } from 'hooks';
+import { m } from 'framer-motion';
 
 export const CreateSft: React.FC<{
   isOpen: boolean;
@@ -15,6 +17,7 @@ export const CreateSft: React.FC<{
   const [metadatas, setMetadatas] = useState<string>('');
   const [tags, setTags] = useState<string>('');
   const [uris, setUris] = useState<string[]>([]);
+  const [metaUri, setMetaUri] = useState<string>('');
   const [invalidUris, setInvalidUris] = useState<string[]>([]);
   const ipfsUrlPattern = /^https?:\/\/.+\/ipfs\/[a-zA-Z0-9]+(\/[^\s]*)?$/;
   // const ipfsGateway = 'https://ipfs.io/ipfs/';
@@ -22,13 +25,11 @@ export const CreateSft: React.FC<{
   const ipfsGateway = 'https://gateway.pinata.cloud/ipfs/';
   const [ipfsData, setIpfsData] = useState<string | null>(null);
 
+  const { tokenLogin } = useGetLoginInfo();
+
   const handleFetchMetadata = async (value: string) => {
     setIpfsData(null);
     setMetadatas(value);
-    // if (!isValidCID(cid)) {
-    //   setError('CID invalide');
-    //   return;
-    // }
 
     try {
       const url = `${ipfsGateway}${value}`;
@@ -63,6 +64,7 @@ export const CreateSft: React.FC<{
     return ipfsUrlPattern.test(uri.trim());
   };
 
+  // Handle change in the textarea
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const lines = e.target.value
       .split('\n')
@@ -75,6 +77,59 @@ export const CreateSft: React.FC<{
     setInvalidUris(invalid);
   };
 
+  //for direct upload to pinata
+  const MAX_FILE_SIZE_MB = 10;
+  const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+  const handleUploadToPinata = async (files: FileList) => {
+    const validFiles = Array.from(files).filter((file) => {
+      if (file.size > MAX_FILE_SIZE) {
+        alert(
+          `Le fichier ${file.name} dépasse la limite de ${MAX_FILE_SIZE_MB} Mo.`
+        );
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    const formData = new FormData();
+
+    for (const file of Array.from(files)) {
+      formData.append('files', file);
+    }
+    if (!tokenLogin) {
+      return;
+    }
+    const res = await fetch('http://localhost:3000/pinata/upload', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
+      }
+    });
+    //   {
+    //     "uploaded": [
+    //         {
+    //             "name": "42.png",
+    //             "cid": "QmcSxY2nd2usSLFEsFYEKykbN973Vo9GV3PNdtCaQtwAqn",
+    //             "url": "https://gateway.pinata.cloud/ipfs/QmcSxY2nd2usSLFEsFYEKykbN973Vo9GV3PNdtCaQtwAqn"
+    //         }
+    //     ]
+    // }
+    const data = await res.json();
+    console.log('data', data);
+    for (const f of data.uploaded) {
+      const uri = `https://ipfs.io/ipfs/${f.cid}`;
+      if (f.name.endsWith('.json')) {
+        console.log('json', f);
+        setMetaUri(uri);
+        handleFetchMetadata(f.cid);
+      } else {
+        setUris((prev) => [...prev, ...uri.split('\n')]);
+      }
+    }
+  };
   return (
     <Dialog open={isOpen} onClose={closeModal} as={Fragment}>
       <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40'>
@@ -163,6 +218,15 @@ export const CreateSft: React.FC<{
                 placeholder='ipfsCID/name.json'
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
                 onChange={(e) => handleFetchMetadata(e.target.value.trim())}
+              />{' '}
+              <input
+                type='file'
+                // multiple
+                onChange={(e) => {
+                  if (e.target.files) {
+                    handleUploadToPinata(e.target.files);
+                  }
+                }}
               />
               {ipfsData && (
                 <div className='mt-2'>
@@ -214,10 +278,20 @@ export const CreateSft: React.FC<{
               </label>
               <textarea
                 id='uris'
+                value={uris.join('\n')}
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
                 placeholder='https://ipfs.io/ipfs/ipfsCID/1.mp4
 https://ipfs.io/ipfs/ipfsCID/1.json'
                 onChange={handleChange}
+              />
+              <input
+                type='file'
+                // multiple
+                onChange={(e) => {
+                  if (e.target.files) {
+                    handleUploadToPinata(e.target.files);
+                  }
+                }}
               />
               {invalidUris.length > 0 && (
                 <div className='text-red-500 mt-2'>
@@ -238,7 +312,7 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
             royalties={royalties}
             hash=''
             attributes={`metadatas:${metadatas};tags:${tags}`}
-            uris={uris}
+            uris={[...uris, ...(metaUri ? [metaUri] : [])]}
             disabled={invalidUris.length > 0}
           />
         </div>
