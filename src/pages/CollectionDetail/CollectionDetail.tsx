@@ -69,6 +69,19 @@ export const CollectionDetail = () => {
     <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
         <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+          <div
+            style={{
+              float: 'right',
+              marginTop: '20px',
+              marginRight: '20px'
+            }}
+          >
+            {' '}
+            <button onClick={() => navigate('/collections')} className=''>
+              {t('lotteries:return')}
+            </button>
+          </div>
+
           {collections.map((item, index) => (
             <div key={index}>
               <h3>{item.collection}</h3>

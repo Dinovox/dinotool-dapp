@@ -1,5 +1,7 @@
 import { EnvironmentsEnum } from 'types';
 export const internal_api = 'https://devnet-internal.mvx.fr';
+// export const internal_api = 'https://devnet-api.dinovox.com';
+
 export * from './sharedConfig';
 
 export const contractAddress =

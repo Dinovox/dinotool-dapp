@@ -49,7 +49,8 @@
     "test": "jest",
     "wdio-smoke": "wdio run wdio/wdio.conf.ts",
     "smoke": "wdio run wdio/wdio.conf.ts --suite smoke",
-    "deploy": "node ftp-main"
+    "deploy:mainnet": "node ftp-main",
+    "deploy:devnet": "node ftp-dev"
   },
   "browserslist": [
     ">0.2%",

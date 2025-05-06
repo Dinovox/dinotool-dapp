@@ -38,7 +38,7 @@ export const ActionCreateSFT: React.FC<{
         .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
         .join('')}`,
       receiver: new Address(address).toBech32(),
-      gasLimit: 60000000
+      gasLimit: 10000000
     };
 
     await refreshAccount();
@@ -63,7 +63,7 @@ export const ActionCreateSFT: React.FC<{
           <div>Quantity:{quantity.toFixed()}</div>
           <div>Royalties:{royalties.toFixed()}</div>
           <div>Attributes:{attributes}</div>
-          {uris && uris.map((uri) => <div>{`${uri}`}</div>)}
+          {uris && uris.map((uri, key) => <div key={key}>{`${uri}`}</div>)}
           <button
             className='dinoButton'
             onClick={handleSend}

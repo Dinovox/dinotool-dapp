@@ -30,6 +30,13 @@ export const CreateSft: React.FC<{
   const handleFetchMetadata = async (value: string) => {
     setIpfsData(null);
     setMetadatas(value);
+    setMetaUri('https://ipfs.io/ipfs/' + value);
+    const isPotentialCID = (v: string) =>
+      v.length >= 46 && /^[a-zA-Z0-9]+$/.test(v);
+    if (!isPotentialCID(value)) {
+      setIpfsData('Invalid IPFS CID');
+      return;
+    }
 
     try {
       const url = `${ipfsGateway}${value}`;
@@ -94,14 +101,17 @@ export const CreateSft: React.FC<{
     if (validFiles.length === 0) return;
 
     const formData = new FormData();
-
+    formData.append('collection', selectedCollection.collection);
+    console.log('formData', formData);
     for (const file of Array.from(files)) {
       formData.append('files', file);
     }
+    console.log('formData2', formData);
     if (!tokenLogin) {
       return;
     }
-    const res = await fetch('http://localhost:3000/pinata/upload', {
+    // const res = await fetch('http://localhost:3000/pinata/upload', {
+    const res = await fetch('https://devnet-api.dinovox.com/pinata/upload', {
       method: 'POST',
       body: formData,
       headers: {
@@ -135,7 +145,10 @@ export const CreateSft: React.FC<{
       <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40'>
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-xl font-semibold'>Create a new SFT</h2>
+            <h2 className='text-xl font-semibold'>
+              Create a new{' '}
+              {selectedCollection.type == 'NonFungibleESDT' ? 'NFT' : 'SFT'}
+            </h2>
             <button
               onClick={closeModal}
               className='text-gray-500 hover:text-gray-700'
@@ -161,7 +174,7 @@ export const CreateSft: React.FC<{
                 id='name'
                 value={name}
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                onChange={(e) => setName(e.target.value.trim())}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
 
@@ -176,8 +189,13 @@ export const CreateSft: React.FC<{
                 onWheel={(e) => e.currentTarget.blur()}
                 type='number'
                 id='quantity'
-                value={quantity.toString()}
+                value={
+                  selectedCollection.type == 'NonFungibleESDT'
+                    ? quantity.toString()
+                    : 1
+                }
                 min='1'
+                disabled={selectedCollection.type == 'NonFungibleESDT'}
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
                 onChange={(e) => setQuantity(new BigNumber(e.target.value))}
               />
@@ -200,7 +218,11 @@ export const CreateSft: React.FC<{
                 step='0.01'
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
                 onChange={(e) =>
-                  setRoyalties(new BigNumber(e.target.value).multipliedBy(100))
+                  setRoyalties(
+                    new BigNumber(e.target.value).isLessThanOrEqualTo(100)
+                      ? new BigNumber(e.target.value).multipliedBy(100)
+                      : new BigNumber(100).multipliedBy(100)
+                  )
                 }
               />
             </div>
@@ -250,7 +272,7 @@ export const CreateSft: React.FC<{
                 value={tags}
                 placeholder='DinoVox,Graou'
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                onChange={(e) => setTags(e.target.value.trim())}
+                onChange={(e) => setTags(e.target.value.trim().toLowerCase())}
               />
             </div>
 
@@ -264,7 +286,7 @@ export const CreateSft: React.FC<{
               <textarea
                 id='attributes'
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                value={`metadatas:${metadatas};tags:${tags}`}
+                value={`metadata:${metadatas};tags:${tags}`}
                 disabled
               />
             </div>
@@ -307,11 +329,11 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
           </form>
           <ActionCreateSFT
             collection={selectedCollection.collection}
-            name={name}
+            name={name.trim()}
             quantity={quantity}
             royalties={royalties}
             hash=''
-            attributes={`metadatas:${metadatas};tags:${tags}`}
+            attributes={`metadata:${metadatas};tags:${tags}`}
             uris={[...uris, ...(metaUri ? [metaUri] : [])]}
             disabled={invalidUris.length > 0}
           />
