@@ -8,5 +8,6 @@ export enum RouteNamesEnum {
   quiz = '/quiz',
   lotteries = '/lotteries',
   vouchers = '/vouchers',
-  collections = '/collections'
+  collections = '/collections',
+  profile = '/profile'
 }

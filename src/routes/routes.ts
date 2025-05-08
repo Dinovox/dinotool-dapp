@@ -8,7 +8,8 @@ import {
   LotteryDetail,
   Vouchers,
   Collections,
-  CollectionDetail
+  CollectionDetail,
+  Profile
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
@@ -68,6 +69,11 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       path: `${RouteNamesEnum.collections}/:id`,
       title: t('collection'),
       component: CollectionDetail
+    },
+    {
+      path: RouteNamesEnum.profile,
+      title: t('profil'),
+      component: Profile
     }
   ];
 };
