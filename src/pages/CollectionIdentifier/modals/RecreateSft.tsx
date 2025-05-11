@@ -1,19 +1,19 @@
 import React, { Fragment, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
-import { ActionCreateSFT } from 'helpers/actions/ActionCreateSFT';
+import { ActionRecreateSFT } from 'helpers/actions/ActionRecreateSFT';
 import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
 import { useGetLoginInfo } from 'hooks';
 import { m } from 'framer-motion';
 import { Collection } from 'helpers/api/accounts/getCollections';
+import { Nfts } from 'helpers/api/accounts/getNfts';
 
-export const CreateSft: React.FC<{
+export const RecreateSft: React.FC<{
   isOpen: boolean;
   closeModal: () => void;
-  collection: Collection;
-}> = ({ isOpen, closeModal, collection }) => {
+  nfts: Nfts;
+}> = ({ isOpen, closeModal, nfts }) => {
   const [name, setName] = useState<string>('');
-  const [quantity, setQuantity] = useState<BigNumber>(new BigNumber(1));
   const [royalties, setRoyalties] = useState<BigNumber>(new BigNumber(500));
   const [metadatas, setMetadatas] = useState<string>('');
   const [tags, setTags] = useState<string>('');
@@ -26,6 +26,7 @@ export const CreateSft: React.FC<{
   const ipfsGateway = 'https://gateway.pinata.cloud/ipfs/';
   const [ipfsData, setIpfsData] = useState<string | null>(null);
 
+  console.log('nfts-rec', nfts);
   const { tokenLogin } = useGetLoginInfo();
 
   const handleFetchMetadata = async (value: string) => {
@@ -102,7 +103,7 @@ export const CreateSft: React.FC<{
     if (validFiles.length === 0) return;
 
     const formData = new FormData();
-    formData.append('collection', collection.collection);
+    formData.append('collection', nfts.collection);
     console.log('formData', formData);
     for (const file of Array.from(files)) {
       formData.append('files', file);
@@ -147,8 +148,7 @@ export const CreateSft: React.FC<{
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
-              Create a new{' '}
-              {collection.type == 'NonFungibleESDT' ? 'NFT' : 'SFT'}
+              Recreate {nfts.type == 'NonFungibleESDT' ? 'NFT' : 'SFT'}
             </h2>
             <button
               onClick={closeModal}
@@ -184,23 +184,15 @@ export const CreateSft: React.FC<{
                 htmlFor='quantity'
                 className='block text-sm font-medium text-gray-700'
               >
-                Quantity
+                Nonce
               </label>
               <input
-                onWheel={(e) => e.currentTarget.blur()}
                 type='number'
                 id='quantity'
-                value={quantity.toFixed()}
+                value={nfts?.nonce?.toFixed()}
                 min='1'
-                disabled={collection.type == 'NonFungibleESDT'}
+                disabled={true}
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                onChange={(e) =>
-                  setQuantity(
-                    new BigNumber(
-                      collection.type == 'NonFungibleESDT' ? 1 : e.target.value
-                    )
-                  )
-                }
               />
             </div>
 
@@ -330,10 +322,10 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
               )}
             </div>
           </form>
-          <ActionCreateSFT
-            collection={collection.collection}
+          <ActionRecreateSFT
+            collection={nfts.collection}
             name={name.trim()}
-            quantity={quantity}
+            nonce={nfts.nonce}
             royalties={royalties}
             hash=''
             attributes={`metadata:${metadatas};tags:${tags}`}
@@ -346,4 +338,4 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
   );
 };
 
-export default CreateSft;
+export default RecreateSft;

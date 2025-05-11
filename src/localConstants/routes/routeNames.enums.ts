@@ -9,5 +9,6 @@ export enum RouteNamesEnum {
   lotteries = '/lotteries',
   vouchers = '/vouchers',
   collections = '/collections',
+  nfts = '/nfts',
   profile = '/profile'
 }

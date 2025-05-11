@@ -11,4 +11,5 @@ export * from './LotteryDetail';
 export * from './Vouchers';
 export * from './Collections';
 export * from './CollectionDetail';
+export * from './CollectionIdentifier';
 export * from './Profile';

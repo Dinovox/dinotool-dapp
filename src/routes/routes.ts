@@ -9,6 +9,7 @@ import {
   Vouchers,
   Collections,
   CollectionDetail,
+  CollectionIdentifier,
   Profile
 } from 'pages';
 import { RouteType } from 'types';
@@ -70,6 +71,12 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       title: t('collection'),
       component: CollectionDetail
     },
+    {
+      path: `${RouteNamesEnum.nfts}/:id`,
+      title: t('collection'),
+      component: CollectionIdentifier
+    },
+
     {
       path: RouteNamesEnum.profile,
       title: t('profil'),

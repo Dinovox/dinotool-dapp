@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
+import { h } from 'framer-motion/dist/types.d-B50aGbjN';
 export interface CollectionRole {
   canCreate: boolean;
   canBurn: boolean;
@@ -43,6 +44,8 @@ export const useGetCollections = (collection: string) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { hasPendingTransactions } = useGetPendingTransactions();
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -67,9 +70,12 @@ export const useGetCollections = (collection: string) => {
     };
 
     if (collection) {
+      if (hasPendingTransactions) {
+        return;
+      }
       fetchData();
     }
-  }, [collection, network.apiAddress]);
+  }, [collection, network.apiAddress, hasPendingTransactions]);
 
   return { data, loading, error };
 };

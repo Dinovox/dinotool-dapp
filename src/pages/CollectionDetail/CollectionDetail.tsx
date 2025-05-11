@@ -1,7 +1,6 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { Trans, useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
-import { useAccountsRolesCollections } from 'helpers/api/accounts/getRolesCollections';
 
 import {
   Collection,
@@ -12,8 +11,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState, Fragment } from 'react';
 import BigNumber from 'bignumber.js';
 import { Dialog } from '@headlessui/react'; // ou un autre composant modal si tu préfères
-import { R } from 'framer-motion/dist/types.d-B50aGbjN';
-import { useGetAccountInfo } from 'hooks';
+import { R, u } from 'framer-motion/dist/types.d-B50aGbjN';
+import { useGetAccountInfo, useGetPendingTransactions } from 'hooks';
 import { CreateSft } from './modals/CreateSft';
 import { AddRoles } from './modals/AddRoles';
 import { ChangeToDynamic } from './modals/ChangeToDynamic';
@@ -42,6 +41,8 @@ export const CollectionDetail = () => {
   // const [tokenIdentifier, setTokenIdentifier] = useState<string>('');
 
   const { address } = useGetAccountInfo();
+  const { hasPendingTransactions } = useGetPendingTransactions();
+
   const [tokenIdentifier, setTokenIdentifier] = useState<string>('');
 
   const { data: collection } = useGetCollections(tokenIdentifier);
@@ -77,6 +78,12 @@ export const CollectionDetail = () => {
   const closeModal = () => {
     setModal({ type: null, collection: null, address: '' });
   };
+
+  useEffect(() => {
+    if (!hasPendingTransactions) {
+      setModal({ type: null, collection: null, address: '' });
+    }
+  }, [hasPendingTransactions]);
 
   //liste des roles déjà affectés impossible de les affecter à nouveau
   const IGNORED_ROLES = [
@@ -166,13 +173,16 @@ export const CollectionDetail = () => {
             {collection &&
               collection.roles &&
               collection.roles.length > 0 &&
-              collection.roles.map((role, item) => (
-                <p key={role.address}>
-                  {role.address}
-                  <br />
-                  {role.roles}
-                </p>
-              ))}
+              collection.roles
+                .filter((role) => role.address) // Filter roles with no address
+                .map((role, item) => (
+                  <div key={item}>
+                    <h3>{role.address}</h3>
+                    <p style={{ marginBottom: '10px' }}>
+                      {role.roles && role.roles.map((role) => role + ' ')}
+                    </p>
+                  </div>
+                ))}
 
             {collection.canAddSpecialRoles && collection.owner == address && (
               <button
@@ -205,7 +215,8 @@ export const CollectionDetail = () => {
               </button>
             )}
 
-            {collection.type !== 'FungibleESDT' &&
+            {collection.type &&
+              collection.type !== 'FungibleESDT' &&
               collection.type !== 'NonFungibleESDT' &&
               collection.type !== 'NonFungibleESDTv2' &&
               collection.subType != 'DynamicSemiFungibleESDT' && (

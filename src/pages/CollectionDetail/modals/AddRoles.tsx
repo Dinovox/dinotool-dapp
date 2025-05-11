@@ -31,8 +31,6 @@ export const AddRoles: React.FC<{
     (r: RolesCollections) => r.collection === collection.collection
   );
 
-  console.log('collection?', collection);
-  console.log('selectedCollection', collection);
   const sftRoles = [
     'ESDTRoleNFTCreate',
     'ESDTRoleNFTBurn',
