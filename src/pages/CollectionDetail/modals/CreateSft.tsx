@@ -2,15 +2,16 @@ import React, { Fragment, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
 import { ActionCreateSFT } from 'helpers/actions/ActionCreateSFT';
-import { CollectionRole } from 'helpers/api/accounts/getRolesCollections';
+import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
 import { useGetLoginInfo } from 'hooks';
 import { m } from 'framer-motion';
+import { Collection } from 'helpers/api/accounts/getCollections';
 
 export const CreateSft: React.FC<{
   isOpen: boolean;
   closeModal: () => void;
-  selectedCollection: CollectionRole;
-}> = ({ isOpen, closeModal, selectedCollection }) => {
+  collection: Collection;
+}> = ({ isOpen, closeModal, collection }) => {
   const [name, setName] = useState<string>('');
   const [quantity, setQuantity] = useState<BigNumber>(new BigNumber(1));
   const [royalties, setRoyalties] = useState<BigNumber>(new BigNumber(500));
@@ -101,7 +102,7 @@ export const CreateSft: React.FC<{
     if (validFiles.length === 0) return;
 
     const formData = new FormData();
-    formData.append('collection', selectedCollection.collection);
+    formData.append('collection', collection.collection);
     console.log('formData', formData);
     for (const file of Array.from(files)) {
       formData.append('files', file);
@@ -147,7 +148,7 @@ export const CreateSft: React.FC<{
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
               Create a new{' '}
-              {selectedCollection.type == 'NonFungibleESDT' ? 'NFT' : 'SFT'}
+              {collection.type == 'NonFungibleESDT' ? 'NFT' : 'SFT'}
             </h2>
             <button
               onClick={closeModal}
@@ -189,15 +190,17 @@ export const CreateSft: React.FC<{
                 onWheel={(e) => e.currentTarget.blur()}
                 type='number'
                 id='quantity'
-                value={
-                  selectedCollection.type == 'NonFungibleESDT'
-                    ? quantity.toString()
-                    : 1
-                }
+                value={quantity.toFixed()}
                 min='1'
-                disabled={selectedCollection.type == 'NonFungibleESDT'}
+                disabled={collection.type == 'NonFungibleESDT'}
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                onChange={(e) => setQuantity(new BigNumber(e.target.value))}
+                onChange={(e) =>
+                  setQuantity(
+                    new BigNumber(
+                      collection.type == 'NonFungibleESDT' ? 1 : e.target.value
+                    )
+                  )
+                }
               />
             </div>
 
@@ -328,7 +331,7 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
             </div>
           </form>
           <ActionCreateSFT
-            collection={selectedCollection.collection}
+            collection={collection.collection}
             name={name.trim()}
             quantity={quantity}
             royalties={royalties}

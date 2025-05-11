@@ -145,7 +145,12 @@ export const Profile = () => {
   };
 
   if (loading || !profile) {
-    return <div>Loading...</div>;
+    return (
+      <AuthRedirectWrapper requireAuth={true}>
+        {' '}
+        <PageWrapper>Loading...</PageWrapper>
+      </AuthRedirectWrapper>
+    );
   }
   return (
     <AuthRedirectWrapper requireAuth={true}>

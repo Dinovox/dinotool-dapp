@@ -296,10 +296,6 @@ textarea {
   margin-left: 5px; /* Petit espace entre le label et la checkbox */
 }
 
-input[type='checkbox'] {
-  margin-right: -20px; /* Espace entre le label et la checkbox */
-}
-
 /* Styles pour la tooltip */
 .tooltip-inline {
   position: relative;

@@ -1,8 +1,9 @@
 import React, { Fragment, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
-import { CollectionRole } from 'helpers/api/accounts/getRolesCollections';
+import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
 import { ActionIssueCollection } from 'helpers/actions/ActionIssueCollection';
+import { is } from '@react-spring/shared';
 
 export const IssueCollection: React.FC<{
   isOpen: boolean;
@@ -11,6 +12,7 @@ export const IssueCollection: React.FC<{
   const [type, setType] = useState<string>('NFT');
   const [name, setName] = useState<string>('');
   const [ticker, setTicker] = useState<string>('');
+  const [isDynamic, setIsDynamic] = useState<boolean>(false);
   //   Token Name:
 
   //   length between 3 and 50 characters
@@ -43,31 +45,42 @@ export const IssueCollection: React.FC<{
                 <label className='block text-sm font-medium text-gray-700'>
                   Type
                 </label>
-                <div className='mt-2 flex items-center space-x-4'>
-                  <label className='flex items-center'>
+                <div className='mt-2 flex items-center gap-6'>
+                  {/* NFT */}
+                  <label className='inline-flex items-center gap-2 cursor-pointer'>
                     <input
                       type='radio'
                       name='type'
                       value='NFT'
-                      className='form-radio text-blue-500'
+                      className='h-4 w-4 text-blue-600'
                       defaultChecked
-                      onChange={(e) => {
-                        setType(e.target.value);
-                      }}
+                      onChange={(e) => setType(e.target.value)}
                     />
-                    <span className='ml-2 text-sm text-gray-700'>NFT</span>
-                  </label>{' '}
-                  <label className='flex items-center'>
+                    <span className='text-sm text-gray-700'>NFT</span>
+                  </label>
+
+                  {/* SFT */}
+                  <label className='inline-flex items-center gap-2 cursor-pointer'>
                     <input
                       type='radio'
                       name='type'
                       value='SFT'
-                      className='form-radio text-blue-500'
-                      onChange={(e) => {
-                        setType(e.target.value);
-                      }}
+                      className='h-4 w-4 text-blue-600'
+                      onChange={(e) => setType(e.target.value)}
                     />
-                    <span className='ml-2 text-sm text-gray-700'>SFT</span>
+                    <span className='text-sm text-gray-700'>SFT</span>
+                  </label>
+
+                  {/* Dynamic */}
+                  <label className='inline-flex items-center gap-2 cursor-pointer'>
+                    <input
+                      type='checkbox'
+                      name='dynamic'
+                      className='h-4 w-4 text-blue-600 rounded border-gray-300'
+                      checked={isDynamic}
+                      onChange={() => setIsDynamic(!isDynamic)}
+                    />
+                    <span className='text-sm text-gray-700'>Dynamic</span>
                   </label>
                 </div>
               </div>
@@ -119,7 +132,12 @@ export const IssueCollection: React.FC<{
               />
             </div>
           </form>
-          <ActionIssueCollection type={type} name={name} ticker={ticker} />
+          <ActionIssueCollection
+            type={type}
+            isDynamic={isDynamic}
+            name={name}
+            ticker={ticker}
+          />
         </div>
       </div>
     </Dialog>

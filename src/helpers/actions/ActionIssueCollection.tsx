@@ -11,6 +11,7 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 
 interface ActionIssueProps {
   type: string;
+  isDynamic: boolean;
   name: string;
   ticker: string;
   disabled?: boolean;
@@ -18,6 +19,7 @@ interface ActionIssueProps {
 
 export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
   type,
+  isDynamic,
   name,
   ticker,
   disabled = false
@@ -42,9 +44,15 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
       Buffer.from('canAddSpecialRoles').toString('hex');
     const trueHex = Buffer.from('true').toString('hex');
     const falseHex = Buffer.from('false').toString('hex');
-
-    const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
-    const data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+    const typeHex = Buffer.from(type).toString('hex');
+    const denominator = new BigNumber('0');
+    let data = '';
+    if (isDynamic) {
+      data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+    } else {
+      const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
+      data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+    }
 
     const createTransaction = {
       value: '50000000000000000', // 0.05 EGLD

@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useGetNetworkConfig } from 'hooks';
-
-export interface Role {
+export interface CollectionRole {
   canCreate: boolean;
   canBurn: boolean;
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
+  canTransfer?: boolean;
   roles: string[];
+  address?: string;
 }
 
-export interface RolesCollections {
+export interface Collection {
   collection: string;
   type: string;
   subType: string;
@@ -19,6 +20,8 @@ export interface RolesCollections {
   ticker: string;
   owner: string;
   timestamp: number;
+  roles?: CollectionRole[];
+  role: CollectionRole;
   canFreeze: boolean;
   canWipe: boolean;
   canPause: boolean;
@@ -32,30 +35,11 @@ export interface RolesCollections {
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
-  role: Role;
 }
 
-export interface UseAccountsRolesOptions {
-  from?: number;
-  size?: number;
-  search?: string;
-  type?: string;
-  subType?: string;
-  owner?: string;
-  canCreate?: boolean;
-  canBurn?: boolean;
-  canAddQuantity?: boolean;
-  canUpdateAttributes?: boolean;
-  canTransferRole?: boolean;
-  excludeMetaESDT?: boolean;
-}
-
-export const useAccountsRolesCollections = (
-  address: string,
-  options: UseAccountsRolesOptions = {}
-) => {
+export const useGetCollections = (collection: string) => {
   const { network } = useGetNetworkConfig();
-  const [data, setData] = useState<RolesCollections[]>([]);
+  const [data, setData] = useState<Collection>({} as Collection);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,29 +48,28 @@ export const useAccountsRolesCollections = (
       setLoading(true);
       setError(null);
 
-      let url = `/accounts/${address}/roles/collections`;
+      let url = `/collections/${collection}`;
       const config: AxiosRequestConfig = {
-        baseURL: network.apiAddress,
-        params: { ...options }
+        baseURL: network.apiAddress
       };
 
       try {
-        const response = await axios.get<RolesCollections[]>(url, config);
+        const response = await axios.get<Collection>(url, config);
         console.log('response', response);
-        setData(response.data);
+        setData(response.data as Collection);
       } catch (err: any) {
         setError('Failed to fetch roles collections');
         console.error(err);
-        setData([]);
+        setData({} as Collection);
       } finally {
         setLoading(false);
       }
     };
 
-    if (address) {
+    if (collection) {
       fetchData();
     }
-  }, [address, JSON.stringify(options), network.apiAddress]);
+  }, [collection, network.apiAddress]);
 
   return { data, loading, error };
 };

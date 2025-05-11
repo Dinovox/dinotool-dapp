@@ -8,14 +8,14 @@ import { bigNumToHex } from '../bigNumToHex';
 import { useTranslation } from 'react-i18next';
 import { h } from 'framer-motion/dist/types.d-B50aGbjN';
 
-interface ActionAssignRoleProps {
+interface ActionSetSpecialRoleProps {
   tokenIdentifier: string;
   addressToAssign: string;
   roles: string[];
   disabled?: boolean;
 }
 
-export const ActionAssignRole: React.FC<ActionAssignRoleProps> = ({
+export const ActionSetSpecialRole: React.FC<ActionSetSpecialRoleProps> = ({
   tokenIdentifier,
   addressToAssign,
   roles,
@@ -51,9 +51,9 @@ export const ActionAssignRole: React.FC<ActionAssignRoleProps> = ({
     const { sessionId, error } = await sendTransactions({
       transactions: createTransaction,
       transactionsDisplayInfo: {
-        processingMessage: 'Processing SFT creation transaction',
-        errorMessage: 'An error occurred during SFT creation',
-        successMessage: 'SFT creation transaction successful'
+        processingMessage: 'Processing set roles transaction',
+        errorMessage: 'An error occurred during set roles',
+        successMessage: 'SFT set roles successful'
       }
     });
   };
