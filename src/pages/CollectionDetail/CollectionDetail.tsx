@@ -21,6 +21,11 @@ import { useGetCollections } from 'helpers/api/accounts/getCollections';
 import { to } from 'react-spring';
 import StopCreate from './modals/StopCreate';
 import TransfertNFTCreateRole from './modals/TransfertNFTCreateRole';
+import ControlChanges from './modals/ControlChanges';
+import { ActionFreeze } from 'helpers/actions/ActionFreeze';
+import { ActionUnFreeze } from 'helpers/actions/ActionUnfreeze';
+import { ActionPause } from 'helpers/actions/ActionPause';
+import { ActionUnPause } from 'helpers/actions/ActionUnPause';
 
 export type ModalType =
   | 'createSft'
@@ -29,6 +34,7 @@ export type ModalType =
   | 'changeToDynamic'
   | 'stopCreate'
   | 'transferNFTCreateRole'
+  | 'controlChanges'
   | null;
 
 export interface ModalState {
@@ -137,32 +143,110 @@ export const CollectionDetail = () => {
           <div>
             <h3>Collection: {collection.collection}</h3>
             <h3>Name: {collection.name}</h3>
+            <p>Type: {collection.type}</p>
+            <p>SubType: {collection.subType}</p>
+            {collection.type &&
+              collection.type !== 'FungibleESDT' &&
+              collection.type !== 'NonFungibleESDT' &&
+              collection.type !== 'NonFungibleESDTv2' &&
+              collection.subType != 'DynamicSemiFungibleESDT' && (
+                <button
+                  onClick={() => openModal('changeToDynamic', collection)}
+                  className='dinoButton'
+                >
+                  Upgrade to Dynamic
+                </button>
+              )}
             <p>Owner: {collection.owner}</p>
             <p>
               {collection.canChangeOwner
                 ? 'Can Change Owner'
                 : 'Cannot Change Owner'}
             </p>
-            <p>Type: {collection.type}</p>
-            <p>SubType: {collection.subType}</p>
             <p>{collection.canFreeze ? 'Can Freeze' : 'Cannot Freeze'}</p>
+            {collection.canFreeze && (
+              <>
+                <ActionFreeze
+                  tokenIdentifier={collection.collection}
+                  addressToAssign={
+                    'erd1ve2jekzgdeg2mvss8su56p0huuqkr7rjp9cl94xy65y9k3mxlp9s5uxtfe'
+                  }
+                />{' '}
+                <ActionUnFreeze
+                  tokenIdentifier={collection.collection}
+                  addressToAssign={
+                    'erd1ve2jekzgdeg2mvss8su56p0huuqkr7rjp9cl94xy65y9k3mxlp9s5uxtfe'
+                  }
+                />
+              </>
+            )}{' '}
             <p>{collection.canWipe ? 'Can Wipe' : 'Cannot Wipe'}</p>
             <p>{collection.canPause ? 'Can Pause' : 'Cannot Pause'}</p>
+            {collection.canPause && (
+              <>
+                <ActionPause tokenIdentifier={collection.collection} />{' '}
+                <ActionUnPause tokenIdentifier={collection.collection} />
+              </>
+            )}
             <p>
               {collection.canTransferNftCreateRole
                 ? 'Can Transfer NFT Create Role'
                 : 'Cannot Transfer NFT Create Role'}
             </p>
+            {collection.owner == address &&
+              collection.canTransferNftCreateRole &&
+              collection.roles?.find?.((r) => r.canCreate) && (
+                <button
+                  onClick={() => openModal('transferNFTCreateRole', collection)}
+                  className='dinoButton'
+                >
+                  Transfert NFT Create Role
+                </button>
+              )}
             <p>{collection.canUpgrade ? 'Can Upgrade' : 'Cannot Upgrade'}</p>
+            {collection.owner == address && collection.canUpgrade && (
+              <button
+                onClick={() => openModal('controlChanges', collection)}
+                className='dinoButton'
+              >
+                Change controls
+              </button>
+            )}
             <p>
               {collection.canAddSpecialRoles
                 ? 'Can Add Special Roles'
                 : 'Cannot Add Special Roles'}
             </p>
+            {collection.canAddSpecialRoles && collection.owner == address && (
+              <button
+                onClick={() => openModal('addRoles', collection)}
+                className='dinoButton'
+              >
+                Add Roles
+              </button>
+            )}
+            {collection.owner == address &&
+              collection.roles &&
+              collection?.roles?.length > 1 && (
+                <button
+                  onClick={() => openModal('removeRoles', collection, address)}
+                  className='dinoButton'
+                >
+                  Removes Roles
+                </button>
+              )}
             <p>{collection.canTransfer ? 'Can Transfer' : 'Cannot Transfer'}</p>
-
             <br />
-
+            {collection.roles?.find?.(
+              (r) => r.address === address && r.canCreate
+            ) && (
+              <button
+                onClick={() => openModal('createSft', collection)}
+                className='dinoButton'
+              >
+                Create {collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'}
+              </button>
+            )}
             {collection.role?.roles && (
               <p>
                 Roles :{' '}
@@ -183,50 +267,6 @@ export const CollectionDetail = () => {
                     </p>
                   </div>
                 ))}
-
-            {collection.canAddSpecialRoles && collection.owner == address && (
-              <button
-                onClick={() => openModal('addRoles', collection)}
-                className='dinoButton'
-              >
-                Add Roles
-              </button>
-            )}
-
-            {collection.owner == address &&
-              collection.roles &&
-              collection?.roles?.length > 1 && (
-                <button
-                  onClick={() => openModal('removeRoles', collection, address)}
-                  className='dinoButton'
-                >
-                  Removes Roles
-                </button>
-              )}
-
-            {collection.roles?.find?.(
-              (r) => r.address === address && r.canCreate
-            ) && (
-              <button
-                onClick={() => openModal('createSft', collection)}
-                className='dinoButton'
-              >
-                Create {collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'}
-              </button>
-            )}
-
-            {collection.type &&
-              collection.type !== 'FungibleESDT' &&
-              collection.type !== 'NonFungibleESDT' &&
-              collection.type !== 'NonFungibleESDTv2' &&
-              collection.subType != 'DynamicSemiFungibleESDT' && (
-                <button
-                  onClick={() => openModal('changeToDynamic', collection)}
-                  className='dinoButton'
-                >
-                  Upgrade to Dynamic
-                </button>
-              )}
             {/* Stop create is too dangerous to show*/}
             {/* <button
               onClick={() => openModal('stopCreate', collection)}
@@ -234,17 +274,6 @@ export const CollectionDetail = () => {
             >
               Stop Create
             </button> */}
-
-            {collection.owner == address &&
-              collection.canTransferNftCreateRole &&
-              collection.roles?.find?.((r) => r.canCreate) && (
-                <button
-                  onClick={() => openModal('transferNFTCreateRole', collection)}
-                  className='dinoButton'
-                >
-                  Transfert NFT Create Role
-                </button>
-              )}
           </div>
         </div>
 
@@ -281,6 +310,11 @@ export const CollectionDetail = () => {
             /> */}
             <TransfertNFTCreateRole
               isOpen={modal.type === 'transferNFTCreateRole'}
+              closeModal={closeModal}
+              collection={collection}
+            />
+            <ControlChanges
+              isOpen={modal.type === 'controlChanges'}
               closeModal={closeModal}
               collection={collection}
             />
