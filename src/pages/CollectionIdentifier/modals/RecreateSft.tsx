@@ -7,6 +7,7 @@ import { useGetLoginInfo } from 'hooks';
 import { m } from 'framer-motion';
 import { Collection } from 'helpers/api/accounts/getCollections';
 import { Nfts } from 'helpers/api/accounts/getNfts';
+import { internal_api_v2 } from 'config';
 
 export const RecreateSft: React.FC<{
   isOpen: boolean;
@@ -113,7 +114,7 @@ export const RecreateSft: React.FC<{
       return;
     }
     // const res = await fetch('http://localhost:3000/pinata/upload', {
-    const res = await fetch('https://devnet-api.dinovox.com/pinata/upload', {
+    const res = await fetch(`${internal_api_v2}/pinata/upload`, {
       method: 'POST',
       body: formData,
       headers: {

@@ -141,7 +141,17 @@ export const CollectionDetail = () => {
           </div>
 
           <div>
-            <h3>Collection: {collection.collection}</h3>
+            <h3>
+              Collection:
+              <a
+                href={`https://explorer.multiversx.com/collections/${collection.collection}`}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-blue-500 hover:underline'
+              >
+                {collection.collection}
+              </a>
+            </h3>
             <h3>Name: {collection.name}</h3>
             <p>Type: {collection.type}</p>
             <p>SubType: {collection.subType}</p>
@@ -168,15 +178,11 @@ export const CollectionDetail = () => {
               <>
                 <ActionFreeze
                   tokenIdentifier={collection.collection}
-                  addressToAssign={
-                    'erd1ve2jekzgdeg2mvss8su56p0huuqkr7rjp9cl94xy65y9k3mxlp9s5uxtfe'
-                  }
+                  addressToAssign={''}
                 />{' '}
                 <ActionUnFreeze
                   tokenIdentifier={collection.collection}
-                  addressToAssign={
-                    'erd1ve2jekzgdeg2mvss8su56p0huuqkr7rjp9cl94xy65y9k3mxlp9s5uxtfe'
-                  }
+                  addressToAssign={''}
                 />
               </>
             )}{' '}

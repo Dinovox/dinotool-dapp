@@ -6,6 +6,7 @@ import { useGetLoginInfo } from 'hooks';
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
 import { is } from '@react-spring/shared';
+import { internal_api_v2 } from 'config';
 
 export type DiscordInfo = {
   discordId: string;
@@ -44,7 +45,7 @@ export const Profile = () => {
       }
 
       try {
-        const res = await fetch('https://devnet-api.dinovox.com/auth', {
+        const res = await fetch(`${internal_api_v2}/auth`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -74,7 +75,7 @@ export const Profile = () => {
     if (!tokenLogin) {
       return;
     }
-    const res = await fetch('https://devnet-api.dinovox.com/auth/discord', {
+    const res = await fetch(`${internal_api_v2}/auth/discord`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -92,7 +93,7 @@ export const Profile = () => {
       return;
     }
 
-    const res = await fetch('https://devnet-api.dinovox.com/auth/discord', {
+    const res = await fetch(`${internal_api_v2}/auth/discord`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -111,7 +112,7 @@ export const Profile = () => {
     if (!tokenLogin) {
       return;
     }
-    const res = await fetch('https://devnet-api.dinovox.com/auth/twitter', {
+    const res = await fetch(`${internal_api_v2}/auth/twitter`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -129,7 +130,7 @@ export const Profile = () => {
       return;
     }
 
-    const res = await fetch('https://devnet-api.dinovox.com/auth/twitter', {
+    const res = await fetch(`${internal_api_v2}/auth/twitter`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`

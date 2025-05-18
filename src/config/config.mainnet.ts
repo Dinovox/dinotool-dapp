@@ -1,6 +1,8 @@
 import { EnvironmentsEnum } from 'types';
 export const environment: EnvironmentsEnum = EnvironmentsEnum.mainnet;
 export const internal_api = 'https://internal.mvx.fr';
+export const internal_api_v2 = 'https://api.dinovox.com';
+
 export * from './sharedConfig';
 
 //WHY?
