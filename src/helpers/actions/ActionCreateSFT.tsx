@@ -60,12 +60,12 @@ export const ActionCreateSFT: React.FC<{
       {collection && (
         <>
           {' '}
-          <div>Collection:{collection.collection}</div>
+          {/* <div>Collection:{collection.collection}</div>
           <div>Name:{name}</div>
           <div>Quantity:{quantity.toFixed()}</div>
           <div>Royalties:{royalties.toFixed()}</div>
-          <div>Attributes:{attributes}</div>
-          {uris && uris.map((uri, key) => <div key={key}>{`${uri}`}</div>)}
+          <div>Attributes:{attributes}</div> */}
+          {/* {uris && uris.map((uri, key) => <div key={key}>{`${uri}`}</div>)} */}
           <button
             className='dinoButton'
             onClick={handleSend}
