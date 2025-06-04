@@ -38,7 +38,7 @@ const NftDisplay: React.FC<NftDisplayProps> = ({
       <div className='info-item'>
         <div
           className='mint-image'
-          style={{ margin: 'auto', width: '168px', height: '168px' }}
+          style={{ margin: 'auto', width: '168px', height: '188px' }}
         >
           {is_free && <div className='dinoFree'>{t('lotteries:free')}</div>}
           {is_locked && (

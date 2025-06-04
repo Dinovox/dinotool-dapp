@@ -13,6 +13,7 @@ import { useGetAccount } from 'hooks';
 import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
 import { is } from '@react-spring/shared';
 import { ActionControlChanges } from 'helpers/actions/ActionControlChanges';
+import { t } from 'i18next';
 
 type Props = {
   collection: Record<string, any>; // Pas de typage strict ici
@@ -59,7 +60,9 @@ export const ControlChanges: React.FC<{
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
-              Change control of {collection.collection}
+              {t('collections:change_properties_of', {
+                collection: collection.name
+              })}
             </h2>
             <button
               onClick={closeModal}

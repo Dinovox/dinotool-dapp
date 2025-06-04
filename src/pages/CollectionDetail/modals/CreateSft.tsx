@@ -7,6 +7,7 @@ import { useGetLoginInfo } from 'hooks';
 import { m } from 'framer-motion';
 import { Collection } from 'helpers/api/accounts/getCollections';
 import { internal_api_v2 } from 'config';
+import { t } from 'i18next';
 
 export const CreateSft: React.FC<{
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const CreateSft: React.FC<{
   const [quantity, setQuantity] = useState<BigNumber>(new BigNumber(1));
   const [royalties, setRoyalties] = useState<BigNumber>(new BigNumber(500));
   const [metadatas, setMetadatas] = useState<string>('');
+  const [attributes, setAttributes] = useState<string>('');
   const [tags, setTags] = useState<string>('');
   const [uris, setUris] = useState<string[]>([]);
   const [metaUri, setMetaUri] = useState<string>('');
@@ -64,6 +66,20 @@ export const CreateSft: React.FC<{
       // }
 
       setIpfsData(json);
+      console.log('IPFS Data:', json);
+      try {
+        // const parsed = JSON.parse(json);
+        // console.log('Parsed JSON:', parsed);
+        // setJsonData(parsed);
+
+        const stringified = JSON.stringify(json);
+        console.log('Stringified JSON:', stringified);
+        // const hex = Buffer.from(stringified).toString('hex');
+        setAttributes(stringified);
+        // console.log('Hex-encoded attributes:', hex);
+      } catch (e) {
+        alert('Invalid JSON');
+      }
     } catch (err: any) {
       setIpfsData('Erreur lors du téléchargement du JSON');
     }
@@ -108,7 +124,7 @@ export const CreateSft: React.FC<{
     for (const file of Array.from(files)) {
       formData.append('files', file);
     }
-    console.log('formData2', formData);
+    // console.log('formData2', formData);
     if (!tokenLogin) {
       return;
     }
@@ -149,8 +165,14 @@ export const CreateSft: React.FC<{
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
-              Create a new{' '}
-              {collection.type == 'NonFungibleESDT' ? 'NFT' : 'SFT'}
+              {t('collections:create_new_type', {
+                type:
+                  collection.type == 'MetaESDT'
+                    ? 'MetaESDT'
+                    : collection.type == 'NonFungibleESDT'
+                    ? 'NFT'
+                    : 'SFT'
+              })}
             </h2>
             <button
               onClick={closeModal}
@@ -170,7 +192,7 @@ export const CreateSft: React.FC<{
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                Name
+                {t('collections:name')}
               </label>
               <input
                 type='text'
@@ -186,7 +208,7 @@ export const CreateSft: React.FC<{
                 htmlFor='quantity'
                 className='block text-sm font-medium text-gray-700'
               >
-                Quantity
+                {t('collections:quantity')}
               </label>
               <input
                 onWheel={(e) => e.currentTarget.blur()}
@@ -255,31 +277,49 @@ export const CreateSft: React.FC<{
                   }
                 }}
               />
-              {ipfsData && (
-                <div className='mt-2'>
-                  <h3 className='text-lg font-semibold'>Metadatas:</h3>
-                  <pre className='bg-gray-100 p-2 rounded'>
-                    {JSON.stringify(ipfsData, null, 2)}
-                  </pre>
-                </div>
+              {collection.type !== 'MetaESDT' ? (
+                <>
+                  {ipfsData && (
+                    <div className='mt-2'>
+                      <h3 className='text-lg font-semibold'>Metadatas:</h3>
+                      <pre className='bg-gray-100 p-2 rounded'>
+                        {JSON.stringify(ipfsData, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {' '}
+                  {attributes && (
+                    <div className='mt-2'>
+                      <h3 className='text-lg font-semibold'>Metadatas:</h3>
+                      <pre className='bg-gray-100 p-2 rounded'>
+                        {attributes}
+                      </pre>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            <div className='mb-4'>
-              <label
-                htmlFor='tags'
-                className='block text-sm font-medium text-gray-700'
-              >
-                Tags
-              </label>
-              <textarea
-                id='tags'
-                value={tags}
-                placeholder='DinoVox,Graou'
-                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                onChange={(e) => setTags(e.target.value.trim().toLowerCase())}
-              />
-            </div>
+            {collection.type !== 'MetaESDT' && (
+              <div className='mb-4'>
+                <label
+                  htmlFor='tags'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  Tags
+                </label>
+                <textarea
+                  id='tags'
+                  value={tags}
+                  placeholder='DinoVox,Graou'
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
+                  onChange={(e) => setTags(e.target.value.trim().toLowerCase())}
+                />
+              </div>
+            )}
 
             <div className='mb-4'>
               <label
@@ -291,7 +331,11 @@ export const CreateSft: React.FC<{
               <textarea
                 id='attributes'
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                value={`metadata:${metadatas};tags:${tags}`}
+                value={
+                  collection.type === 'MetaESDT'
+                    ? attributes
+                    : `metadata:${metadatas};tags:${tags}`
+                }
                 disabled
               />
             </div>
@@ -333,12 +377,16 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
             </div>
           </form>
           <ActionCreateSFT
-            collection={collection.collection}
+            collection={collection}
             name={name.trim()}
             quantity={quantity}
             royalties={royalties}
             hash=''
-            attributes={`metadata:${metadatas};tags:${tags}`}
+            attributes={
+              collection.type === 'MetaESDT'
+                ? attributes
+                : `metadata:${metadatas};tags:${tags}`
+            }
             uris={[...uris, ...(metaUri ? [metaUri] : [])]}
             disabled={invalidUris.length > 0 || uris.length === 0}
           />

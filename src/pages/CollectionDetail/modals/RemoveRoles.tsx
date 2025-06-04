@@ -8,6 +8,7 @@ import {
 import { useGetAccount } from 'hooks';
 import { ActionUnsetSpecialRole } from 'helpers/actions/ActionUnsetSpecialRole';
 import { Collection } from 'helpers/api/accounts/getCollections';
+import { t } from 'i18next';
 
 export const RemoveRoles: React.FC<{
   isOpen: boolean;
@@ -27,7 +28,7 @@ export const RemoveRoles: React.FC<{
   const collection_roles = temp?.find(
     (r: RolesCollections) => r.collection === collection.collection
   );
-  console.log('collection!?', collection_roles);
+  // console.log('collection!?', collection_roles);
 
   const handleRoleToggle = (role: string) => {
     setNewRoles((prev) =>
@@ -41,7 +42,9 @@ export const RemoveRoles: React.FC<{
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
-              Remove Roles to {collection.collection}
+              {t('collections:remove_roles_from', {
+                collection: collection.name
+              })}
             </h2>
             <button
               onClick={closeModal}
@@ -61,7 +64,7 @@ export const RemoveRoles: React.FC<{
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                Address
+                {t('collections:address')}
               </label>
               <input
                 type='text'

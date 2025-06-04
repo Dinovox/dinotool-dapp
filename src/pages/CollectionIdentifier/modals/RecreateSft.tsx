@@ -109,7 +109,7 @@ export const RecreateSft: React.FC<{
     for (const file of Array.from(files)) {
       formData.append('files', file);
     }
-    console.log('formData2', formData);
+    // console.log('formData2', formData);
     if (!tokenLogin) {
       return;
     }

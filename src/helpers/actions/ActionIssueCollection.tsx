@@ -14,6 +14,7 @@ interface ActionIssueProps {
   isDynamic: boolean;
   name: string;
   ticker: string;
+  decimals?: number;
   disabled?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
   isDynamic,
   name,
   ticker,
+  decimals = 0,
   disabled = false
 }) => {
   const { address, account } = useGetAccountInfo();
@@ -45,13 +47,23 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
     const trueHex = Buffer.from('true').toString('hex');
     const falseHex = Buffer.from('false').toString('hex');
     const typeHex = Buffer.from(type).toString('hex');
-    const denominator = new BigNumber('0');
+    const denominator = bigNumToHex(new BigNumber(decimals));
+
     let data = '';
-    if (isDynamic) {
-      data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+
+    if (type === 'META') {
+      if (isDynamic) {
+        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+      } else {
+        data = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+      }
     } else {
-      const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
-      data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+      if (isDynamic) {
+        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+      } else {
+        const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
+        data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+      }
     }
 
     const createTransaction = {
@@ -68,9 +80,9 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
     const { sessionId, error } = await sendTransactions({
       transactions: createTransaction,
       transactionsDisplayInfo: {
-        processingMessage: 'Processing SFT creation transaction',
-        errorMessage: 'An error occurred during SFT creation',
-        successMessage: 'SFT creation transaction successful'
+        processingMessage: 'Processing creation',
+        errorMessage: 'An error occurred creation',
+        successMessage: 'Creation successful'
       }
     });
   };
@@ -81,7 +93,7 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
       disabled={disabled || !address}
       className='dinoButton'
     >
-      {t('actions:issue_token_sft')}
+      {t('collections:new_collection_button')}{' '}
     </button>
   );
 };

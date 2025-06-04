@@ -58,7 +58,7 @@ export const ActionTransfertNFTCreateRole: React.FC<
       disabled={disabled || !address}
       className='dinoButton'
     >
-      {t('actions:assign_role')}
+      {t('collections:transfer_role')}
     </button>
   );
 };

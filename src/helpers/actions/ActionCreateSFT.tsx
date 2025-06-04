@@ -5,8 +5,10 @@ import { Address } from '@multiversx/sdk-core/out';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
+import { t } from 'i18next';
+import { Collection } from 'helpers/api/accounts/getCollections';
 export const ActionCreateSFT: React.FC<{
-  collection: string;
+  collection: Collection;
   name: string;
   quantity: BigNumber;
   royalties: BigNumber;
@@ -28,7 +30,7 @@ export const ActionCreateSFT: React.FC<{
   const handleSend = async () => {
     const createTransaction = {
       value: '0',
-      data: `ESDTNFTCreate@${Buffer.from(collection).toString(
+      data: `ESDTNFTCreate@${Buffer.from(collection.collection).toString(
         'hex'
       )}@${bigNumToHex(quantity)}@${Buffer.from(name).toString(
         'hex'
@@ -58,7 +60,7 @@ export const ActionCreateSFT: React.FC<{
       {collection && (
         <>
           {' '}
-          <div>Collection:{collection}</div>
+          <div>Collection:{collection.collection}</div>
           <div>Name:{name}</div>
           <div>Quantity:{quantity.toFixed()}</div>
           <div>Royalties:{royalties.toFixed()}</div>
@@ -69,7 +71,14 @@ export const ActionCreateSFT: React.FC<{
             onClick={handleSend}
             disabled={disabled || uris.length === 0 || !name}
           >
-            Create SFT
+            {t('collections:create_type', {
+              type:
+                collection.type == 'MetaESDT'
+                  ? 'MetaESDT'
+                  : collection.type == 'NonFungibleESDT'
+                  ? 'NFT'
+                  : 'SFT'
+            })}
           </button>
         </>
       )}

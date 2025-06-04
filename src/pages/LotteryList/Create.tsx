@@ -17,7 +17,7 @@ import { useGetUserNFT } from 'helpers/useGetUserNft';
 import { useGetAccountInfo } from 'hooks';
 import { ActionCreate } from './Transaction/ActionCreate';
 import BigNumber from 'bignumber.js';
-import { graou_identifier, xgraou_identifier } from 'config';
+import { graou_identifier, lottery_cost, xgraou_identifier } from 'config';
 import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -76,11 +76,9 @@ const CreateLotteryModal: React.FC<{
   const showModal = () => {
     setVisible(true);
   };
-
   const handleCancel = () => {
     setVisible(false);
   };
-
   const handleCreate = (values: any) => {
     setVisible(false);
   };
@@ -114,6 +112,7 @@ const CreateLotteryModal: React.FC<{
     }
   };
 
+  //EGLD/SFT/ESDT
   const handlePriceType = (e: any) => {
     if (e.target.value === 'Egld') {
       setPriceType('Egld');
@@ -322,19 +321,20 @@ const CreateLotteryModal: React.FC<{
     return null;
   }
 
+  //locked = free
   function handleIsLocked(e: CheckboxChangeEvent): void {
     const checked = e.target.checked;
     setAutoDraw(checked);
     // setIsFree(false);
     setIsLocked(checked);
     if (!priceIdentifier) {
-      setPriceType(checked ? 'Esdt' : '');
-      setPriceIdentifier(checked ? graou_identifier : '');
-      setPriceTicker(checked ? graou_identifier : '');
-      setPriceDecimals(checked ? 18 : 0);
-      setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
-      setPriceDisplay(checked ? '100' : '');
-      setPriceNonce(0);
+      // setPriceType(checked ? 'Esdt' : '');
+      // setPriceIdentifier(checked ? graou_identifier : '');
+      // setPriceTicker(checked ? graou_identifier : '');
+      // setPriceDecimals(checked ? 18 : 0);
+      // setPriceAmount(new BigNumber(checked ? 100 * 10 ** 18 : 0));
+      // setPriceDisplay(checked ? '100' : '');
+      // setPriceNonce(0);
     }
     setMaxPerWallet(checked ? 1 : 0);
     setMaxTickets(maxTickets > 50 ? 50 : maxTickets);
@@ -691,8 +691,8 @@ const CreateLotteryModal: React.FC<{
                         setPriceTicker(
                           priceType === 'Esdt'
                             ? datas?.datas?.identifier
-                            : datas?.datas?.ticker
-                            ? datas?.datas?.ticker
+                            : datas?.datas?.collection
+                            ? datas?.datas?.collection
                             : ''
                         );
                         setPriceNonce(
@@ -1213,7 +1213,9 @@ const CreateLotteryModal: React.FC<{
                     {!cost_graou ? (
                       <Trans
                         i18nKey='lotteries:you_need_x_graou'
-                        values={{ x: 500 }}
+                        values={{
+                          x: BigNumber(lottery_cost.graou).div(1e18).toFixed(2)
+                        }}
                         components={{
                           bold: <b />,
                           link1: (
@@ -1236,7 +1238,7 @@ const CreateLotteryModal: React.FC<{
                       />
                     ) : (
                       t('lotteries:pay_x_start', {
-                        x: 500,
+                        x: BigNumber(lottery_cost.graou).div(1e18).toFixed(2),
                         token: 'XGRAOU'
                       })
                     )}
@@ -1252,7 +1254,9 @@ const CreateLotteryModal: React.FC<{
                     {!cost_egld ? (
                       <Trans
                         i18nKey='lotteries:you_need_x_egld'
-                        values={{ x: 0.25 }}
+                        values={{
+                          x: BigNumber(lottery_cost.egld).div(1e18).toFixed(2)
+                        }}
                         components={{
                           bold: <b />,
                           link1: (
@@ -1275,7 +1279,7 @@ const CreateLotteryModal: React.FC<{
                       />
                     ) : (
                       t('lotteries:pay_x_start', {
-                        x: 0.25,
+                        x: BigNumber(lottery_cost.egld).div(1e18).toFixed(2),
                         token: 'EGLD'
                       })
                     )}

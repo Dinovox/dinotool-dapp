@@ -4,7 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { lotteryContractAddress, xgraou_identifier } from 'config';
+import {
+  lottery_cost,
+  lotteryContractAddress,
+  xgraou_identifier
+} from 'config';
 import { Address } from '@multiversx/sdk-core/out';
 import {
   useGetAccountInfo,
@@ -91,8 +95,8 @@ export const ActionCreate = ({
       pay_with == 'EGLD' ? 'EGLD-000000' : xgraou_identifier;
     const graou_amount =
       pay_with == 'EGLD'
-        ? new BigNumber('250000000000000000')
-        : new BigNumber('500000000000000000000');
+        ? new BigNumber(lottery_cost.egld)
+        : new BigNumber(lottery_cost.graou);
     let data = '';
     if (auto_draw) {
       //auto draw demande des EGLD en plus en fonction du nombre de tickets

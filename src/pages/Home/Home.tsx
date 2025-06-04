@@ -57,16 +57,22 @@ export const Home = () => {
       image: cardDrop
     },
     {
-      title: 'Soon',
-      link: '/chests',
-      image: cardWip,
-      blured: true
-    },
-    {
       title: t('home:feedback_title'),
       link: 'https://docs.google.com/forms/d/e/1FAIpQLSc1PKfBjGfBSl1pyiSBckAos9xHPOOy1cYEgeLZGR6Ws1923Q/viewform',
       image: cardFeedback,
       external: true
+    },
+    {
+      title: t('home:collections_title'),
+      link: '/collections',
+      image: cardWip,
+      blured: environment == 'devnet' ? false : true
+    },
+    {
+      title: 'Soon',
+      link: '/chests',
+      image: cardWip,
+      blured: true
     }
   ];
 
@@ -177,19 +183,6 @@ export const Home = () => {
               </div>{' '}
             </a>
           </div>
-
-          {/* <ActionCreateSFT
-            collection='DINOCOLLEC-723119'
-            name='DinoVox Special Edition Neverless'
-            quantity={new BigNumber(250)}
-            royalties={500}
-            hash=''
-            attributes='metadata:bafybeiddil7rnefv5idwqycaca7xaavo5747pdtxvofycz6bjxe7xmkfkm/1.json;tags:DinoVox,Graou'
-            uris={[
-              'https://ipfs.io/ipfs/bafybeiddil7rnefv5idwqycaca7xaavo5747pdtxvofycz6bjxe7xmkfkm/1.mp4',
-              'https://ipfs.io/ipfs/bafybeiddil7rnefv5idwqycaca7xaavo5747pdtxvofycz6bjxe7xmkfkm/1.json'
-            ]}
-          /> */}
         </div>
       </PageWrapper>
     </AuthRedirectWrapper>

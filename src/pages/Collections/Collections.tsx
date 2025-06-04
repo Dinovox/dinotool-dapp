@@ -32,7 +32,7 @@ export const Collections = () => {
 
   console.log('roles', collections);
 
-  const loading = useLoadTranslations('home');
+  const loading = useLoadTranslations('collections');
   const { t } = useTranslation();
 
   if (loading) {
@@ -55,7 +55,7 @@ export const Collections = () => {
               </div>
             ))}{' '}
             <button onClick={() => openModal()} className='dinoButton'>
-              New collection
+              {t('collections:new_collection')}
             </button>
             <IssueCollection isOpen={isModalOpen} closeModal={closeModal} />
           </div>

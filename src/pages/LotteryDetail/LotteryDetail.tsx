@@ -28,6 +28,7 @@ import TwitterShareButton from './Transaction/helpers/shareOnX';
 import { EditDescription } from './EditDescription';
 import SafeMarkdown from '../../components/SafeMarkdown';
 import { useLocation } from 'react-router-dom';
+import bigToHex from 'helpers/bigToHex';
 
 export const LotteryDetail = () => {
   const loading = useLoadTranslations('lotteries');
@@ -78,8 +79,13 @@ export const LotteryDetail = () => {
 
   const { buyed } = useGetUserTickets(lotteryID);
   const { balance } = useGetAccount();
-  const user_esdt = useGetUserESDT();
-  const user_sft = useGetUserNFT(address);
+  const user_esdt = useGetUserESDT(lottery?.price_identifier);
+  const user_sft = useGetUserNFT(
+    address,
+    lottery?.price_identifier
+      ? lottery?.price_identifier + '-' + bigToHex(lottery?.price_nonce)
+      : ''
+  );
   const prize_nft_information = useGetNftInformations(
     lottery?.prize_nonce > 0 ? lottery?.prize_identifier : '',
     lottery?.prize_nonce > 0 ? lottery?.prize_nonce : ''

@@ -5,18 +5,26 @@ import { Address } from '@multiversx/sdk-core/out';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
+import { t } from 'i18next';
 export const ActionFreeze: React.FC<{
   tokenIdentifier: string;
-  addressToAssign: string;
-}> = ({ tokenIdentifier, addressToAssign }) => {
-  const { address } = useGetAccountInfo();
+  address: string;
+  nonce: BigNumber;
+}> = ({ tokenIdentifier, address, nonce }) => {
   const tokenIdentifierHex = Buffer.from(tokenIdentifier).toString('hex');
-  const addressHex = new Address(addressToAssign).hex();
 
   const handleSend = async () => {
+    const addressHex = new Address(address).hex();
+
+    let tx_data = `freeze@${tokenIdentifierHex}@${addressHex}`;
+    if (nonce.isGreaterThan(0)) {
+      tx_data = `freezeSingleNFT@${tokenIdentifierHex}@${bigNumToHex(
+        nonce
+      )}@${addressHex}`;
+    }
     const createTransaction = {
       value: '0',
-      data: `freeze@${tokenIdentifierHex}@${addressHex}`,
+      data: tx_data,
       receiver:
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
       gasLimit: 60000000
@@ -39,8 +47,12 @@ export const ActionFreeze: React.FC<{
       {tokenIdentifier && (
         <>
           {' '}
-          <button className='dinoButton' onClick={handleSend}>
-            Freeze Address
+          <button
+            className='dinoButton'
+            onClick={handleSend}
+            disabled={!address}
+          >
+            {t('collections:freeze_wallet')}
           </button>
         </>
       )}

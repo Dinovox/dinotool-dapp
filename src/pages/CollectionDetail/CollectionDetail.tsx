@@ -1,32 +1,34 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 
-import {
-  Collection,
-  CollectionRole
-} from 'helpers/api/accounts/getCollections';
+import { Collection } from 'helpers/api/accounts/getCollections';
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState, Fragment } from 'react';
-import BigNumber from 'bignumber.js';
-import { Dialog } from '@headlessui/react'; // ou un autre composant modal si tu préfères
-import { R, u } from 'framer-motion/dist/types.d-B50aGbjN';
+import { useEffect, useState } from 'react';
+
 import { useGetAccountInfo, useGetPendingTransactions } from 'hooks';
 import { CreateSft } from './modals/CreateSft';
 import { AddRoles } from './modals/AddRoles';
 import { ChangeToDynamic } from './modals/ChangeToDynamic';
 import { RemoveRoles } from './modals/RemoveRoles';
 import { useGetCollections } from 'helpers/api/accounts/getCollections';
-import { to } from 'react-spring';
-import StopCreate from './modals/StopCreate';
+import { useGetCollectionsNfts } from 'helpers/api/accounts/getCollectionsNfts';
 import TransfertNFTCreateRole from './modals/TransfertNFTCreateRole';
+import FreezeAddress from './modals/FreezeAddress';
+import UnFreezeAddress from './modals/UnFreezeAddress';
 import ControlChanges from './modals/ControlChanges';
-import { ActionFreeze } from 'helpers/actions/ActionFreeze';
-import { ActionUnFreeze } from 'helpers/actions/ActionUnfreeze';
+
 import { ActionPause } from 'helpers/actions/ActionPause';
 import { ActionUnPause } from 'helpers/actions/ActionUnPause';
 
+import CollectionDetailHeader from './CollectionDetailHeader';
+import CollectionDetailProperties from './CollectionDetailProperties';
+import CollectionDetailRoles from './CollectionDetailRoles';
+import { Section } from './Section';
+import { Grid } from './Grid';
+import { NftGrid } from './NftGrid';
+import { t } from 'i18next';
 export type ModalType =
   | 'createSft'
   | 'addRoles'
@@ -35,6 +37,8 @@ export type ModalType =
   | 'stopCreate'
   | 'transferNFTCreateRole'
   | 'controlChanges'
+  | 'freezeAddress'
+  | 'unFreezeAddress'
   | null;
 
 export interface ModalState {
@@ -52,6 +56,7 @@ export const CollectionDetail = () => {
   const [tokenIdentifier, setTokenIdentifier] = useState<string>('');
 
   const { data: collection } = useGetCollections(tokenIdentifier);
+  const { data: nfts } = useGetCollectionsNfts(tokenIdentifier);
 
   console.log('collection ??', collection);
   const navigate = useNavigate();
@@ -65,8 +70,7 @@ export const CollectionDetail = () => {
     }
   }, [id]);
 
-  const loading = useLoadTranslations('home');
-  const { t } = useTranslation();
+  const loading = useLoadTranslations('collections');
 
   const [modal, setModal] = useState<ModalState>({
     type: null,
@@ -119,6 +123,7 @@ export const CollectionDetail = () => {
   ];
 
   console.log('definedRoles', definedRoles);
+  console.log('collection.roles', collection.roles);
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -131,7 +136,9 @@ export const CollectionDetail = () => {
             style={{
               float: 'right',
               marginTop: '20px',
-              marginRight: '20px'
+              marginRight: '20px',
+              position: 'relative',
+              zIndex: '1'
             }}
           >
             {' '}
@@ -141,138 +148,125 @@ export const CollectionDetail = () => {
           </div>
 
           <div>
-            <h3>
-              Collection:
-              <a
-                href={`https://explorer.multiversx.com/collections/${collection.collection}`}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='text-blue-500 hover:underline'
-              >
-                {collection.collection}
-              </a>
-            </h3>
-            <h3>Name: {collection.name}</h3>
-            <p>Type: {collection.type}</p>
-            <p>SubType: {collection.subType}</p>
-            {collection.type &&
-              collection.type !== 'FungibleESDT' &&
-              collection.type !== 'NonFungibleESDT' &&
-              collection.type !== 'NonFungibleESDTv2' &&
-              collection.subType != 'DynamicSemiFungibleESDT' && (
-                <button
-                  onClick={() => openModal('changeToDynamic', collection)}
-                  className='dinoButton'
-                >
-                  Upgrade to Dynamic
-                </button>
-              )}
-            <p>Owner: {collection.owner}</p>
-            <p>
-              {collection.canChangeOwner
-                ? 'Can Change Owner'
-                : 'Cannot Change Owner'}
-            </p>
-            <p>{collection.canFreeze ? 'Can Freeze' : 'Cannot Freeze'}</p>
-            {collection.canFreeze && (
-              <>
-                <ActionFreeze
-                  tokenIdentifier={collection.collection}
-                  addressToAssign={''}
-                />{' '}
-                <ActionUnFreeze
-                  tokenIdentifier={collection.collection}
-                  addressToAssign={''}
-                />
-              </>
-            )}{' '}
-            <p>{collection.canWipe ? 'Can Wipe' : 'Cannot Wipe'}</p>
-            <p>{collection.canPause ? 'Can Pause' : 'Cannot Pause'}</p>
-            {collection.canPause && (
-              <>
-                <ActionPause tokenIdentifier={collection.collection} />{' '}
-                <ActionUnPause tokenIdentifier={collection.collection} />
-              </>
-            )}
-            <p>
-              {collection.canTransferNftCreateRole
-                ? 'Can Transfer NFT Create Role'
-                : 'Cannot Transfer NFT Create Role'}
-            </p>
-            {collection.owner == address &&
-              collection.canTransferNftCreateRole &&
-              collection.roles?.find?.((r) => r.canCreate) && (
-                <button
-                  onClick={() => openModal('transferNFTCreateRole', collection)}
-                  className='dinoButton'
-                >
-                  Transfert NFT Create Role
-                </button>
-              )}
-            <p>{collection.canUpgrade ? 'Can Upgrade' : 'Cannot Upgrade'}</p>
-            {collection.owner == address && collection.canUpgrade && (
-              <button
-                onClick={() => openModal('controlChanges', collection)}
-                className='dinoButton'
-              >
-                Change controls
-              </button>
-            )}
-            <p>
-              {collection.canAddSpecialRoles
-                ? 'Can Add Special Roles'
-                : 'Cannot Add Special Roles'}
-            </p>
-            {collection.canAddSpecialRoles && collection.owner == address && (
-              <button
-                onClick={() => openModal('addRoles', collection)}
-                className='dinoButton'
-              >
-                Add Roles
-              </button>
-            )}
-            {collection.owner == address &&
-              collection.roles &&
-              collection?.roles?.length > 1 && (
-                <button
-                  onClick={() => openModal('removeRoles', collection, address)}
-                  className='dinoButton'
-                >
-                  Removes Roles
-                </button>
-              )}
-            <p>{collection.canTransfer ? 'Can Transfer' : 'Cannot Transfer'}</p>
-            <br />
-            {collection.roles?.find?.(
-              (r) => r.address === address && r.canCreate
-            ) && (
-              <button
-                onClick={() => openModal('createSft', collection)}
-                className='dinoButton'
-              >
-                Create {collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'}
-              </button>
-            )}
-            {collection.role?.roles && (
-              <p>
-                Roles :{' '}
-                {collection.role.roles &&
-                  collection.role.roles.map((role) => role + ' ')}
-              </p>
-            )}
-            {collection &&
-              collection.roles &&
-              collection.roles.length > 0 &&
-              collection.roles
-                .filter((role) => role.address) // Filter roles with no address
-                .map((role, item) => (
-                  <div key={item}>
-                    <h3>{role.address}</h3>
-                    <p style={{ marginBottom: '10px' }}>
-                      {role.roles && role.roles.map((role) => role + ' ')}
-                    </p>
-                  </div>
-                ))}
+            <CollectionDetailHeader collection={collection} />
+            <CollectionDetailProperties collection={collection} />
+            <CollectionDetailRoles collection={collection} />
+            <Section title={t('collections:available_actions')}>
+              <Grid columns={2}>
+                {collection.type &&
+                  collection.type !== 'FungibleESDT' &&
+                  collection.type !== 'NonFungibleESDT' &&
+                  collection.type !== 'NonFungibleESDTv2' &&
+                  collection.subType != 'DynamicSemiFungibleESDT' && (
+                    <button
+                      onClick={() => openModal('changeToDynamic', collection)}
+                      className='dinoButton'
+                    >
+                      {t('collections:change_to_dynamic')}
+                    </button>
+                  )}
+                {collection.canFreeze &&
+                  collection.roles &&
+                  collection?.roles?.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => openModal('freezeAddress', collection)}
+                        className='dinoButton'
+                      >
+                        {t('collections:freeze_wallet')}
+                      </button>{' '}
+                      <button
+                        onClick={() => openModal('unFreezeAddress', collection)}
+                        className='dinoButton'
+                      >
+                        {t('collections:unfreeze_wallet')}
+                      </button>
+                      {/* <ActionFreeze
+                    tokenIdentifier={collection.collection}
+                    addressToAssign={''}
+                  />{' '}
+                  <ActionUnFreeze
+                    tokenIdentifier={collection.collection}
+                    addressToAssign={''}
+                  /> */}
+                    </>
+                  )}{' '}
+                {collection.canPause &&
+                  collection.roles &&
+                  collection?.roles?.length > 1 && (
+                    <>
+                      <ActionPause tokenIdentifier={collection.collection} />{' '}
+                      <ActionUnPause tokenIdentifier={collection.collection} />
+                    </>
+                  )}
+                {collection.owner == address &&
+                  collection.canTransferNftCreateRole &&
+                  collection.roles?.find?.((r) => r.canCreate) && (
+                    <button
+                      onClick={() =>
+                        openModal('transferNFTCreateRole', collection)
+                      }
+                      className='dinoButton'
+                    >
+                      {t('collections:transfer_create_role')}
+                    </button>
+                  )}
+                {collection.owner == address &&
+                  collection.canUpgrade &&
+                  collection.roles &&
+                  collection?.roles?.length > 1 && (
+                    <button
+                      onClick={() => openModal('controlChanges', collection)}
+                      className='dinoButton'
+                    >
+                      {t('collections:change_properties')}
+                    </button>
+                  )}
+                {collection.canAddSpecialRoles &&
+                  collection.owner == address && (
+                    <button
+                      onClick={() => openModal('addRoles', collection)}
+                      className='dinoButton'
+                    >
+                      {t('collections:add_roles')}
+                    </button>
+                  )}
+                {collection.owner == address &&
+                  collection.roles &&
+                  collection?.roles?.length > 1 && (
+                    <button
+                      onClick={() =>
+                        openModal('removeRoles', collection, address)
+                      }
+                      className='dinoButton'
+                    >
+                      {t('collections:remove_roles')}
+                    </button>
+                  )}
+                <br />
+                {collection.roles?.find?.(
+                  (r) => r.address === address && r.canCreate
+                ) && (
+                  <button
+                    onClick={() => openModal('createSft', collection)}
+                    className='dinoButton'
+                  >
+                    {t('collections:create_type', {
+                      type:
+                        collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'
+                    })}
+                  </button>
+                )}
+                {/* {collection.role?.roles && (
+                  <p>
+                    Roles :{' '}
+                    {collection.role.roles &&
+                      collection.role.roles.map((role) => role + ' ')}
+                  </p>
+                )} */}
+              </Grid>
+            </Section>
+
             {/* Stop create is too dangerous to show*/}
             {/* <button
               onClick={() => openModal('stopCreate', collection)}
@@ -281,8 +275,11 @@ export const CollectionDetail = () => {
               Stop Create
             </button> */}
           </div>
+
+          <NftGrid nfts={nfts} />
         </div>
 
+        {/* Modals */}
         {collection && (
           <>
             <CreateSft
@@ -321,6 +318,16 @@ export const CollectionDetail = () => {
             />
             <ControlChanges
               isOpen={modal.type === 'controlChanges'}
+              closeModal={closeModal}
+              collection={collection}
+            />
+            <FreezeAddress
+              isOpen={modal.type === 'freezeAddress'}
+              closeModal={closeModal}
+              collection={collection}
+            />
+            <UnFreezeAddress
+              isOpen={modal.type === 'unFreezeAddress'}
               closeModal={closeModal}
               collection={collection}
             />

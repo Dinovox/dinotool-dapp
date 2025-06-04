@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
 import { ActionIssueCollection } from 'helpers/actions/ActionIssueCollection';
 import { is } from '@react-spring/shared';
+import { t } from 'i18next';
 
 export const IssueCollection: React.FC<{
   isOpen: boolean;
@@ -26,7 +27,9 @@ export const IssueCollection: React.FC<{
       <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40'>
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-xl font-semibold'>Create a new Collection</h2>
+            <h2 className='text-xl font-semibold'>
+              {t('collections:create_new_collection')}
+            </h2>
             <button
               onClick={closeModal}
               className='text-gray-500 hover:text-gray-700'
@@ -71,6 +74,18 @@ export const IssueCollection: React.FC<{
                     <span className='text-sm text-gray-700'>SFT</span>
                   </label>
 
+                  {/* META-ESDT */}
+                  <label className='inline-flex items-center gap-2 cursor-pointer'>
+                    <input
+                      type='radio'
+                      name='type'
+                      value='META'
+                      className='h-4 w-4 text-blue-600'
+                      onChange={(e) => setType(e.target.value)}
+                    />
+                    <span className='text-sm text-gray-700'>META-ESDT</span>
+                  </label>
+
                   {/* Dynamic */}
                   <label className='inline-flex items-center gap-2 cursor-pointer'>
                     <input
@@ -84,11 +99,13 @@ export const IssueCollection: React.FC<{
                   </label>
                 </div>
               </div>
+              {type === 'META' && <>{t('collections:meta_esdt_info')}</>}
+
               <label
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                Name
+                {t('collections:name')}
               </label>
               <input
                 type='text'
@@ -106,13 +123,12 @@ export const IssueCollection: React.FC<{
                 }}
               />
             </div>
-
             <div className='mb-4'>
               <label
                 htmlFor='quantity'
                 className='block text-sm font-medium text-gray-700'
               >
-                Ticker
+                {t('collections:ticker')}
               </label>
               <input
                 type='text'
@@ -131,12 +147,39 @@ export const IssueCollection: React.FC<{
                 }}
               />
             </div>
+
+            {type === 'META' && (
+              <div className='mb-4'>
+                <label
+                  htmlFor='decimals'
+                  className='block text-sm font-medium text-gray-700'
+                >
+                  {t('collections:decimals')}
+                </label>
+                <input
+                  type='number'
+                  id='decimals'
+                  min={0}
+                  max={18}
+                  defaultValue={18}
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value, 10);
+                    if (value >= 0 && value <= 18) {
+                      // Handle decimals value here
+                    }
+                  }}
+                />
+              </div>
+            )}
           </form>
+
           <ActionIssueCollection
             type={type}
             isDynamic={isDynamic}
             name={name}
             ticker={ticker}
+            decimals={type === 'META' ? 18 : undefined}
           />
         </div>
       </div>

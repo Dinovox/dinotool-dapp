@@ -49,7 +49,7 @@ export const ActionChangeToDynamic: React.FC<ActionChangeToDynamic> = ({
 
   return (
     <button onClick={handleSend} className='dinoButton'>
-      {t('actions:assign_role')}
+      {t('collections:proceed_with_conversion')}
     </button>
   );
 };

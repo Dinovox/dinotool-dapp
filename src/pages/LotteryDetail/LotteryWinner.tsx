@@ -9,8 +9,10 @@ const LotteryWinner = ({ lottery }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
   const [currentWinner, setCurrentWinner] = useState(
-    lottery.winner?.address ||
+    lottery.winner?.address !=
       'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu'
+      ? lottery.winner?.address
+      : lottery?.vm_winner
   );
   const [showConfetti, setShowConfetti] = useState(false);
 

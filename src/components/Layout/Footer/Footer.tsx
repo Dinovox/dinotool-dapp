@@ -17,6 +17,17 @@ export const Footer = () => {
         >
           Made with Graou by the Dinovox team
         </a>
+        <a
+          target='_blank'
+          className='flex items-center text-sm hover:underline'
+          href='https://github.com/Dinovox/'
+        >
+          <img
+            src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'
+            alt='GitHub Icon'
+            className='w-4 h-4 mr-2'
+          />
+        </a>
       </div>
     </footer>
   );

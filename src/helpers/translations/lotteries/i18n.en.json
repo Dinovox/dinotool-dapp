@@ -68,7 +68,7 @@
   "fee_percentage": "Fee Deduction & Vendor Payment",
   "fee_percentage_tooltip": "A portion of the creator’s pool will be deducted as fees to support platform development. The vendor amount, after fee deduction, will be sent based on the total number of tickets sold.",
 
-  "graou_create_fee": "Creation fee: 500 xGraou or 0.25 EGLD",
+  "graou_create_fee": "Creation fee: 100 xGraou or 0.1 EGLD",
   "auto_draw_fee": "Auto draw fee:",
   "platform_fee": "Platform fee",
   "royalty_fee": "Royalty fee",

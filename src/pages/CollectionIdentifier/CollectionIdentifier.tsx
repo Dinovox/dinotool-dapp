@@ -120,7 +120,10 @@ export const CollectionIdentifier = () => {
             }}
           >
             {' '}
-            <button onClick={() => navigate('/collections')} className=''>
+            <button
+              onClick={() => navigate('/collections/' + collection.collection)}
+              className=''
+            >
               {t('lotteries:return')}
             </button>
           </div>
@@ -209,23 +212,25 @@ export const CollectionIdentifier = () => {
                 Burn Quantity
               </button>
             )}
-
-            {collection.roles?.find?.(
-              (r) =>
-                r.address === address &&
-                (r.roles.includes('ESDTRoleNFTRecreate') ||
-                  collection.owner === address)
-            ) && (
-              <button
-                onClick={() => openModal('recreateSft', nfts)}
-                className='dinoButton'
-              >
-                Recreate
-              </button>
-            )}
+            {/* ||
+                    collection.owner === address) */}
+            {collection.roles &&
+              collection.roles.find(
+                (r) =>
+                  r.address === address &&
+                  r.roles.includes('ESDTRoleNFTRecreate')
+              ) && (
+                <button
+                  onClick={() => openModal('recreateSft', nfts)}
+                  className='dinoButton'
+                >
+                  Recreate
+                </button>
+              )}
           </div>
         </div>
 
+        {/* modals */}
         <AddQuantity
           isOpen={modal.type === 'addQuantity'}
           closeModal={closeModal}
@@ -236,6 +241,7 @@ export const CollectionIdentifier = () => {
           closeModal={closeModal}
           nfts={nfts}
         />
+
         <RecreateSft
           isOpen={modal.type === 'recreateSft'}
           closeModal={closeModal}

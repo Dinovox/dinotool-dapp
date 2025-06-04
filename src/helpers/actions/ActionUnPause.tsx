@@ -2,6 +2,7 @@ import React from 'react';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { t } from 'i18next';
 export const ActionUnPause: React.FC<{
   tokenIdentifier: string;
 }> = ({ tokenIdentifier }) => {
@@ -35,7 +36,7 @@ export const ActionUnPause: React.FC<{
         <>
           {' '}
           <button className='dinoButton' onClick={handleSend}>
-            UnPause
+            {t('collections:unpause')}
           </button>
         </>
       )}

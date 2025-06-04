@@ -12,6 +12,7 @@ import {
 import { useGetAccount } from 'hooks';
 import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
 import { is } from '@react-spring/shared';
+import { t } from 'i18next';
 
 export const AddRoles: React.FC<{
   isOpen: boolean;
@@ -111,7 +112,7 @@ export const AddRoles: React.FC<{
     );
   };
 
-  console.log('newRoles', newRoles);
+  // console.log('newRoles', newRoles);
 
   return (
     <Dialog open={isOpen} onClose={closeModal} as={Fragment}>
@@ -119,7 +120,9 @@ export const AddRoles: React.FC<{
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
-              Add Roles to {collection.collection}
+              {t('collections:add_roles_to', {
+                collection: collection.name
+              })}
             </h2>
             <button
               onClick={closeModal}
@@ -139,7 +142,7 @@ export const AddRoles: React.FC<{
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                Address
+                {t('collections:address')}
               </label>
               <input
                 type='text'

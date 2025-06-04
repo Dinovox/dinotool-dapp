@@ -77,7 +77,7 @@ export const ActionControlChanges: React.FC<ActionControlChangesProps> = ({
 
   return (
     <button onClick={handleIssue} className='dinoButton'>
-      {t('actions:issue_token_sft')}
+      {t('collections:update_properties')}
     </button>
   );
 };

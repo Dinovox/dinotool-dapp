@@ -5,6 +5,7 @@ import { Address } from '@multiversx/sdk-core/out';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
+import { t } from 'i18next';
 export const ActionPause: React.FC<{
   tokenIdentifier: string;
 }> = ({ tokenIdentifier }) => {
@@ -38,7 +39,7 @@ export const ActionPause: React.FC<{
         <>
           {' '}
           <button className='dinoButton' onClick={handleSend}>
-            Pause
+            {t('collections:pause')}
           </button>
         </>
       )}

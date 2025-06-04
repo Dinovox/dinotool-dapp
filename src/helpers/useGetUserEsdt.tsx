@@ -5,13 +5,16 @@ import {
   useGetPendingTransactions
 } from '@multiversx/sdk-dapp/hooks';
 import axios from 'axios';
-export const useGetUserESDT = () => {
+export const useGetUserESDT = (identifier?: string) => {
   const { network } = useGetNetworkConfig();
   const [esdtBalance, setEsdtBalance] = useState<any>([]);
   const address = useGetAccountInfo().address;
   const { hasPendingTransactions } = useGetPendingTransactions();
 
-  const url = '/accounts/' + address + '/tokens?size=1000';
+  let url = '/accounts/' + address + '/tokens?size=1000';
+  if (identifier) {
+    url += `&identifier=${identifier}`;
+  }
   const getUserESDT = async () => {
     if (hasPendingTransactions == true) {
       return;
@@ -33,7 +36,7 @@ export const useGetUserESDT = () => {
 
   useEffect(() => {
     getUserESDT();
-  }, [hasPendingTransactions]);
+  }, [hasPendingTransactions, identifier]);
 
   return esdtBalance;
 };

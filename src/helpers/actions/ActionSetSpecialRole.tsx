@@ -64,7 +64,7 @@ export const ActionSetSpecialRole: React.FC<ActionSetSpecialRoleProps> = ({
       disabled={disabled || !address}
       className='dinoButton'
     >
-      {t('actions:assign_role')}
+      {t('collections:assign_roles')}
     </button>
   );
 };

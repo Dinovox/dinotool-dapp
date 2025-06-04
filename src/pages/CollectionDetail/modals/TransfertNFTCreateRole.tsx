@@ -13,6 +13,7 @@ import { useGetAccount } from 'hooks';
 import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
 import { is } from '@react-spring/shared';
 import { ActionTransfertNFTCreateRole } from 'helpers/actions/ActionTransfertNFTCreateRole';
+import { t } from 'i18next';
 
 export const TransfertNFTCreateRole: React.FC<{
   isOpen: boolean;
@@ -50,7 +51,9 @@ export const TransfertNFTCreateRole: React.FC<{
         <div className='bg-white rounded-lg max-h-[90vh] overflow-y-auto p-6 max-w-lg w-full shadow-lg'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-xl font-semibold'>
-              Transfert {collection.collection} creation role
+              {t('collections:transfer_create_role_from', {
+                collection: collection.name
+              })}
             </h2>
             <button
               onClick={closeModal}
@@ -65,15 +68,13 @@ export const TransfertNFTCreateRole: React.FC<{
               // Handle form submission logic here
             }}
           >
-            Can create role can be assigned to only one address at a time. This
-            action will remove the role from the current address and assign it
-            to the new address.
+            {t('collections:transfer_create_role_info')}
             <div className='mb-4'>
               <label
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                Current Address
+                {t('collections:current_address')}
               </label>
               <input
                 type='text'
@@ -88,7 +89,7 @@ export const TransfertNFTCreateRole: React.FC<{
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                New creator Address
+                {t('collections:new_address')}
               </label>
               <input
                 type='text'
