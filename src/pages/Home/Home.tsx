@@ -2,21 +2,14 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './NavigationCards.css';
-import cardMain from '../../assets/cards/main.png';
-import cardGazette from '../../assets/cards/gazette.png';
-import cardLotteries from '../../assets/cards/lotteries.png';
-import cardDrop from '../../assets/cards/drop.png';
-import cardFeedback from '../../assets/cards/feedback.png';
-import cardWip from '../../assets/cards/wip.png';
-import cardSoldGraout from '../../assets/cards/sold.png';
+const cardMain = '/cards/main.png';
+const cardGazette = '/cards/gazette.png';
+const cardLotteries = '/cards/lotteries.png';
+const cardDrop = '/cards/drop.png';
+const cardFeedback = '/cards/feedback.png';
+const cardWip = '/cards/wip.png';
+const cardSoldGraout = '/cards/sold.png';
 
-import lotterie from '../../assets/img/lotterie.webp';
-import navMain from '../../assets/img/dinoMain.png';
-import mintLive from '../../assets/img//dinoGaz.jpeg';
-import soldGraout from '../../assets/img/sold_graout.jpg';
-import random from '../../assets/img/random.png';
-import chest from '../../assets/img/chest.png';
-import drop from '../../assets/img/drop.png';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 

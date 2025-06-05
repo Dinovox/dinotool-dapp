@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useGetNetworkConfig } from 'hooks';
+import { API_URL } from 'config';
 
 export interface Role {
   canCreate: boolean;
@@ -66,9 +67,10 @@ export const useAccountsRolesCollections = (
 
       let url = `/accounts/${address}/roles/collections`;
       const config: AxiosRequestConfig = {
-        baseURL: network.apiAddress,
+        baseURL: API_URL,
         params: { ...options }
       };
+      console.log('fetching roles collections', url, config);
 
       try {
         const response = await axios.get<RolesCollections[]>(url, config);

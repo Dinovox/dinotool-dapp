@@ -7,15 +7,13 @@ import { useGetNftInformations } from './Transaction/helpers/useGetNftInformatio
 import { formatAmount } from 'utils/sdkDappUtils';
 import toHex from 'helpers/toHex';
 import './MintSFT.css';
-import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAccount } from 'hooks';
 import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import sold_graout from 'assets/img/sold_graout.jpg';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
-import { h } from 'framer-motion/dist/types.d-B50aGbjN';
+const sold_graout = '/assets/img/sold_graout.jpg';
 
 export const Mint = () => {
   const loading = useLoadTranslations('mint');

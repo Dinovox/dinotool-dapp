@@ -10,7 +10,6 @@ import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAccount } from 'hooks';
 import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import sold_graout from 'assets/img/sold_graout.jpg';
 import { useGetVouchers } from './Transaction/helpers/useGetVouchers';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import TextCopy from 'helpers/textCopy';

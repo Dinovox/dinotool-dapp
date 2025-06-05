@@ -1,23 +1,17 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
-import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
-import { formatAmount } from 'utils/sdkDappUtils';
-import toHex from 'helpers/toHex';
 import './MintSFT.css';
-import { useGetAccount } from 'hooks';
-import { useEffect, useState } from 'react';
-import BigNumber from 'bignumber.js';
-import sold_graout from 'assets/img/sold_graout.jpg';
+import { useState } from 'react';
 import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks/account/useGetLoginInfo';
 import axios from 'axios';
-import halloween from 'assets/img/halloween.png';
-import halloweenCard from 'assets/img/halloween-card.png';
-import halloweenBad from 'assets/img/halloween-bad.png';
-import lowLife from 'assets/img/low-life.png';
-import dinovoxLogo from '/dinovox_logo.webp';
 import { internal_api } from 'config';
 
+const halloween = '/assets/img/halloween.png';
+const halloweenCard = '/assets/img/halloween-card.png';
+const halloweenBad = '/assets/img/halloween-bad.png';
+const lowLife = '/assets/img/low-life.png';
+const dinovoxLogo = '/dinovox_logo.webp';
+
 export const Quiz = () => {
-  const [project, setProject] = useState('1');
   const { tokenLogin, isLoggedIn } = useGetLoginInfo();
   const [answer, setAnswer] = useState('');
   const [message, setMessage] = useState('');

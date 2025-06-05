@@ -14,7 +14,7 @@
     "@fortawesome/react-fontawesome": "0.2.0",
     "@headlessui/react": "^2.2.2",
     "@mui/material": "^6.4.4",
-    "@multiversx/sdk-core": "14.1.2",
+    "@multiversx/sdk-core": "14.2.0",
     "@multiversx/sdk-dapp": "4.1.8",
     "@multiversx/sdk-network-providers": "2.9.3",
     "antd": "^5.24.3",

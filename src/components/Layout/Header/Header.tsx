@@ -3,15 +3,12 @@ import { MxLink } from 'components/MxLink';
 import { logout } from 'helpers';
 import { useGetAccount, useGetIsLoggedIn, useGetNetworkConfig } from 'hooks';
 import { RouteNamesEnum } from 'localConstants';
-import MultiversXLogo from '../../../assets/img/multiversx-logo.svg?react';
 import { useMatch } from 'react-router-dom';
-import dinovoxLogo from '/DinoVoxDinoTools.png';
-import DinoToolsAlpha from '/DinoToolsAlpha.png';
-import ShortenedAddress from 'helpers/shortenedAddress';
-import { EnvironmentsEnum } from 'types';
 import { environment } from 'config';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+const dinovoxLogo = '/DinoVoxDinoTools.png';
+const DinoToolsAlpha = '/DinoToolsAlpha.png';
 
 const callbackUrl = `${window.location.origin}/`;
 const onRedirect = undefined; // use this to redirect with useNavigate to a specific page after logout
