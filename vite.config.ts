@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react';
-import basicSsl from '@vitejs/plugin-basic-ssl';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgrPlugin from 'vite-plugin-svgr';
@@ -20,7 +19,6 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    basicSsl(),
     tsconfigPaths(),
     svgrPlugin(),
     nodePolyfills({
