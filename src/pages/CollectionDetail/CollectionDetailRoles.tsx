@@ -3,6 +3,7 @@ import { Collection } from 'helpers/api/accounts/getCollections';
 import React from 'react';
 import { Section } from './Section';
 import { t } from 'i18next';
+import ShortenedAddress from 'helpers/shortenedAddress';
 const CollectionDetailRoles: React.FC<{
   collection: Collection;
 }> = ({ collection }) => {
@@ -12,7 +13,9 @@ const CollectionDetailRoles: React.FC<{
         collection.roles.map((role) => (
           <Card>
             <p>
-              <strong>{role.address}</strong>
+              <strong>
+                <ShortenedAddress address={role.address} />
+              </strong>
             </p>
             <p>{role.roles.join(', ')}</p>
           </Card>

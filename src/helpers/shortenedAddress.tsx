@@ -7,6 +7,10 @@ const ShortenedAddress = ({ address, herotag }: any) => {
   const [copied, setCopied] = useState(false);
   const { network } = useGetNetworkConfig();
 
+  if (!address) {
+    return <></>;
+  }
+
   const shortenedAddress = `${address.slice(0, 6)}...${address.slice(-6)}`;
 
   const copyToClipboard = () => {
@@ -15,9 +19,6 @@ const ShortenedAddress = ({ address, herotag }: any) => {
     setTimeout(() => setCopied(false), 2000); // Réinitialiser le statut après 2 secondes
   };
 
-  if (!address) {
-    return <></>;
-  }
   return (
     <div className='shortened-address'>
       <span className='address-text'>

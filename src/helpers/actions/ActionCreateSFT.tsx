@@ -27,20 +27,27 @@ export const ActionCreateSFT: React.FC<{
   disabled
 }) => {
   const { address } = useGetAccountInfo();
+
   const handleSend = async () => {
+    const data = `ESDTNFTCreate@${Buffer.from(collection.collection).toString(
+      'hex'
+    )}@${bigNumToHex(quantity)}@${Buffer.from(name).toString(
+      'hex'
+    )}@${bigNumToHex(royalties)}@${Buffer.from(hash).toString(
+      'hex'
+    )}@${Buffer.from(attributes).toString('hex')}${uris
+      .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
+      .join('')}`;
+    const baseGas = 60000000;
+    const gasPerByte = 1500;
+    const dataSize = Buffer.from(data).length;
+    const estimatedGas = baseGas + dataSize * gasPerByte;
+
     const createTransaction = {
       value: '0',
-      data: `ESDTNFTCreate@${Buffer.from(collection.collection).toString(
-        'hex'
-      )}@${bigNumToHex(quantity)}@${Buffer.from(name).toString(
-        'hex'
-      )}@${bigNumToHex(royalties)}@${Buffer.from(hash).toString(
-        'hex'
-      )}@${Buffer.from(attributes).toString('hex')}${uris
-        .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
-        .join('')}`,
+      data: data,
       receiver: new Address(address).toBech32(),
-      gasLimit: 10000000
+      gasLimit: estimatedGas
     };
 
     await refreshAccount();

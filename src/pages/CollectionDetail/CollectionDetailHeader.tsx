@@ -3,6 +3,7 @@ import { Collection } from 'helpers/api/accounts/getCollections';
 
 import React from 'react';
 import { Section } from './Section';
+import ShortenedAddress from 'helpers/shortenedAddress';
 
 const CollectionDetailHeader: React.FC<{
   collection: Collection;
@@ -23,7 +24,9 @@ const CollectionDetailHeader: React.FC<{
       >
         {collection.collection}
       </a>
-      <p>Owner: {collection.owner}</p>
+      <p>
+        Owner: <ShortenedAddress address={collection.owner} />
+      </p>
     </Section>
   );
 };

@@ -69,7 +69,6 @@ export const CreateSft: React.FC<{
       // }
 
       setIpfsData(json);
-      console.log('IPFS Data:', json);
       try {
         // const parsed = JSON.parse(json);
         // console.log('Parsed JSON:', parsed);
@@ -481,7 +480,10 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
                 ? attributes
                 : `metadata:${metadatas};tags:${tags}`
             }
+            // metada in uris
             uris={[...uris, ...(metaUri ? [metaUri] : [])]}
+            // no metadata in uris
+            // uris={uris}
             disabled={invalidUris.length > 0 || uris.length === 0}
           />
         </div>

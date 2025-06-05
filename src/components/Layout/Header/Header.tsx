@@ -67,7 +67,7 @@ export const Header = () => {
           {/* <MultiversXLogo className='w-full h-6' /> */}
           <img
             src={
-              ['/lotteries', '/drop'].some((route) =>
+              ['/lotteries', '/drop', '/collections', '/nfts'].some((route) =>
                 currentRouteName.startsWith(route)
               )
                 ? DinoToolsAlpha

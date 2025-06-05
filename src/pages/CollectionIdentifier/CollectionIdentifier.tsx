@@ -22,6 +22,11 @@ import { useGetNfts } from 'helpers/api/accounts/getNfts';
 import AddQuantity from './modals/AddQuantity';
 import BurnQuantity from './modals/BurnQuantity';
 import RecreateSft from './modals/RecreateSft';
+import { Section } from 'pages/CollectionDetail/Section';
+import { Card } from 'antd';
+import ShortenedAddress from 'helpers/shortenedAddress';
+import { Badge } from 'pages/CollectionDetail/Badge';
+import { ActionProcessNft } from 'helpers/actions/ActionProcessNft';
 
 export type NModalType = 'addQuantity' | 'burnQuantity' | 'recreateSft' | null;
 
@@ -128,106 +133,131 @@ export const CollectionIdentifier = () => {
             </button>
           </div>
 
-          <div>
-            {nfts && (
-              <div>
-                <h3>NFT Details:</h3>
-                <p>Identifier: {nfts.identifier}</p>
-                <p>Collection: {nfts.collection}</p>
+          <Section title='NFT Details'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <Card>
+                <h4 className='font-semibold'>General</h4>
                 <p>
-                  Timestamp: {new Date(nfts.timestamp * 1000).toLocaleString()}
+                  <strong>Identifier:</strong> {nfts.identifier}
                 </p>
-                <p>Type: {nfts.type}</p>
-                <p>SubType: {nfts.subType}</p>
-                <p>Name: {nfts.name}</p>
-                <p>Creator: {nfts.creator}</p>
-                <p>Royalties: {nfts.royalties}%</p>
-                <p>Owner: {nfts.owner}</p>
                 <p>
-                  URL:{' '}
-                  <a href={nfts.url} target='_blank' rel='noopener noreferrer'>
-                    {nfts.url}
-                  </a>
+                  <strong>Name:</strong> {nfts.name}
                 </p>
-                <p>Metadata Description: {nfts.metadata?.description}</p>
-                <div>
-                  <h4>Attributes:</h4>
-                  {nfts.metadata?.attributes?.map((attr, index) => (
-                    <p key={index}>
-                      {attr.trait_type}: {attr.value}
-                    </p>
-                  ))}
-                </div>
-                <div>
-                  <h4>Media:</h4>
-                  {nfts.media?.map((mediaItem, index) => (
-                    <div key={index}>
-                      <p>File Type: {mediaItem.fileType}</p>
-                      <p>File Size: {mediaItem.fileSize} bytes</p>
-                      <img
-                        src={mediaItem.thumbnailUrl}
-                        alt='NFT Thumbnail'
-                        style={{ maxWidth: '200px', marginTop: '10px' }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                <p>
+                  <strong>Collection:</strong> {nfts.collection}
+                </p>
+                <p>
+                  <strong>Timestamp:</strong>{' '}
+                  {new Date(nfts.timestamp * 1000).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Royalties:</strong> {nfts.royalties}%
+                </p>
+              </Card>
 
-            {collection &&
-              collection.roles &&
-              collection.roles.length > 0 &&
-              collection.roles
-                .filter((role) => role.address) // Filter roles with no address
-                .map((role, item) => (
-                  <div key={item}>
-                    <h3>{role.address}</h3>
-                    <p style={{ marginBottom: '10px' }}>
-                      {role.roles && role.roles.map((role) => role + ' ')}
-                    </p>
-                  </div>
-                ))}
+              <Card>
+                <h4 className='font-semibold'>Creator & Owner</h4>
+                <p>
+                  <strong>Creator:</strong>{' '}
+                  <ShortenedAddress address={nfts.creator} />
+                </p>
+                <p>
+                  <strong>Owner:</strong>{' '}
+                  <ShortenedAddress address={nfts.owner} />
+                </p>
+              </Card>
+            </div>
+          </Section>
 
-            {collection.roles?.find?.(
-              (r) => r.address === address && r.canAddQuantity
-            ) && (
-              <button
-                onClick={() => openModal('addQuantity', nfts)}
-                className='dinoButton'
-              >
-                Add Quantity
-              </button>
-            )}
+          <Section title='Metadata'>
+            <p className='mb-2 text-gray-700'>{nfts.metadata?.description}</p>
 
-            {collection.roles?.find?.(
-              (r) =>
-                r.address === address &&
-                (r.canBurn || collection.owner === address)
-            ) && (
-              <button
-                onClick={() => openModal('burnQuantity', nfts)}
-                className='dinoButton'
-              >
-                Burn Quantity
-              </button>
-            )}
-            {/* ||
-                    collection.owner === address) */}
-            {collection.roles &&
-              collection.roles.find(
+            <div className='flex flex-wrap gap-2 mt-2'>
+              {nfts.metadata?.attributes?.map((attr, i) => (
+                <Badge key={i}>
+                  {attr.trait_type}: {attr.value}
+                </Badge>
+              ))}
+            </div>
+          </Section>
+
+          <Section title='Media'>
+            {nfts.media?.map((mediaItem, i) => (
+              <Card key={i}>
+                <p>
+                  <strong>Type:</strong> {mediaItem.fileType}
+                </p>
+                <p>
+                  <strong>Size:</strong>{' '}
+                  {(mediaItem.fileSize / 1024).toFixed(1)} KB
+                </p>
+                <img
+                  src={mediaItem.thumbnailUrl}
+                  alt='NFT Preview'
+                  className='rounded-lg mt-2 w-64'
+                />
+              </Card>
+            ))}
+          </Section>
+
+          <Section title='Roles'>
+            {collection.roles
+              ?.filter((r) => r.address)
+              .map((role, idx) => (
+                <Card key={idx}>
+                  <p className='font-semibold'>
+                    {' '}
+                    <ShortenedAddress address={role.address} />
+                  </p>
+                  <p className='text-sm text-gray-600'>
+                    {role.roles.join(', ')}
+                  </p>
+                </Card>
+              ))}
+          </Section>
+
+          <Section title='Actions'>
+            <div className='flex flex-wrap gap-4'>
+              {collection.roles &&
+                collection.roles.find(
+                  (r) =>
+                    r.address === address &&
+                    r.roles.includes('ESDTRoleNFTRecreate')
+                ) && (
+                  <button
+                    className='dinoButton'
+                    onClick={() => openModal('addQuantity', nfts)}
+                  >
+                    Add Quantity
+                  </button>
+                )}
+              {collection.roles?.find?.(
                 (r) =>
                   r.address === address &&
-                  r.roles.includes('ESDTRoleNFTRecreate')
+                  (r.canBurn || collection.owner === address)
               ) && (
                 <button
-                  onClick={() => openModal('recreateSft', nfts)}
                   className='dinoButton'
+                  onClick={() => openModal('burnQuantity', nfts)}
                 >
-                  Recreate
+                  Burn Quantity
                 </button>
               )}
-          </div>
+              {collection.roles &&
+                collection.roles.find(
+                  (r) =>
+                    r.address === address &&
+                    r.roles.includes('ESDTRoleNFTRecreate')
+                ) && (
+                  <button
+                    className='dinoButton'
+                    onClick={() => openModal('recreateSft', nfts)}
+                  >
+                    Recreate
+                  </button>
+                )}
+            </div>
+          </Section>
         </div>
 
         {/* modals */}
@@ -246,8 +276,9 @@ export const CollectionIdentifier = () => {
           isOpen={modal.type === 'recreateSft'}
           closeModal={closeModal}
           nfts={nfts}
+          collection={collection}
         />
-
+        {/* <ActionProcessNft collection={nfts?.collection} /> */}
         {collection && <></>}
       </PageWrapper>
     </AuthRedirectWrapper>
