@@ -1,30 +1,22 @@
+import { useState, useRef, useEffect } from 'react';
 import { Button } from 'components/Button';
 import { MxLink } from 'components/MxLink';
 import { logout } from 'helpers';
 import { useGetAccount, useGetIsLoggedIn, useGetNetworkConfig } from 'hooks';
 import { RouteNamesEnum } from 'localConstants';
-import { useMatch } from 'react-router-dom';
+import { useMatch, useNavigate } from 'react-router-dom';
 import { environment } from 'config';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import { FaUserCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 const dinovoxLogo = '/DinoVoxDinoTools.png';
 const DinoToolsAlpha = '/DinoToolsAlpha.png';
 
 const callbackUrl = `${window.location.origin}/`;
-const onRedirect = undefined; // use this to redirect with useNavigate to a specific page after logout
-const shouldAttemptReLogin = false; // use for special cases where you want to re-login after logout
+const onRedirect = undefined;
+const shouldAttemptReLogin = false;
 const options = {
-  /*
-   * @param {boolean} [shouldBroadcastLogoutAcrossTabs=true]
-   * @description If your dApp supports multiple accounts on multiple tabs,
-   * this param will broadcast the logout event across all tabs.
-   */
   shouldBroadcastLogoutAcrossTabs: true,
-  /*
-   * @param {boolean} [hasConsentPopup=false]
-   * @description Set it to true if you want to perform async calls before logging out on Safari.
-   * It will open a consent popup for the user to confirm the action before leaving the page.
-   */
   hasConsentPopup: false
 };
 
@@ -35,24 +27,45 @@ export const Header = () => {
   const isUnlockRoute = Boolean(useMatch(RouteNamesEnum.unlock));
   const network = useGetNetworkConfig();
   const currentRouteName = useMatch('*')?.pathname || 'unknown';
+  const navigate = useNavigate();
+  const { address } = useGetAccount();
+
+  // Dropdown state
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
+  const handleLogout = () => {
+    setOpen(false);
+    sessionStorage.clear();
+    logout(callbackUrl, onRedirect, shouldAttemptReLogin, options);
+  };
+
+  const handleProfile = () => {
+    setOpen(false);
+    navigate(RouteNamesEnum.profile);
+  };
 
   const ConnectButton = isUnlockRoute ? null : (
     <MxLink to={RouteNamesEnum.unlock}>{t('global:connect')}</MxLink>
   );
-
-  const handleLogout = () => {
-    sessionStorage.clear();
-    logout(
-      callbackUrl,
-      /*
-       * following are optional params. Feel free to remove them in your implementation
-       */
-      onRedirect,
-      shouldAttemptReLogin,
-      options
-    );
-  };
-  const { address } = useGetAccount();
 
   return (
     <div>
@@ -61,7 +74,6 @@ export const Header = () => {
           className='flex items-center justify-between'
           to={isLoggedIn ? RouteNamesEnum.home : RouteNamesEnum.home}
         >
-          {/* <MultiversXLogo className='w-full h-6' /> */}
           <img
             src={
               ['/lotteries', '/drop', '/collections', '/nfts'].some((route) =>
@@ -75,76 +87,60 @@ export const Header = () => {
           />
         </MxLink>
 
-        <nav className='h-full w-full text</div>-sm sm:relative sm:left-auto sm:top-auto sm:flex sm:w-auto sm:flex-row sm:justify-end sm:bg-transparent'>
+        <nav className='h-full w-full sm:flex sm:w-auto sm:flex-row sm:justify-end sm:bg-transparent'>
           <div className='flex justify-end container mx-auto items-center gap-2'>
-            {/* <div className='flex gap-1 items-center'>
-              <div className='w-2 h-2 rounded-full bg-green-500' />
-              <p className='text-gray-600'>{environment}</p>
-            </div> */}
-            {/* {environment === 'devnet' && (
-              <MxLink className='' to={RouteNamesEnum.lotteries}>
-                <div
-                  style={{ width: '100%' }}
-                  className='mintGazTitle dinoTitle'
-                >
-                  LOTTERIES
-                </div>
-              </MxLink>
-            )} */}
             {isLoggedIn ? (
-              <>
-                {/* {['devnet', 'mainnet'].includes(environment) && (
-                  <MxLink
-                    className=''
-                    to={isLoggedIn ? RouteNamesEnum.mint : RouteNamesEnum.home}
-                  >
-                    <div
-                      style={{ width: '100%' }}
-                      className='mintGazTitle dinoTitle'
-                    >
-                      GAZETTE
-                    </div>
-                  </MxLink>
-                )}
-                {['devnet', 'mainnet'].includes(environment) && (
-                  <MxLink
-                    className=''
-                    to={isLoggedIn ? RouteNamesEnum.drop : RouteNamesEnum.home}
-                  >
-                    <div
-                      style={{ width: '100%' }}
-                      className='mintGazTitle dinoTitle'
-                    >
-                      DROP
-                    </div>
-                  </MxLink>
-                )} */}
-                {environment === 'testnet' && (
-                  <MxLink
-                    className=''
-                    to={isLoggedIn ? RouteNamesEnum.quiz : RouteNamesEnum.home}
-                  >
-                    <div
-                      style={{ width: '100%' }}
-                      className='mintGazTitle dinoTitle'
-                    >
-                      QUIZ
-                    </div>
-                  </MxLink>
-                )}{' '}
-                <button onClick={handleLogout} className='dinoButton reverse'>
-                  {t('global:close')}
+              <div className='relative' ref={dropdownRef}>
+                <button
+                  className='flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:bg-yellow-100 px-2 py-1'
+                  onClick={() => setOpen((v) => !v)}
+                  aria-label={t('global:profile')}
+                  style={{
+                    background: open ? '#f5ed43' : 'transparent',
+                    borderRadius: '9999px'
+                  }}
+                >
+                  <FaUserCircle
+                    style={{
+                      fontSize: '2.1rem',
+                      color: open ? '#453922' : '#bfae6a',
+                      transition: 'color 0.2s'
+                    }}
+                  />
+                  <span className='hidden sm:inline text-base font-semibold text-gray-700'>
+                    {t('global:profile')}
+                  </span>
                 </button>
-              </>
+                {open && (
+                  <div
+                    className='absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 z-50 animate-fade-in'
+                    style={{
+                      minWidth: '160px'
+                    }}
+                  >
+                    <button
+                      className='w-full flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-yellow-50 transition rounded-t-xl'
+                      onClick={handleProfile}
+                    >
+                      <FaUser className='text-yellow-500' />
+                      <span>{t('global:profile')}</span>
+                    </button>
+                    <button
+                      className='w-full flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-yellow-50 transition rounded-b-xl'
+                      onClick={handleLogout}
+                    >
+                      <FaSignOutAlt className='text-red-500' />
+                      <span>{t('global:close')}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               ConnectButton
             )}
-          </div>{' '}
+          </div>
         </nav>
       </header>
-      {/* <div style={{ margin: 'auto', textAlign: 'center' }}>
-        <ShortenedAddress address={address} />
-      </div> */}
     </div>
   );
 };

@@ -1,0 +1,8 @@
+{
+  "connected_with": "Connected via {{network}}",
+  "multiversx_address": "MultiversX Address",
+  "balance_token": "Balance {{token}}",
+  "connect_network": "Connect to {{network}}",
+  "disconnect_network": "Disconnect from {{network}}",
+  "loading_profile": "Loading profile..."
+}

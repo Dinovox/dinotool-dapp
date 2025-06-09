@@ -2,5 +2,6 @@
   "connect": "Connect",
   "login": "Login",
   "close": "Close",
-  "login_method": "Choose a login method"
+  "login_method": "Choose a login method",
+  "profile": "Profile"
 }
