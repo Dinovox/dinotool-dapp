@@ -1,7 +1,6 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { ActionBuy } from './Transaction/ActionBuy';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
-import { formatAmount } from 'utils/sdkDappUtils';
 import './MintSFT.css';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAccount } from 'hooks';
@@ -38,13 +37,13 @@ export const LotteryDetail = () => {
   const page = location.state?.page_number;
   const status_filter = location.state?.status;
   const price_filter = location.state?.price;
-  let return_url = `/lotteries?page=${page ? page : 1}`;
+  let return_url = '/lotteries?page=${page ? page : 1}';
 
   if (status_filter) {
-    return_url += `&status=${status_filter}`;
+    return_url += '&status=${status_filter}';
   }
   if (price_filter) {
-    return_url += `&price=${price_filter}`;
+    return_url += '&price=${price_filter}';
   }
 
   const [timeStart, setTimeStart] = useState(60 * 60);
@@ -133,27 +132,10 @@ export const LotteryDetail = () => {
       ?.balance || 0
   );
 
-  // const graou_cost = new BigNumber(lottery_cost.graou);
-  // const egld_cost = new BigNumber(lottery_cost.egld);
-  // const lotteriesDisplay =
-  //   filter === 'user'
-  //     ? userLotteries
-  //     : filter === 'owned'
-  //     ? lotteries.user_owned
-  //     : filter === 'ongoing'
-  //     ? runningLottery
-  //     : endedLottery;
-
-  //calcul pagination
-  // const itemsPerPage = 4;
-  // const totalPages = Math.ceil(lotteriesDisplay.length / itemsPerPage);
-  // const maxPagesToShow = 5;
-
-  // let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
-  // let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-  // if (endPage - startPage + 1 < maxPagesToShow) {
-  //   startPage = Math.max(1, endPage - maxPagesToShow + 1);
-  // }
+  const blockToTime = (timestamp: any) => {
+    const date = new Date(timestamp * 1000); // Convertir en millisecondes
+    return date.toLocaleString(); // Retourner l'heure en format UTC
+  };
 
   return (
     <AuthRedirectWrapper requireAuth={false}>
@@ -553,9 +535,4 @@ export const LotteryDetail = () => {
       </PageWrapper>
     </AuthRedirectWrapper>
   );
-};
-
-const blockToTime = (timestamp: any) => {
-  const date = new Date(timestamp * 1000); // Convertir en millisecondes
-  return date.toLocaleString(); // Retourner l'heure en format UTC
 };
