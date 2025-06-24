@@ -70,7 +70,8 @@ export const ControlChanges: React.FC<{
             >
               ✕
             </button>
-          </div>
+          </div>{' '}
+          {t('collections:change_properties_time')}
           <div>
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
               {controls.map((ctrl) => (
@@ -98,7 +99,7 @@ export const ControlChanges: React.FC<{
                     {formValues[ctrl] ? 'Assigned' : 'Not assigned'}
                   </span>
                 </div>
-              ))}
+              ))}{' '}
             </div>
           </div>
           <ActionControlChanges

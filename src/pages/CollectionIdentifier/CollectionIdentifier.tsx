@@ -173,11 +173,12 @@ export const CollectionIdentifier = () => {
             <p className='mb-2 text-gray-700'>{nfts.metadata?.description}</p>
 
             <div className='flex flex-wrap gap-2 mt-2'>
-              {nfts.metadata?.attributes?.map((attr, i) => (
-                <Badge key={i}>
-                  {attr.trait_type}: {attr.value}
-                </Badge>
-              ))}
+              {Array.isArray(nfts.metadata?.attributes) &&
+                nfts.metadata.attributes.map((attr, i) => (
+                  <Badge key={i}>
+                    {attr.trait_type}: {attr.value}
+                  </Badge>
+                ))}
             </div>
           </Section>
 
@@ -222,7 +223,7 @@ export const CollectionIdentifier = () => {
                 collection.roles.find(
                   (r) =>
                     r.address === address &&
-                    r.roles.includes('ESDTRoleNFTRecreate')
+                    r.roles.includes('ESDTRoleNFTAddQuantity')
                 ) && (
                   <button
                     className='dinoButton'

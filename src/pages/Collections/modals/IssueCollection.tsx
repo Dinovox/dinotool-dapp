@@ -5,6 +5,7 @@ import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
 import { ActionIssueCollection } from 'helpers/actions/ActionIssueCollection';
 import { is } from '@react-spring/shared';
 import { t } from 'i18next';
+import { Tooltip } from 'components/Tooltip';
 
 export const IssueCollection: React.FC<{
   isOpen: boolean;
@@ -95,11 +96,18 @@ export const IssueCollection: React.FC<{
                       checked={isDynamic}
                       onChange={() => setIsDynamic(!isDynamic)}
                     />
-                    <span className='text-sm text-gray-700'>Dynamic</span>
+                    <span className='text-sm text-gray-700'>
+                      <Tooltip content={t('collections:dynamic_info')}>
+                        {' '}
+                        Dynamic
+                      </Tooltip>
+                    </span>
                   </label>
                 </div>
               </div>
-              {type === 'META' && <>{t('collections:meta_esdt_info')}</>}
+              {type === 'NFT' && <p>{t('collections:nft_esdt_info')}</p>}
+              {type === 'SFT' && <p>{t('collections:sft_esdt_info')}</p>}
+              {type === 'META' && <p>{t('collections:meta_esdt_info')}</p>}
 
               <label
                 htmlFor='name'

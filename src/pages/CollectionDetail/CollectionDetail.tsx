@@ -167,19 +167,20 @@ export const CollectionDetail = () => {
                   )}
                 {collection.canFreeze &&
                   collection.roles &&
-                  collection?.roles?.length > 1 && (
+                  collection?.roles?.length > 1 &&
+                  collection.owner == address && (
                     <>
                       <button
                         onClick={() => openModal('freezeAddress', collection)}
                         className='dinoButton'
                       >
-                        {t('collections:freeze_wallet')}
+                        {t('collections:freeze_wallet')} 🔍
                       </button>{' '}
                       <button
                         onClick={() => openModal('unFreezeAddress', collection)}
                         className='dinoButton'
                       >
-                        {t('collections:unfreeze_wallet')}
+                        {t('collections:unfreeze_wallet')} 🔍
                       </button>
                       {/* <ActionFreeze
                     tokenIdentifier={collection.collection}
@@ -193,7 +194,8 @@ export const CollectionDetail = () => {
                   )}{' '}
                 {collection.canPause &&
                   collection.roles &&
-                  collection?.roles?.length > 1 && (
+                  collection?.roles?.length > 1 &&
+                  collection.owner == address && (
                     <>
                       <ActionPause tokenIdentifier={collection.collection} />{' '}
                       <ActionUnPause tokenIdentifier={collection.collection} />
@@ -208,7 +210,7 @@ export const CollectionDetail = () => {
                       }
                       className='dinoButton'
                     >
-                      {t('collections:transfer_create_role')}
+                      {t('collections:transfer_create_role')} 🔍
                     </button>
                   )}
                 {collection.owner == address &&
@@ -219,7 +221,7 @@ export const CollectionDetail = () => {
                       onClick={() => openModal('controlChanges', collection)}
                       className='dinoButton'
                     >
-                      {t('collections:change_properties')}
+                      {t('collections:change_properties')} 🔍
                     </button>
                   )}
                 {collection.canAddSpecialRoles &&
@@ -228,7 +230,7 @@ export const CollectionDetail = () => {
                       onClick={() => openModal('addRoles', collection)}
                       className='dinoButton'
                     >
-                      {t('collections:add_roles')}
+                      {t('collections:add_roles')} 🔍
                     </button>
                   )}
                 {collection.owner == address &&
@@ -240,7 +242,7 @@ export const CollectionDetail = () => {
                       }
                       className='dinoButton'
                     >
-                      {t('collections:remove_roles')}
+                      {t('collections:remove_roles')} 🔍
                     </button>
                   )}
                 <br />
@@ -254,7 +256,8 @@ export const CollectionDetail = () => {
                     {t('collections:create_type', {
                       type:
                         collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'
-                    })}
+                    })}{' '}
+                    🔍
                   </button>
                 )}
                 {/* {collection.role?.roles && (

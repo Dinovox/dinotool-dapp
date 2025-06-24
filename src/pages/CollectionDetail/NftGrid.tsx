@@ -40,7 +40,12 @@ export const NftGrid: React.FC<{
           </h3>
           <p className='text-sm text-gray-500 line-clamp-2'>
             {nft.metadata?.description}
-          </p>
+          </p>{' '}
+          {nft && nft.supply && (
+            <span className='text-xs bg-gray-100 text-gray-700 rounded-full px-2 py-0.5'>
+              Supply: {nft.supply}
+            </span>
+          )}
           {nft &&
             nft?.metadata &&
             nft?.metadata?.attributes &&

@@ -3,10 +3,12 @@ import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgrPlugin from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import basicSsl from '@vitejs/plugin-basic-ssl';
+// SSL Is requied for local development with DefiWallet
 
 export default defineConfig({
   server: {
-    port: Number(process.env.PORT) || 3020,
+    port: Number(process.env.PORT) || 3000,
     strictPort: true,
     host: true,
     watch: {
@@ -19,6 +21,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    basicSsl(),
     tsconfigPaths(),
     svgrPlugin(),
     nodePolyfills({

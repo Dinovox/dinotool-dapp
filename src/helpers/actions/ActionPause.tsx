@@ -6,6 +6,7 @@ import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
 import { t } from 'i18next';
+import { Tooltip } from 'components/Tooltip';
 export const ActionPause: React.FC<{
   tokenIdentifier: string;
 }> = ({ tokenIdentifier }) => {
@@ -39,7 +40,9 @@ export const ActionPause: React.FC<{
         <>
           {' '}
           <button className='dinoButton' onClick={handleSend}>
-            {t('collections:pause')}
+            <Tooltip content={t('collections:pause_tooltip')}>
+              {t('collections:pause')}
+            </Tooltip>
           </button>
         </>
       )}

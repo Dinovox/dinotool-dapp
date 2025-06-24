@@ -102,7 +102,7 @@ export const AddRoles: React.FC<{
       //pas owner -> On enlève le role create (pas possible de l'ajouter au sc)
       setNewRoles((prev) => prev.filter((r) => r !== 'ESDTRoleNFTCreate'));
     }
-  }, [collection, newRoles, address]);
+  }, [collection, newRoles, address, collection_roles]);
 
   const handleRoleToggle = (role: string) => {
     if (collection_roles?.role?.roles?.includes(role)) return;
@@ -211,6 +211,13 @@ export const AddRoles: React.FC<{
               })}
             </div>
           </form>
+          {newRoles.includes('ESDTTransferRole') && (
+            <div className='mt-4 p-4 bg-yellow-100 text-yellow-800 rounded'>
+              Warning: When the <strong>Transfer</strong> role is assigned, the
+              collection becomes restricted. Tokens can only be transferred{' '}
+              <strong>to and from addresses</strong> that hold this role.{' '}
+            </div>
+          )}
           <ActionSetSpecialRole
             tokenIdentifier={collection.collection}
             addressToAssign={address}

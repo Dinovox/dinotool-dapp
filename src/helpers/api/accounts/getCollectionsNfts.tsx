@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useGetPendingTransactions } from 'hooks';
+import { API_URL } from 'config';
 
 export interface CollectionNft {
   identifier: string;
@@ -35,6 +36,7 @@ export interface CollectionNft {
   };
   ticker: string;
   rarities?: Record<string, any>;
+  supply?: number;
 }
 
 export const useGetCollectionsNfts = (collection: string) => {
@@ -51,9 +53,9 @@ export const useGetCollectionsNfts = (collection: string) => {
       setLoading(true);
       setError(null);
 
-      const url = `/collections/${collection}/nfts`;
+      const url = `/collections/${collection}/nfts?withSupply=true`;
       const config: AxiosRequestConfig = {
-        baseURL: 'https://devnet-api.multiversx.com'
+        baseURL: API_URL
       };
 
       try {

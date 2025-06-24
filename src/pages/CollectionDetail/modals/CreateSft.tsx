@@ -3,7 +3,7 @@ import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
 import { ActionCreateSFT } from 'helpers/actions/ActionCreateSFT';
 import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
-import { useGetLoginInfo } from 'hooks';
+import { useGetAccount, useGetLoginInfo } from 'hooks';
 import { m } from 'framer-motion';
 import { Collection } from 'helpers/api/accounts/getCollections';
 import { internal_api_v2 } from 'config';
@@ -33,11 +33,13 @@ export const CreateSft: React.FC<{
   const [ipfsData, setIpfsData] = useState<string | null>(null);
 
   const { tokenLogin } = useGetLoginInfo();
+  const { address } = useGetAccount();
 
   const handleFetchMetadata = async (value: string) => {
     setIpfsData(null);
     setMetadatas(value);
     setMetaUri('https://ipfs.io/ipfs/' + value);
+
     const isPotentialCID = (v: string) =>
       v.length >= 46 && /^[a-zA-Z0-9]+$/.test(v);
     if (!isPotentialCID(value)) {
@@ -109,7 +111,11 @@ export const CreateSft: React.FC<{
   const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
   const handleUploadToPinata = async (files: FileList) => {
     const validFiles = Array.from(files).filter((file) => {
-      if (file.size > MAX_FILE_SIZE) {
+      if (
+        file.size > MAX_FILE_SIZE &&
+        address !==
+          'erd1yfxtk0s7eu9eq8zzwsvgsnuq85xrj0yysjhsp28tc2ldrps25mwqztxgph'
+      ) {
         alert(
           `Le fichier ${file.name} dépasse la limite de ${MAX_FILE_SIZE_MB} Mo.`
         );
