@@ -9,6 +9,7 @@ export interface Role {
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
+  canTransfer: boolean;
   roles: string[];
 }
 

@@ -60,7 +60,12 @@ export const IssueCollection: React.FC<{
                       defaultChecked
                       onChange={(e) => setType(e.target.value)}
                     />
-                    <span className='text-sm text-gray-700'>NFT</span>
+                    <span className='text-sm text-gray-700'>
+                      {' '}
+                      <Tooltip content={t('collections:nft_esdt_info')}>
+                        NFT
+                      </Tooltip>
+                    </span>
                   </label>
 
                   {/* SFT */}
@@ -72,7 +77,12 @@ export const IssueCollection: React.FC<{
                       className='h-4 w-4 text-blue-600'
                       onChange={(e) => setType(e.target.value)}
                     />
-                    <span className='text-sm text-gray-700'>SFT</span>
+                    <span className='text-sm text-gray-700'>
+                      {' '}
+                      <Tooltip content={t('collections:sft_esdt_info')}>
+                        SFT
+                      </Tooltip>
+                    </span>
                   </label>
 
                   {/* META-ESDT */}
@@ -84,7 +94,12 @@ export const IssueCollection: React.FC<{
                       className='h-4 w-4 text-blue-600'
                       onChange={(e) => setType(e.target.value)}
                     />
-                    <span className='text-sm text-gray-700'>META-ESDT</span>
+                    <span className='text-sm text-gray-700'>
+                      {' '}
+                      <Tooltip content={t('collections:meta_esdt_info')}>
+                        META-ESDT
+                      </Tooltip>
+                    </span>
                   </label>
 
                   {/* Dynamic */}
@@ -98,22 +113,20 @@ export const IssueCollection: React.FC<{
                     />
                     <span className='text-sm text-gray-700'>
                       <Tooltip content={t('collections:dynamic_info')}>
-                        {' '}
                         Dynamic
                       </Tooltip>
                     </span>
                   </label>
                 </div>
               </div>
-              {type === 'NFT' && <p>{t('collections:nft_esdt_info')}</p>}
-              {type === 'SFT' && <p>{t('collections:sft_esdt_info')}</p>}
-              {type === 'META' && <p>{t('collections:meta_esdt_info')}</p>}
 
               <label
                 htmlFor='name'
                 className='block text-sm font-medium text-gray-700'
               >
-                {t('collections:name')}
+                <Tooltip content={t('collections:name_tooltip')}>
+                  {t('collections:name')}
+                </Tooltip>
               </label>
               <input
                 type='text'
@@ -136,7 +149,10 @@ export const IssueCollection: React.FC<{
                 htmlFor='quantity'
                 className='block text-sm font-medium text-gray-700'
               >
-                {t('collections:ticker')}
+                {' '}
+                <Tooltip content={t('collections:ticker_tooltip')}>
+                  {t('collections:ticker')}
+                </Tooltip>
               </label>
               <input
                 type='text'

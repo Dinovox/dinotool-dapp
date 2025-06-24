@@ -1,4 +1,8 @@
 {
+  "my_collections": "My Collections",
+  "my_collections_info": "Find all your collections here!",
+  "x_collections": "{{x}} collection{{s}}",
+  "controls_collection_info": "Manage your collection and its properties.",
   "new_collection": "New Collection",
   "create_new_collection": "Create a new collection",
   "name": "Name",
@@ -10,6 +14,8 @@
   "sft_esdt_info": "SFT are semi-fungible tokens that can represent a limited number of identical assets. They are suitable for items like event tickets or limited edition collectibles, where a specific quantity is available but each item is not unique.",
   "meta_esdt_info": "META-ESDTs are similar to SFT collections, but they support decimals, making them suitable for representing fractional assets. Their usage is more complex and typically intended to be managed through a smart contract factory, especially when handling attributes, dynamic minting, or evolving logic.",
   "dynamic_info": "Dynamic collections are a type of ESDT that can change their properties over time. They are ideal for applications where the asset's characteristics may evolve, such as in gaming or dynamic art.",
+  "name_tooltip": "The name of the collection, which will be displayed in the wallet and on explorers. Length between 3 and 20 characters alphanumeric characters only",
+  "ticker_tooltip": "The ticker of the collection, which is a short identifier used to represent the collection in transactions and on explorers. Length between 3 and 10 characters alphanumeric UPPERCASE only",
   "change_to_dynamic": "Upgrade to Dynamic",
   "properties": "Properties",
   "assigned_roles": "Assigned Roles",

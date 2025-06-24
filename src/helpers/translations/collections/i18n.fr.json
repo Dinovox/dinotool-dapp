@@ -1,4 +1,8 @@
 {
+  "my_collections": "Mes collections",
+  "my_collections_info": "Retrouvez ici toutes vos collections !",
+  "x_collections": "{{x}} collections",
+  "controls_collection_info": "Gérez votre collection et ses propriétés.",
   "new_collection": "Nouvelle collection",
   "create_new_collection": "Créer une nouvelle collection",
   "name": "Nom",
@@ -10,6 +14,8 @@
   "sft_esdt_info": "Les SFT sont des jetons semi-fongibles qui peuvent représenter un nombre limité d'actifs identiques. Ils conviennent aux éléments tels que les billets d'événements ou les objets de collection en édition limitée, où une quantité spécifique est disponible mais chaque article n'est pas unique.",
   "meta_esdt_info": "Les META-ESDT sont similaires aux collections SFT, mais elles prennent en charge les décimales, ce qui les rend adaptées à la représentation d'actifs fractionnaires. Leur utilisation est plus complexe et est généralement destinée à être gérée via une factorisation de contrats intelligents, en particulier lors de la gestion des attributs, du minting dynamique ou de la logique évolutive.",
   "dynamic_info": "Les collections dynamiques sont un type d'ESDT qui peuvent modifier leurs propriétés au fil du temps. Elles sont idéales pour les applications où les caractéristiques de l'actif peuvent évoluer, comme dans les jeux ou l'art dynamique.",
+  "name_tooltip": "Le nom de la collection, qui sera affiché dans le portefeuille et sur les explorateurs. Longueur entre 3 et 20 caractères alphanumériques uniquement",
+  "ticker_tooltip": "Le ticker de la collection, qui est un identifiant court utilisé pour représenter la collection dans les transactions et sur les explorateurs. Longueur entre 3 et 10 caractères alphanumériques en MAJUSCULES uniquement",
   "change_to_dynamic": "Mettre à niveau vers dynamique",
   "properties": "Propriétés",
   "assigned_roles": "Rôles assignés",

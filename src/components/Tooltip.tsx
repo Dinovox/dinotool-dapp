@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import type { ReactPortal } from 'react';
 
 type TooltipProps = {
   children: ReactNode;

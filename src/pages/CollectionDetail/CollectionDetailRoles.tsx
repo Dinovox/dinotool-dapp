@@ -6,9 +6,11 @@ import { t } from 'i18next';
 import ShortenedAddress from 'helpers/shortenedAddress';
 const CollectionDetailRoles: React.FC<{
   collection: Collection;
-}> = ({ collection }) => {
+  extraContent?: React.ReactNode;
+}> = ({ collection, extraContent }) => {
   return (
     <Section title={t('collections:assigned_roles')} className='roles-section'>
+      {extraContent && <div className='mb-4'>{extraContent}</div>}
       {collection.roles &&
         collection.roles.map((role) => (
           <Card>

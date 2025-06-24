@@ -53,16 +53,16 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
 
     if (type === 'META') {
       if (isDynamic) {
-        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       } else {
-        data = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       }
     } else {
       if (isDynamic) {
-        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       } else {
         const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
-        data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${trueHex}@${canWipeHex}@${trueHex}@${canPauseHex}@${trueHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${trueHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       }
     }
 
@@ -90,10 +90,10 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
   return (
     <button
       onClick={handleIssue}
-      disabled={disabled || !address}
+      disabled={disabled || name.length < 3 || ticker.length < 3 || loading}
       className='dinoButton'
     >
-      {t('collections:new_collection_button')}{' '}
+      {t('collections:new_collection_button')} (0.05 EGLD)
     </button>
   );
 };

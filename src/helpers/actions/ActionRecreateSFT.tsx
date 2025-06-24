@@ -57,13 +57,13 @@ export const ActionRecreateSFT: React.FC<{
     <>
       {collection && (
         <>
-          {' '}
+          {/* {' '}
           <div>Collection:{collection}</div>
           <div>Name:{name}</div>
           <div>Nonce:{nonce.toFixed()}</div>
           <div>Royalties:{royalties.toFixed()}</div>
           <div>Attributes:{attributes}</div>
-          {uris && uris.map((uri, key) => <div key={key}>{`${uri}`}</div>)}
+          {uris && uris.map((uri, key) => <div key={key}>{`${uri}`}</div>)} */}
           <button
             className='dinoButton'
             onClick={handleSend}

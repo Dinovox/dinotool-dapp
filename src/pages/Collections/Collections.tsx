@@ -17,6 +17,7 @@ import {
   User,
   Leaf
 } from 'lucide-react';
+import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
 
 export const Collections = () => {
   const navigate = useNavigate();
@@ -93,13 +94,7 @@ export const Collections = () => {
     <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
         <div className='min-h-screen bg-gradient-to-br from-cyan-100 to-cyan-200 relative overflow-hidden'>
-          {/* Decorative leaves */}
-          <div className='absolute top-0 left-0 w-32 h-32 opacity-30'>
-            <Leaf className='w-full h-full text-green-600 transform -rotate-12' />
-          </div>
-          <div className='absolute top-0 right-0 w-24 h-24 opacity-30'>
-            <Leaf className='w-full h-full text-green-600 transform rotate-12' />
-          </div>
+          <DecorativeIconCorners animated />
 
           {/* Header Section - Dinovox Style */}
           <div className='bg-white/90 backdrop-blur-sm rounded-3xl mx-6 mt-6 shadow-lg border border-white/50'>
@@ -110,21 +105,23 @@ export const Collections = () => {
                     className='text-2xl font-bold text-gray-800 dinoTitle'
                     style={{}}
                   >
-                    Mes Collections
+                    {t('collections:my_collections')}
                   </h1>
                 </div>
                 <div className='bg-white rounded-2xl px-4 py-2 shadow-md border border-gray-200'>
                   <div className='flex items-center space-x-2 text-sm text-gray-600'>
                     <Sparkles className='h-4 w-4' />
                     <span className='font-medium'>
-                      {collections?.length || 0} collection
-                      {collections?.length > 1 ? 's' : ''}
+                      {t('collections:x_collections', {
+                        x: collections?.length || 0,
+                        s: collections?.length > 1 ? 's' : ''
+                      })}
                     </span>
                   </div>
                 </div>
               </div>
               <p className='text-gray-600 mt-3 text-lg'>
-                Retrouvez ici toutes vos collections !
+                {t('collections:my_collections_info')}
               </p>
             </div>
           </div>

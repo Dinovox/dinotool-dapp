@@ -29,6 +29,9 @@ import { Section } from './Section';
 import { Grid } from './Grid';
 import { NftGrid } from './NftGrid';
 import { t } from 'i18next';
+import { ArrowRight, Leaf, Plus, Sparkles } from 'lucide-react';
+import ShortenedAddress from 'helpers/shortenedAddress';
+import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
 export type ModalType =
   | 'createSft'
   | 'addRoles'
@@ -131,58 +134,165 @@ export const CollectionDetail = () => {
   return (
     <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
-        <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-          <div
-            style={{
-              float: 'right',
-              marginTop: '20px',
-              marginRight: '20px',
-              position: 'relative',
-              zIndex: '1'
-            }}
-          >
-            {' '}
-            <button onClick={() => navigate('/collections')} className=''>
-              {t('lotteries:return')}
-            </button>
-          </div>
+        <div className='min-h-screen bg-gradient-to-br from-cyan-100 to-cyan-200 relative overflow-hidden'>
+          <DecorativeIconCorners animated />
 
-          <div>
-            <CollectionDetailHeader collection={collection} />
-            <CollectionDetailProperties collection={collection} />
-            <CollectionDetailRoles collection={collection} />
-            <Section title={t('collections:available_actions')}>
-              <Grid columns={2}>
-                {collection.type &&
-                  collection.type !== 'FungibleESDT' &&
-                  collection.type !== 'NonFungibleESDT' &&
-                  collection.type !== 'NonFungibleESDTv2' &&
-                  collection.subType != 'DynamicSemiFungibleESDT' && (
+          {/* Header Section - Dinovox Style */}
+          <div className='bg-white/90 backdrop-blur-sm rounded-3xl mx-6 mt-6 shadow-lg border border-white/50'>
+            <div
+              style={{
+                float: 'right',
+                marginTop: '20px',
+                marginRight: '20px',
+                position: 'relative',
+                zIndex: '1'
+              }}
+            >
+              {' '}
+              <button onClick={() => navigate('/collections')} className=''>
+                {t('lotteries:return')}
+              </button>
+            </div>
+            <div className='max-w-7xl mx-auto px-8 py-6'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center space-x-4'>
+                  <h1
+                    className='text-2xl font-bold text-gray-800 dinoTitle'
+                    style={{}}
+                  >
+                    {collection.name}
+                  </h1>
+                </div>
+                <div className='bg-white rounded-2xl px-4 py-2 shadow-md border border-gray-200'>
+                  <div className='flex items-center space-x-2 text-sm text-gray-600'>
+                    <Sparkles className='h-4 w-4' />
+                    <span className='font-medium'>
+                      {collection.type == 'NonFungibleESDT'
+                        ? 'NFT'
+                        : collection.type == 'MetaESDT'
+                        ? 'MetaESDT'
+                        : 'SFT'}
+                    </span>
+                  </div>
+                  {collection.subType?.startsWith('Dynamic') && (
+                    <div className='bg-white rounded-2xl px-4 py-2 shadow-md border border-gray-200'>
+                      <div className='flex items-center space-x-2 text-sm text-gray-600'>
+                        <Sparkles className='h-4 w-4' />
+                        <span className='font-medium'>
+                          <strong>Dynamic</strong>
+                        </span>
+                      </div>
+                    </div>
+                  )}{' '}
+                </div>{' '}
+              </div>{' '}
+              <p className='text-gray-600 mt-3 text-lg'>
+                {t('collections:controls_collection_info')}
+              </p>
+              <p className='text-gray-600 mt-3 text-lg'>
+                Owner: <ShortenedAddress address={collection.owner} />
+              </p>
+            </div>
+            <div>
+              {/* <CollectionDetailHeader collection={collection} /> */}
+              <CollectionDetailProperties
+                collection={collection}
+                extraContent={
+                  collection.owner === address &&
+                  collection.canUpgrade &&
+                  collection.roles &&
+                  collection.roles.length > 1 ? (
                     <button
-                      onClick={() => openModal('changeToDynamic', collection)}
-                      className='dinoButton'
+                      onClick={() => openModal('controlChanges', collection)}
+                      className='dinoButton group relative flex items-center justify-center space-x-3'
                     >
-                      {t('collections:change_to_dynamic')}
+                      {t('collections:change_properties')}
+                      <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                    </button>
+                  ) : null
+                }
+              />
+              <CollectionDetailRoles
+                collection={collection}
+                extraContent={
+                  <>
+                    {collection.canAddSpecialRoles &&
+                      collection.owner == address && (
+                        <button
+                          onClick={() => openModal('addRoles', collection)}
+                          className='dinoButton group relative flex items-center justify-center space-x-3'
+                        >
+                          {t('collections:add_roles')}{' '}
+                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                        </button>
+                      )}
+                    {collection.owner == address &&
+                      collection.roles &&
+                      collection?.roles?.length > 1 && (
+                        <button
+                          onClick={() =>
+                            openModal('removeRoles', collection, address)
+                          }
+                          className='dinoButton group relative flex items-center justify-center space-x-3'
+                        >
+                          {t('collections:remove_roles')}{' '}
+                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                        </button>
+                      )}
+                  </>
+                }
+              />
+              <Section title={t('collections:available_actions')}>
+                <Grid columns={2}>
+                  {collection.roles?.find?.(
+                    (r) => r.address === address && r.canCreate
+                  ) && (
+                    <button
+                      onClick={() => openModal('createSft', collection)}
+                      className='dinoButton group relative flex items-center justify-center space-x-3'
+                    >
+                      <Plus className='h-5 w-5 group-hover:rotate-90 transition-transform duration-300' />
+                      {t('collections:create_type', {
+                        type:
+                          collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'
+                      })}
+                      <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
                     </button>
                   )}
-                {collection.canFreeze &&
-                  collection.roles &&
-                  collection?.roles?.length > 1 &&
-                  collection.owner == address && (
-                    <>
+                  {collection.type &&
+                    collection.type !== 'FungibleESDT' &&
+                    collection.type !== 'NonFungibleESDT' &&
+                    collection.type !== 'NonFungibleESDTv2' &&
+                    collection.subType != 'DynamicSemiFungibleESDT' && (
                       <button
-                        onClick={() => openModal('freezeAddress', collection)}
+                        onClick={() => openModal('changeToDynamic', collection)}
                         className='dinoButton'
                       >
-                        {t('collections:freeze_wallet')} 🔍
-                      </button>{' '}
-                      <button
-                        onClick={() => openModal('unFreezeAddress', collection)}
-                        className='dinoButton'
-                      >
-                        {t('collections:unfreeze_wallet')} 🔍
+                        {t('collections:change_to_dynamic')}
                       </button>
-                      {/* <ActionFreeze
+                    )}
+                  {collection.canFreeze &&
+                    collection.roles &&
+                    collection?.roles?.length > 1 &&
+                    collection.owner == address && (
+                      <>
+                        <button
+                          onClick={() => openModal('freezeAddress', collection)}
+                          className='dinoButton group relative flex items-center justify-center space-x-3'
+                        >
+                          {t('collections:freeze_wallet')}{' '}
+                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                        </button>{' '}
+                        <button
+                          onClick={() =>
+                            openModal('unFreezeAddress', collection)
+                          }
+                          className='dinoButton group relative flex items-center justify-center space-x-3'
+                        >
+                          {t('collections:unfreeze_wallet')}{' '}
+                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                        </button>
+                        {/* <ActionFreeze
                     tokenIdentifier={collection.collection}
                     addressToAssign={''}
                   />{' '}
@@ -190,152 +300,102 @@ export const CollectionDetail = () => {
                     tokenIdentifier={collection.collection}
                     addressToAssign={''}
                   /> */}
-                    </>
-                  )}{' '}
-                {collection.canPause &&
-                  collection.roles &&
-                  collection?.roles?.length > 1 &&
-                  collection.owner == address && (
-                    <>
-                      <ActionPause tokenIdentifier={collection.collection} />{' '}
-                      <ActionUnPause tokenIdentifier={collection.collection} />
-                    </>
-                  )}
-                {collection.owner == address &&
-                  collection.canTransferNftCreateRole &&
-                  collection.roles?.find?.((r) => r.canCreate) && (
-                    <button
-                      onClick={() =>
-                        openModal('transferNFTCreateRole', collection)
-                      }
-                      className='dinoButton'
-                    >
-                      {t('collections:transfer_create_role')} 🔍
-                    </button>
-                  )}
-                {collection.owner == address &&
-                  collection.canUpgrade &&
-                  collection.roles &&
-                  collection?.roles?.length > 1 && (
-                    <button
-                      onClick={() => openModal('controlChanges', collection)}
-                      className='dinoButton'
-                    >
-                      {t('collections:change_properties')} 🔍
-                    </button>
-                  )}
-                {collection.canAddSpecialRoles &&
-                  collection.owner == address && (
-                    <button
-                      onClick={() => openModal('addRoles', collection)}
-                      className='dinoButton'
-                    >
-                      {t('collections:add_roles')} 🔍
-                    </button>
-                  )}
-                {collection.owner == address &&
-                  collection.roles &&
-                  collection?.roles?.length > 1 && (
-                    <button
-                      onClick={() =>
-                        openModal('removeRoles', collection, address)
-                      }
-                      className='dinoButton'
-                    >
-                      {t('collections:remove_roles')} 🔍
-                    </button>
-                  )}
-                <br />
-                {collection.roles?.find?.(
-                  (r) => r.address === address && r.canCreate
-                ) && (
-                  <button
-                    onClick={() => openModal('createSft', collection)}
-                    className='dinoButton'
-                  >
-                    {t('collections:create_type', {
-                      type:
-                        collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'
-                    })}{' '}
-                    🔍
-                  </button>
-                )}
-                {/* {collection.role?.roles && (
-                  <p>
-                    Roles :{' '}
-                    {collection.role.roles &&
-                      collection.role.roles.map((role) => role + ' ')}
-                  </p>
-                )} */}
-              </Grid>
-            </Section>
+                      </>
+                    )}{' '}
+                  {collection.canPause &&
+                    collection.roles &&
+                    collection?.roles?.length > 1 &&
+                    collection.owner == address && (
+                      <>
+                        <ActionPause tokenIdentifier={collection.collection} />{' '}
+                        <ActionUnPause
+                          tokenIdentifier={collection.collection}
+                        />
+                      </>
+                    )}
+                  {collection.owner == address &&
+                    collection.canTransferNftCreateRole &&
+                    collection.roles?.find?.((r) => r.canCreate) && (
+                      <button
+                        onClick={() =>
+                          openModal('transferNFTCreateRole', collection)
+                        }
+                        className='dinoButton group relative flex items-center justify-center space-x-3'
+                      >
+                        {t('collections:transfer_create_role')}{' '}
+                        <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                      </button>
+                    )}
+                </Grid>
+              </Section>
 
-            {/* Stop create is too dangerous to show*/}
-            {/* <button
+              {/* Stop create is too dangerous to show*/}
+              {/* <button
               onClick={() => openModal('stopCreate', collection)}
               className='dinoButton'
             >
               Stop Create
             </button> */}
+            </div>
+
+            <NftGrid nfts={nfts} />
           </div>
 
-          <NftGrid nfts={nfts} />
-        </div>
-
-        {/* Modals */}
-        {collection && (
-          <>
-            <CreateSft
-              isOpen={modal.type === 'createSft'}
-              closeModal={closeModal}
-              collection={collection}
-            />
-            <AddRoles
-              isOpen={modal.type === 'addRoles'}
-              closeModal={closeModal}
-              collection={collection}
-              definedRoles={definedRoles}
-            />
-            {collection.roles && collection?.roles?.length > 1 && (
-              <RemoveRoles
-                isOpen={modal.type === 'removeRoles'}
+          {/* Modals */}
+          {collection && (
+            <>
+              <CreateSft
+                isOpen={modal.type === 'createSft'}
                 closeModal={closeModal}
                 collection={collection}
-                address={modal.address ? modal.address : ''}
               />
-            )}
-            <ChangeToDynamic
-              isOpen={modal.type === 'changeToDynamic'}
-              closeModal={closeModal}
-              collection={collection}
-            />
-            {/* <StopCreate
+              <AddRoles
+                isOpen={modal.type === 'addRoles'}
+                closeModal={closeModal}
+                collection={collection}
+                definedRoles={definedRoles}
+              />
+              {collection.roles && collection?.roles?.length > 1 && (
+                <RemoveRoles
+                  isOpen={modal.type === 'removeRoles'}
+                  closeModal={closeModal}
+                  collection={collection}
+                  address={modal.address ? modal.address : ''}
+                />
+              )}
+              <ChangeToDynamic
+                isOpen={modal.type === 'changeToDynamic'}
+                closeModal={closeModal}
+                collection={collection}
+              />
+              {/* <StopCreate
               isOpen={modal.type === 'stopCreate'}
               closeModal={closeModal}
               collection={collection}
             /> */}
-            <TransfertNFTCreateRole
-              isOpen={modal.type === 'transferNFTCreateRole'}
-              closeModal={closeModal}
-              collection={collection}
-            />
-            <ControlChanges
-              isOpen={modal.type === 'controlChanges'}
-              closeModal={closeModal}
-              collection={collection}
-            />
-            <FreezeAddress
-              isOpen={modal.type === 'freezeAddress'}
-              closeModal={closeModal}
-              collection={collection}
-            />
-            <UnFreezeAddress
-              isOpen={modal.type === 'unFreezeAddress'}
-              closeModal={closeModal}
-              collection={collection}
-            />
-          </>
-        )}
+              <TransfertNFTCreateRole
+                isOpen={modal.type === 'transferNFTCreateRole'}
+                closeModal={closeModal}
+                collection={collection}
+              />
+              <ControlChanges
+                isOpen={modal.type === 'controlChanges'}
+                closeModal={closeModal}
+                collection={collection}
+              />
+              <FreezeAddress
+                isOpen={modal.type === 'freezeAddress'}
+                closeModal={closeModal}
+                collection={collection}
+              />
+              <UnFreezeAddress
+                isOpen={modal.type === 'unFreezeAddress'}
+                closeModal={closeModal}
+                collection={collection}
+              />
+            </>
+          )}
+        </div>
       </PageWrapper>
     </AuthRedirectWrapper>
   );

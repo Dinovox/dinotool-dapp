@@ -1,15 +1,15 @@
 import { Badge } from './Badge';
 import { Collection } from 'helpers/api/accounts/getCollections';
-
 import React from 'react';
 import { Section } from './Section';
 import { t } from 'i18next';
-
 const CollectionDetailProperties: React.FC<{
   collection: Collection;
-}> = ({ collection }) => {
+  extraContent?: React.ReactNode;
+}> = ({ collection, extraContent }) => {
   return (
     <Section title={t('collections:properties')}>
+      {extraContent && <div className='mb-4'>{extraContent}</div>}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3'>
         <Badge color={collection.canUpgrade ? 'green' : 'gray'}>
           {collection.canUpgrade ? 'Can Upgrade' : 'Cannot Upgrade'}
