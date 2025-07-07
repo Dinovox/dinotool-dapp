@@ -11,8 +11,8 @@ import {
 } from 'helpers/api/accounts/getCollections';
 import { useGetAccount } from 'hooks';
 import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
-import { is } from '@react-spring/shared';
 import { t } from 'i18next';
+import { Tooltip } from 'components/Tooltip';
 
 export const AddRoles: React.FC<{
   isOpen: boolean;
@@ -204,7 +204,9 @@ export const AddRoles: React.FC<{
                           </svg>
                         )}
                       </div>
-                      {role}
+                      <Tooltip content={t(`collections:${role}`)}>
+                        {role}
+                      </Tooltip>
                     </label>
                   </div>
                 );

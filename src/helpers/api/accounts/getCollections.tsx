@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
-import { h } from 'framer-motion/dist/types.d-B50aGbjN';
 export interface CollectionRole {
   canCreate: boolean;
   canBurn: boolean;
@@ -11,6 +10,7 @@ export interface CollectionRole {
   canTransfer?: boolean;
   roles: string[];
   address?: string;
+  canTransferNftCreateRole: boolean;
 }
 
 export interface Collection {
@@ -26,7 +26,6 @@ export interface Collection {
   canFreeze: boolean;
   canWipe: boolean;
   canPause: boolean;
-  canTransferNftCreateRole: boolean;
   canChangeOwner: boolean;
   canUpgrade: boolean;
   canAddSpecialRoles: boolean;
@@ -36,6 +35,7 @@ export interface Collection {
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
+  canTransferNftCreateRole: boolean;
 }
 
 export const useGetCollections = (collection: string) => {

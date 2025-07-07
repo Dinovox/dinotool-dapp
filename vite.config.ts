@@ -8,7 +8,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
   server: {
-    port: Number(process.env.PORT) || 3000,
+    port: Number(process.env.PORT) || 3020,
     strictPort: true,
     host: true,
     watch: {

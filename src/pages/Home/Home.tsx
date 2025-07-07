@@ -15,8 +15,12 @@ import useLoadTranslations from '../../hooks/useLoadTranslations';
 
 import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
-import BigNumber from 'bignumber.js';
-import { ActionCreateSFT } from '../../helpers/actions/ActionCreateSFT';
+
+import { ActionESDTNFTTransfer } from 'helpers/actions/ActionESDTNFTTransfer';
+import { ActionMultiESDTNFTTransfer } from 'helpers/actions/ActionMultiESDTNFTTransfer';
+import { useGetAccount } from 'hooks';
+import { a } from 'react-spring';
+
 export const Home = () => {
   const loading = useLoadTranslations('home');
   const { t } = useTranslation();
@@ -25,6 +29,8 @@ export const Home = () => {
   const [isShaking, setIsShaking] = useState(false);
   const mintable = useGetMintable();
   const fullText = '🦖 . . . #GRAOU!';
+
+  const { address } = useGetAccount();
 
   // Images are 210px 150px
   const navItems = [
@@ -50,22 +56,21 @@ export const Home = () => {
       image: cardDrop
     },
     {
+      title: t('home:collections_title'),
+      link: '/collections',
+      image: cardWip
+    },
+    {
       title: t('home:feedback_title'),
       link: 'https://docs.google.com/forms/d/e/1FAIpQLSc1PKfBjGfBSl1pyiSBckAos9xHPOOy1cYEgeLZGR6Ws1923Q/viewform',
       image: cardFeedback,
       external: true
     },
     {
-      title: t('home:collections_title'),
-      link: '/collections',
-      image: cardWip,
-      blured: environment == 'devnet' ? false : true
-    },
-    {
       title: 'Soon',
       link: '/chests',
       image: cardWip,
-      blured: true
+      blured: environment == 'devnet' ? true : true
     }
   ];
 
@@ -130,6 +135,7 @@ export const Home = () => {
                 {item.external ? (
                   <a href={item.link} target='_blank' rel='noopener noreferrer'>
                     <div className='nav-card-content'>
+                      {' '}
                       <img src={item.image} alt={item.title} />
                       <h3>{item.title}</h3>
                     </div>
@@ -164,8 +170,9 @@ export const Home = () => {
                 )}
               </div>
             ))}
-          </div>
+          </div>{' '}
           <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
+            {' '}
             <a
               href='https://x.com/search?q=%23GRAOU&src=typed_query'
               target='_blank'
@@ -176,6 +183,130 @@ export const Home = () => {
               </div>{' '}
             </a>
           </div>
+          {/* <ActionESDTNFTTransfer
+            receiver='erd1qqqqqqqqqqqqqpgq4jt6guxqpvurrkyhx99ung0dcvuxf9xccn0qt3af33'
+            batch={[
+              { collection: 'DINOCARDS-46ceea', nonce: 18, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 19, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 20, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 21, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 22, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 23, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 24, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 25, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 26, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 27, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 28, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 29, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 30, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 31, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 32, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 33, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 34, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 35, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 36, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 37, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 38, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 39, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 40, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 41, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 42, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 43, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 44, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 45, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 46, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 47, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 48, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 49, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 50, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 51, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 52, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 53, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 54, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 55, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 56, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 57, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 58, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 59, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 60, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 61, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 62, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 63, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 64, quantity: 40 },
+              { collection: 'DINOCARDS-46ceea', nonce: 65, quantity: 38 },
+              { collection: 'DINOCARDS-46ceea', nonce: 66, quantity: 38 },
+              { collection: 'DINOCARDS-46ceea', nonce: 67, quantity: 38 },
+              { collection: 'DINOCARDS-46ceea', nonce: 68, quantity: 38 },
+              { collection: 'DINOCARDS-46ceea', nonce: 69, quantity: 38 },
+              { collection: 'DINOCARDS-46ceea', nonce: 70, quantity: 28 },
+              { collection: 'DINOCARDS-46ceea', nonce: 71, quantity: 38 }
+            ]}
+          /> */}
+          {/* {[
+            'erd1yfxtk0s7eu9eq8zzwsvgsnuq85xrj0yysjhsp28tc2ldrps25mwqztxgph',
+            'erd10p0ke87tg4g2wnpah6ngmqmmlv604avfqwrlw7f3a7xpl8p3ugws7t3828'
+          ].includes(address) && (
+            <ActionMultiESDTNFTTransfer
+              receiver='erd1qqqqqqqqqqqqqpgqsn6kmkhfkcldc0h3p7slc3chxy30n4pzuzesp9g6rp'
+              batch={[
+                { collection: 'DINOCARDS-46ceea', nonce: 18, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 19, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 20, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 21, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 22, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 23, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 24, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 25, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 26, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 27, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 28, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 29, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 30, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 31, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 32, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 33, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 34, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 35, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 36, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 37, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 38, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 39, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 40, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 41, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 42, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 43, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 44, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 45, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 46, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 47, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 48, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 49, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 50, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 51, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 52, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 53, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 54, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 55, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 56, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 57, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 58, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 59, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 60, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 61, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 62, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 63, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 64, quantity: 40 },
+                { collection: 'DINOCARDS-46ceea', nonce: 65, quantity: 38 },
+                { collection: 'DINOCARDS-46ceea', nonce: 66, quantity: 38 },
+                { collection: 'DINOCARDS-46ceea', nonce: 67, quantity: 38 },
+                { collection: 'DINOCARDS-46ceea', nonce: 68, quantity: 38 },
+                { collection: 'DINOCARDS-46ceea', nonce: 69, quantity: 38 },
+                { collection: 'DINOCARDS-46ceea', nonce: 70, quantity: 28 },
+                { collection: 'DINOCARDS-46ceea', nonce: 71, quantity: 38 }
+              ]}
+              method='addCards'
+            />
+          )} */}
         </div>
       </PageWrapper>
     </AuthRedirectWrapper>

@@ -26,6 +26,6 @@ export const graou_identifier = 'GRAOU-c9dd53';
 export const xgraou_identifier = 'GRAOU-96c360';
 
 export const lottery_cost = {
-  graou: '500000000000000000000',
-  egld: '250000000000000000'
+  graou: '100000000000000000000',
+  egld: '100000000000000000'
 };

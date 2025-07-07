@@ -289,23 +289,22 @@ export const CreateSft: React.FC<{
               />
             </div>
 
-            {collection.type !== 'MetaESDT' && (
-              <div className='mb-4'>
-                <label
-                  htmlFor='tags'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Tags
-                </label>
-                <textarea
-                  id='tags'
-                  value={tags}
-                  placeholder='DinoVox,Graou'
-                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                  onChange={(e) => setTags(e.target.value.trim().toLowerCase())}
-                />
-              </div>
-            )}
+            {/* {collection.type !== 'MetaESDT' && ( */}
+            <div className='mb-4'>
+              <label
+                htmlFor='tags'
+                className='block text-sm font-medium text-gray-700'
+              >
+                Tags
+              </label>
+              <textarea
+                id='tags'
+                value={tags}
+                placeholder='DinoVox,Graou'
+                className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
+                onChange={(e) => setTags(e.target.value.trim().toLowerCase())}
+              />
+            </div>
 
             <div className='mb-4'>
               <label
@@ -419,11 +418,12 @@ export const CreateSft: React.FC<{
               <textarea
                 id='attributes'
                 className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'
-                value={
-                  collection.type === 'MetaESDT'
-                    ? attributes
-                    : `metadata:${metadatas};tags:${tags}`
-                }
+                // value={
+                //   collection.type === 'MetaESDT'
+                //     ? attributes
+                //     : `metadata:${metadatas};tags:${tags}`
+                // }
+                value={`metadata:${metadatas};tags:${tags}`}
                 disabled
               />
             </div>
@@ -481,11 +481,12 @@ https://ipfs.io/ipfs/ipfsCID/1.json'
             quantity={quantity}
             royalties={royalties}
             hash=''
-            attributes={
-              collection.type === 'MetaESDT'
-                ? attributes
-                : `metadata:${metadatas};tags:${tags}`
-            }
+            attributes={`metadata:${metadatas};tags:${tags}`}
+            // attributes={
+            //   collection.type === 'MetaESDT'
+            //     ? attributes
+            //     : `metadata:${metadatas};tags:${tags}`
+            // }
             // metada in uris
             uris={[...uris, ...(metaUri ? [metaUri] : [])]}
             // no metadata in uris

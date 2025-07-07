@@ -5,16 +5,15 @@ import { Address } from '@multiversx/sdk-core/out';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { useTranslation } from 'react-i18next';
 
-interface ActionTransfertNFTCreateRoleProps {
+interface ActionTransferOwnershipProps {
   tokenIdentifier: string;
-  currentAddress: string;
   newAddress: string;
   disabled?: boolean;
 }
 
-export const ActionTransfertNFTCreateRole: React.FC<
-  ActionTransfertNFTCreateRoleProps
-> = ({ tokenIdentifier, currentAddress, newAddress, disabled = false }) => {
+export const ActionTransferOwnership: React.FC<
+  ActionTransferOwnershipProps
+> = ({ tokenIdentifier, newAddress, disabled = false }) => {
   const { address, account } = useGetAccountInfo();
   const { t } = useTranslation();
 
@@ -23,11 +22,10 @@ export const ActionTransfertNFTCreateRole: React.FC<
 
     // Convert token identifier and address to hex
     const tokenIdentifierHex = Buffer.from(tokenIdentifier).toString('hex');
-    const currentAddressHex = new Address(currentAddress).toHex();
     const newAddressHex = new Address(newAddress).toHex();
 
     // Construct the data field
-    const data = `transferNFTCreateRole@${tokenIdentifierHex}@${currentAddressHex}@${newAddressHex}`;
+    const data = `transferOwnership@${tokenIdentifierHex}@${newAddressHex}`;
 
     const createTransaction = {
       value: '0',

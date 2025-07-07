@@ -23,8 +23,6 @@ import { useGetNftInformations } from './Transaction/helpers/useGetNftInformatio
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
 import { formatAmount } from 'utils';
-import { J } from 'framer-motion/dist/types.d-B50aGbjN';
-import { a } from 'react-spring';
 import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
 
 const CreateLotteryModal: React.FC<{

@@ -5,7 +5,7 @@ import { useAccountsRolesCollections } from 'helpers/api/accounts/getRolesCollec
 import { useNavigate } from 'react-router-dom';
 import { useGetAccountInfo } from 'hooks';
 import IssueCollection from './modals/IssueCollection';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Plus,
   Grid3X3,
@@ -18,8 +18,13 @@ import {
   Leaf
 } from 'lucide-react';
 import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
+import { internal_api_v2 } from 'config';
 
 export const Collections = () => {
+  const [collectionsData, setCollectionsData] = useState<Record<string, any>>(
+    {}
+  );
+
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
@@ -30,6 +35,7 @@ export const Collections = () => {
     setIsModalOpen(false);
   };
   const { address } = useGetAccountInfo();
+
   const {
     data: collections,
     loading: loadingCollections,
@@ -60,7 +66,7 @@ export const Collections = () => {
       item.canFreeze,
       item.canWipe,
       item.canPause,
-      item.canTransferNftCreateRole,
+      item.canTransferNFTCreateRole,
       item.canChangeOwner,
       item.canUpgrade,
       item.canAddSpecialRoles
@@ -72,6 +78,38 @@ export const Collections = () => {
   const getActiveRoles = (item: any) => {
     return item.role?.roles?.length || 0;
   };
+
+  useEffect(() => {
+    const fetchCollectionDetails = async () => {
+      if (!collections || collections.length === 0) return;
+
+      const results = await Promise.all(
+        collections.map(async (col) => {
+          try {
+            const res = await fetch(
+              `${internal_api_v2}/collections/${col.collection}`
+            );
+            const data = await res.json();
+            return { id: col.collection, data };
+          } catch {
+            return { id: col.collection, data: null };
+          }
+        })
+      );
+
+      const mapped = results.reduce(
+        (acc, curr) => {
+          acc[curr.id] = curr.data;
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+
+      setCollectionsData(mapped);
+    };
+
+    fetchCollectionDetails();
+  }, [collections]);
 
   if (loading || loadingCollections) {
     return (
@@ -154,8 +192,17 @@ export const Collections = () => {
                       className={`relative h-48  group-hover:scale-105 transition-transform duration-300`}
                     >
                       <div className='absolute inset-0 flex items-center justify-center'>
-                        <div className='w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm'>
-                          <Grid3X3 className='h-12 w-12 text-white/80' />
+                        <div className='h-48 w-48 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm'>
+                          {collectionsData[item.collection] && (
+                            <img
+                              src={
+                                collectionsData[item.collection].cover ||
+                                '/cards/wip.png'
+                              }
+                              alt={item.name}
+                              className='w-full h-full object-cover rounded-2xl'
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -226,7 +273,7 @@ export const Collections = () => {
                             className={`w-3 h-3 rounded-full ${
                               item.role?.canCreate
                                 ? 'bg-green-400'
-                                : 'bg-gray-300'
+                                : 'bg-red-500'
                             }`}
                           ></div>
                         </div>
@@ -241,18 +288,6 @@ export const Collections = () => {
                                 : item.role?.canTransfer
                                 ? 'bg-orange-300'
                                 : 'bg-red-500'
-                            }`}
-                          ></div>
-                        </div>
-                        <div className='flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2'>
-                          <span className='text-gray-700 font-medium'>
-                            Destruction
-                          </span>
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              item.role?.canBurn
-                                ? 'bg-green-400'
-                                : 'bg-gray-300'
                             }`}
                           ></div>
                         </div>

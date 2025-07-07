@@ -1,6 +1,6 @@
 {
   "my_collections": "Mes collections",
-  "my_collections_info": "Retrouvez ici toutes vos collections !",
+  "my_collections_info": "Retrouvez et gerez ici toutes vos collections !",
   "x_collections": "{{x}} collections",
   "controls_collection_info": "Gérez votre collection et ses propriétés.",
   "new_collection": "Nouvelle collection",
@@ -53,5 +53,26 @@
   "address_to_freeze": "Adresse à bloquer",
   "address_to_unfreeze": "Adresse à débloquer",
   "nonce_to_freeze": "Nonce (optionnel) laissez zéro pour bloquer l'ensemble de la collection",
-  "nonce_to_unfreeze": "Nonce (optionnel) laissez zéro pour débloquer l'ensemble de la collection"
+  "nonce_to_unfreeze": "Nonce (optionnel) laissez zéro pour débloquer l'ensemble de la collection",
+
+  "canFreeze": "Activer le blocage des NFT dans cette collection. Cela permet de bloquer et de débloquer les NFT dans un portefeuille spécifique.",
+  "canWipe": "Activer l'effacement des NFT dans cette collection. Cela permet d'effacer les NFT dans un portefeuille bloqué.",
+  "canPause": "Activer la mise en pause des NFT dans cette collection. En mode pause, aucun transfert de NFT ne peut être effectué.",
+  "canTransferNFTCreateRole": "Autoriser le transfert du rôle de création de cette collection vers une autre adresse. Cela est utile si vous souhaitez déléguer la création de NFT à un autre compte.",
+  "canChangeOwner": "Autoriser le changement de propriétaire de cette collection. Cela est utile si vous souhaitez transférer la propriété de la collection à un autre compte.",
+  "canUpgrade": "Autoriser la modification des propriétés de cette collection. Si non défini, la collection sera immuable et aucune propriété ne pourra être modifiée.",
+  "canAddSpecialRoles": "Autoriser l'ajout de rôles spéciaux à cette collection. Cela est utile si vous souhaitez attribuer des autorisations spécifiques à des comptes.",
+
+  "ESDTRoleNFTCreate": "Accorde à un compte spécifique la permission de créer des NFT au sein de cette collection. Définissez ce rôle pour autoriser la création de NFT.",
+  "ESDTRoleNFTBurn": "Accorde à un compte spécifique la permission de brûler des NFT au sein de cette collection. Définissez ce rôle pour autoriser la destruction de NFT.",
+  "ESDTRoleNFTUpdateAttributes": "Accorde à un compte spécifique la permission de mettre à jour les attributs des NFT au sein de cette collection. Définissez ce rôle pour autoriser la mise à jour des attributs des NFT.",
+  "ESDTRoleNFTAddURI": "Accorde à un compte spécifique la permission d'ajouter une nouvelle URI aux NFT au sein de cette collection. Définissez ce rôle pour autoriser l'ajout d'une nouvelle URI.",
+  "ESDTRoleNFTAddQuantity": "Accorde à un compte spécifique la permission d'ajouter une quantité aux NFT au sein de cette collection. Définissez ce rôle pour autoriser l'ajout de quantité.",
+  "ESDTTransferRole": "Par défaut, tout le monde peut transférer des NFT au sein de cette collection. Une fois ce rôle défini, seuls les comptes avec ce rôle peuvent transférer des NFT au sein de cette collection.",
+  "ESDTRoleNFTUpdate": "Accorde à un compte spécifique la permission de mettre à jour les propriétés des NFT au sein de cette collection. Définissez ce rôle pour autoriser la mise à jour des propriétés des NFT.",
+  "ESDTRoleModifyRoyalties": "Accorde à un compte spécifique la permission de modifier les redevances pour les NFT au sein de cette collection. Définissez ce rôle pour autoriser la modification des redevances.",
+  "ESDTRoleSetNewURI": "Accorde à un compte spécifique la permission de définir une nouvelle URI pour les NFT au sein de cette collection. Définissez ce rôle pour autoriser la définition d'une nouvelle URI.",
+  "ESDTRoleModifyCreator": "Accorde à un compte spécifique la permission de devenir le créateur des NFT au sein de cette collection. Les redevances sont envoyées au créateur.",
+  "ESDTRoleNFTRecreate": "Accorde à un compte spécifique la permission de recréer des NFT au sein de cette collection. Définissez ce rôle pour autoriser la recréation de NFT.",
+  "claim_creator": "Revendiquer le créateur"
 }

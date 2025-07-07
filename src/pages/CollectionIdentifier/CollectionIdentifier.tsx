@@ -1,34 +1,28 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
-
-import {
-  Collection,
-  CollectionRole
-} from 'helpers/api/accounts/getCollections';
-
 import { Nfts } from 'helpers/api/accounts/getNfts';
-
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState, Fragment } from 'react';
-import BigNumber from 'bignumber.js';
-import { Dialog } from '@headlessui/react'; // ou un autre composant modal si tu préfères
-import { N, R, u } from 'framer-motion/dist/types.d-B50aGbjN';
+import { useEffect, useState } from 'react';
 import { useGetAccountInfo, useGetPendingTransactions } from 'hooks';
-
 import { useGetCollections } from 'helpers/api/accounts/getCollections';
-import { to } from 'react-spring';
 import { useGetNfts } from 'helpers/api/accounts/getNfts';
 import AddQuantity from './modals/AddQuantity';
 import BurnQuantity from './modals/BurnQuantity';
 import RecreateSft from './modals/RecreateSft';
+import ModifyCreator from './modals/ModifyCreator';
 import { Section } from 'pages/CollectionDetail/Section';
 import { Card } from 'antd';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { Badge } from 'pages/CollectionDetail/Badge';
-import { ActionProcessNft } from 'helpers/actions/ActionProcessNft';
+import { ActionModifyCreator } from 'helpers/actions/ActionModifyCreator';
 
-export type NModalType = 'addQuantity' | 'burnQuantity' | 'recreateSft' | null;
+export type NModalType =
+  | 'addQuantity'
+  | 'burnQuantity'
+  | 'recreateSft'
+  | 'modifyCreator'
+  | null;
 
 export interface NModalState {
   type: NModalType;
@@ -114,7 +108,7 @@ export const CollectionIdentifier = () => {
   }
 
   return (
-    <AuthRedirectWrapper requireAuth={true}>
+    <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
           <div
@@ -136,7 +130,6 @@ export const CollectionIdentifier = () => {
           <Section title='NFT Details'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <Card>
-                <h4 className='font-semibold'>General</h4>
                 <p>
                   <strong>Identifier:</strong> {nfts.identifier}
                 </p>
@@ -156,15 +149,18 @@ export const CollectionIdentifier = () => {
               </Card>
 
               <Card>
-                <h4 className='font-semibold'>Creator & Owner</h4>
-                <p>
-                  <strong>Creator:</strong>{' '}
-                  <ShortenedAddress address={nfts.creator} />
-                </p>
-                <p>
-                  <strong>Owner:</strong>{' '}
-                  <ShortenedAddress address={nfts.owner} />
-                </p>
+                {nfts.creator && (
+                  <p>
+                    <strong>Creator:</strong>{' '}
+                    <ShortenedAddress address={nfts.creator} />
+                  </p>
+                )}
+                {nfts.owner && (
+                  <p>
+                    <strong>Owner:</strong>{' '}
+                    <ShortenedAddress address={nfts.owner} />
+                  </p>
+                )}
               </Card>
             </div>
           </Section>
@@ -216,49 +212,61 @@ export const CollectionIdentifier = () => {
                 </Card>
               ))}
           </Section>
-
-          <Section title='Actions'>
-            <div className='flex flex-wrap gap-4'>
+          {address && (
+            <Section title='Actions'>
+              <div className='flex flex-wrap gap-4'>
+                {collection.roles &&
+                  collection.roles.find(
+                    (r) =>
+                      r.address === address &&
+                      r.roles.includes('ESDTRoleNFTAddQuantity')
+                  ) && (
+                    <button
+                      className='dinoButton'
+                      onClick={() => openModal('addQuantity', nfts)}
+                    >
+                      Add Quantity
+                    </button>
+                  )}
+                {collection.roles?.find?.(
+                  (r) =>
+                    r.address === address &&
+                    (r.canBurn || collection.owner === address)
+                ) && (
+                  <button
+                    className='dinoButton'
+                    onClick={() => openModal('burnQuantity', nfts)}
+                  >
+                    Burn Quantity
+                  </button>
+                )}
+                {collection.roles &&
+                  collection.roles.find(
+                    (r) =>
+                      r.address === address &&
+                      r.roles.includes('ESDTRoleNFTRecreate')
+                  ) && (
+                    <button
+                      className='dinoButton'
+                      onClick={() => openModal('recreateSft', nfts)}
+                    >
+                      Recreate
+                    </button>
+                  )}
+              </div>
               {collection.roles &&
                 collection.roles.find(
                   (r) =>
                     r.address === address &&
-                    r.roles.includes('ESDTRoleNFTAddQuantity')
+                    r.roles.includes('ESDTRoleNFTModifyCreator')
                 ) && (
-                  <button
-                    className='dinoButton'
-                    onClick={() => openModal('addQuantity', nfts)}
-                  >
-                    Add Quantity
-                  </button>
+                  <ActionModifyCreator
+                    tokenIdentifier={nfts.collection}
+                    nonce={nfts.nonce}
+                  />
                 )}
-              {collection.roles?.find?.(
-                (r) =>
-                  r.address === address &&
-                  (r.canBurn || collection.owner === address)
-              ) && (
-                <button
-                  className='dinoButton'
-                  onClick={() => openModal('burnQuantity', nfts)}
-                >
-                  Burn Quantity
-                </button>
-              )}
-              {collection.roles &&
-                collection.roles.find(
-                  (r) =>
-                    r.address === address &&
-                    r.roles.includes('ESDTRoleNFTRecreate')
-                ) && (
-                  <button
-                    className='dinoButton'
-                    onClick={() => openModal('recreateSft', nfts)}
-                  >
-                    Recreate
-                  </button>
-                )}
-            </div>
-          </Section>
+            </Section>
+          )}
         </div>
 
         {/* modals */}
@@ -269,6 +277,12 @@ export const CollectionIdentifier = () => {
         />
         <BurnQuantity
           isOpen={modal.type === 'burnQuantity'}
+          closeModal={closeModal}
+          nfts={nfts}
+        />
+
+        <ModifyCreator
+          isOpen={modal.type === 'modifyCreator'}
           closeModal={closeModal}
           nfts={nfts}
         />

@@ -4,37 +4,39 @@ import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { Address } from '@multiversx/sdk-core/out';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { useTranslation } from 'react-i18next';
+import { bigNumToHex } from 'helpers/bigNumToHex';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 
-interface ActionTransfertNFTCreateRoleProps {
+interface ActionModifyCreatorProps {
   tokenIdentifier: string;
-  currentAddress: string;
-  newAddress: string;
+  nonce: BigNumber;
   disabled?: boolean;
 }
 
-export const ActionTransfertNFTCreateRole: React.FC<
-  ActionTransfertNFTCreateRoleProps
-> = ({ tokenIdentifier, currentAddress, newAddress, disabled = false }) => {
+export const ActionModifyCreator: React.FC<ActionModifyCreatorProps> = ({
+  tokenIdentifier,
+  nonce,
+  disabled = false
+}) => {
   const { address, account } = useGetAccountInfo();
   const { t } = useTranslation();
+  const loading = useLoadTranslations('collections');
 
   const handleSend = async () => {
     if (!address) return;
 
     // Convert token identifier and address to hex
     const tokenIdentifierHex = Buffer.from(tokenIdentifier).toString('hex');
-    const currentAddressHex = new Address(currentAddress).toHex();
-    const newAddressHex = new Address(newAddress).toHex();
+    const nonceHex = bigNumToHex(nonce);
 
     // Construct the data field
-    const data = `transferNFTCreateRole@${tokenIdentifierHex}@${currentAddressHex}@${newAddressHex}`;
+    const data = `ESDTModifyCreator@${tokenIdentifierHex}@${nonceHex}`;
 
     const createTransaction = {
       value: '0',
       data: data,
       gasLimit: 60000000,
-      receiver:
-        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+      receiver: address,
       sender: address
     };
 
@@ -55,7 +57,7 @@ export const ActionTransfertNFTCreateRole: React.FC<
       disabled={disabled || !address}
       className='dinoButton'
     >
-      {t('collections:transfer_role')}
+      {t('collections:claim_creator')}
     </button>
   );
 };

@@ -35,13 +35,10 @@ export const ActionControlChanges: React.FC<ActionControlChangesProps> = ({
       canPause: Buffer.from('canPause').toString('hex'),
       canChangeOwner: Buffer.from('canChangeOwner').toString('hex'),
       canUpgrade: Buffer.from('canUpgrade').toString('hex'),
-      canAddSpecialRoles: Buffer.from('canAddSpecialRoles').toString('hex')
-
-      // this should be accessible but return
-      // Invalid argument
-      // canTransferNftCreateRole: Buffer.from(
-      //   'canTransferNftCreateRole'
-      // ).toString('hex'),
+      canAddSpecialRoles: Buffer.from('canAddSpecialRoles').toString('hex'),
+      canTransferNFTCreateRole: Buffer.from(
+        'canTransferNFTCreateRole'
+      ).toString('hex')
     };
 
     const trueHex = Buffer.from('true').toString('hex');

@@ -2,7 +2,7 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 
-import { Collection } from 'helpers/api/accounts/getCollections';
+import { Collection } from 'helpers/api/getCollections';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -12,7 +12,7 @@ import { CreateSft } from './modals/CreateSft';
 import { AddRoles } from './modals/AddRoles';
 import { ChangeToDynamic } from './modals/ChangeToDynamic';
 import { RemoveRoles } from './modals/RemoveRoles';
-import { useGetCollections } from 'helpers/api/accounts/getCollections';
+import { useGetCollections } from 'helpers/api/getCollections';
 import { useGetCollectionsNfts } from 'helpers/api/accounts/getCollectionsNfts';
 import TransfertNFTCreateRole from './modals/TransfertNFTCreateRole';
 import FreezeAddress from './modals/FreezeAddress';
@@ -32,6 +32,7 @@ import { t } from 'i18next';
 import { ArrowRight, Leaf, Plus, Sparkles } from 'lucide-react';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
+import TransferOwnership from './modals/TransferOwnership';
 export type ModalType =
   | 'createSft'
   | 'addRoles'
@@ -39,6 +40,7 @@ export type ModalType =
   | 'changeToDynamic'
   | 'stopCreate'
   | 'transferNFTCreateRole'
+  | 'transferOwnership'
   | 'controlChanges'
   | 'freezeAddress'
   | 'unFreezeAddress'
@@ -132,7 +134,7 @@ export const CollectionDetail = () => {
   }
 
   return (
-    <AuthRedirectWrapper requireAuth={true}>
+    <AuthRedirectWrapper requireAuth={false}>
       <PageWrapper>
         <div className='min-h-screen bg-gradient-to-br from-cyan-100 to-cyan-200 relative overflow-hidden'>
           <DecorativeIconCorners animated />
@@ -242,57 +244,65 @@ export const CollectionDetail = () => {
                   </>
                 }
               />
-              <Section title={t('collections:available_actions')}>
-                <Grid columns={2}>
-                  {collection.roles?.find?.(
-                    (r) => r.address === address && r.canCreate
-                  ) && (
-                    <button
-                      onClick={() => openModal('createSft', collection)}
-                      className='dinoButton group relative flex items-center justify-center space-x-3'
-                    >
-                      <Plus className='h-5 w-5 group-hover:rotate-90 transition-transform duration-300' />
-                      {t('collections:create_type', {
-                        type:
-                          collection.type === 'NonFungibleESDT' ? 'NFT' : 'SFT'
-                      })}
-                      <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
-                    </button>
-                  )}
-                  {collection.type &&
-                    collection.type !== 'FungibleESDT' &&
-                    collection.type !== 'NonFungibleESDT' &&
-                    collection.type !== 'NonFungibleESDTv2' &&
-                    collection.subType != 'DynamicSemiFungibleESDT' && (
+              {address && (
+                <Section title={t('collections:available_actions')}>
+                  <Grid columns={2}>
+                    {collection.roles?.find?.(
+                      (r) => r.address === address && r.canCreate
+                    ) && (
                       <button
-                        onClick={() => openModal('changeToDynamic', collection)}
-                        className='dinoButton'
+                        onClick={() => openModal('createSft', collection)}
+                        className='dinoButton group relative flex items-center justify-center space-x-3'
                       >
-                        {t('collections:change_to_dynamic')}
+                        <Plus className='h-5 w-5 group-hover:rotate-90 transition-transform duration-300' />
+                        {t('collections:create_type', {
+                          type:
+                            collection.type === 'NonFungibleESDT'
+                              ? 'NFT'
+                              : 'SFT'
+                        })}
+                        <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
                       </button>
                     )}
-                  {collection.canFreeze &&
-                    collection.roles &&
-                    collection?.roles?.length > 1 &&
-                    collection.owner == address && (
-                      <>
-                        <button
-                          onClick={() => openModal('freezeAddress', collection)}
-                          className='dinoButton group relative flex items-center justify-center space-x-3'
-                        >
-                          {t('collections:freeze_wallet')}{' '}
-                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
-                        </button>{' '}
+                    {collection.type &&
+                      collection.type !== 'FungibleESDT' &&
+                      collection.type !== 'NonFungibleESDT' &&
+                      collection.type !== 'NonFungibleESDTv2' &&
+                      collection.subType != 'DynamicSemiFungibleESDT' &&
+                      collection.owner == address && (
                         <button
                           onClick={() =>
-                            openModal('unFreezeAddress', collection)
+                            openModal('changeToDynamic', collection)
                           }
-                          className='dinoButton group relative flex items-center justify-center space-x-3'
+                          className='dinoButton'
                         >
-                          {t('collections:unfreeze_wallet')}{' '}
-                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                          {t('collections:change_to_dynamic')}
                         </button>
-                        {/* <ActionFreeze
+                      )}
+                    {collection.canFreeze &&
+                      collection.roles &&
+                      collection?.roles?.length > 1 &&
+                      collection.owner == address && (
+                        <>
+                          <button
+                            onClick={() =>
+                              openModal('freezeAddress', collection)
+                            }
+                            className='dinoButton group relative flex items-center justify-center space-x-3'
+                          >
+                            {t('collections:freeze_wallet')}{' '}
+                            <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                          </button>{' '}
+                          <button
+                            onClick={() =>
+                              openModal('unFreezeAddress', collection)
+                            }
+                            className='dinoButton group relative flex items-center justify-center space-x-3'
+                          >
+                            {t('collections:unfreeze_wallet')}{' '}
+                            <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                          </button>
+                          {/* <ActionFreeze
                     tokenIdentifier={collection.collection}
                     addressToAssign={''}
                   />{' '}
@@ -300,34 +310,48 @@ export const CollectionDetail = () => {
                     tokenIdentifier={collection.collection}
                     addressToAssign={''}
                   /> */}
-                      </>
-                    )}{' '}
-                  {collection.canPause &&
-                    collection.roles &&
-                    collection?.roles?.length > 1 &&
-                    collection.owner == address && (
-                      <>
-                        <ActionPause tokenIdentifier={collection.collection} />{' '}
-                        <ActionUnPause
-                          tokenIdentifier={collection.collection}
-                        />
-                      </>
-                    )}
-                  {collection.owner == address &&
-                    collection.canTransferNftCreateRole &&
-                    collection.roles?.find?.((r) => r.canCreate) && (
+                        </>
+                      )}{' '}
+                    {collection.canPause &&
+                      collection.roles &&
+                      collection?.roles?.length > 1 &&
+                      collection.owner == address && (
+                        <>
+                          <ActionPause
+                            tokenIdentifier={collection.collection}
+                          />{' '}
+                          <ActionUnPause
+                            tokenIdentifier={collection.collection}
+                          />
+                        </>
+                      )}
+                    {collection.owner == address &&
+                      collection.canTransferNftCreateRole && (
+                        <button
+                          onClick={() =>
+                            openModal('transferNFTCreateRole', collection)
+                          }
+                          className='dinoButton group relative flex items-center justify-center space-x-3'
+                        >
+                          {t('collections:transfer_create_role')}{' '}
+                          <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
+                        </button>
+                      )}{' '}
+                    {/* {collection.owner == address &&
+                    collection.canChangeOwner && (
                       <button
                         onClick={() =>
-                          openModal('transferNFTCreateRole', collection)
+                          openModal('transferOwnership', collection)
                         }
                         className='dinoButton group relative flex items-center justify-center space-x-3'
                       >
-                        {t('collections:transfer_create_role')}{' '}
+                        {t('collections:transfer_ownership_role')}{' '}
                         <ArrowRight className='h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300' />
                       </button>
-                    )}
-                </Grid>
-              </Section>
+                    )} */}
+                  </Grid>
+                </Section>
+              )}
 
               {/* Stop create is too dangerous to show*/}
               {/* <button
@@ -375,6 +399,11 @@ export const CollectionDetail = () => {
             /> */}
               <TransfertNFTCreateRole
                 isOpen={modal.type === 'transferNFTCreateRole'}
+                closeModal={closeModal}
+                collection={collection}
+              />
+              <TransferOwnership
+                isOpen={modal.type === 'transferOwnership'}
                 closeModal={closeModal}
                 collection={collection}
               />

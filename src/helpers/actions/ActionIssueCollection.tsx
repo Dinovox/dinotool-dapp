@@ -53,16 +53,16 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
 
     if (type === 'META') {
       if (isDynamic) {
-        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       } else {
-        data = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       }
     } else {
       if (isDynamic) {
-        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       } else {
         const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
-        data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${falseHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       }
     }
 

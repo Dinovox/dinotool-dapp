@@ -1,6 +1,6 @@
 {
   "my_collections": "My Collections",
-  "my_collections_info": "Find all your collections here!",
+  "my_collections_info": "Find and mangage all your collections here!",
   "x_collections": "{{x}} collection{{s}}",
   "controls_collection_info": "Manage your collection and its properties.",
   "new_collection": "New Collection",
@@ -53,5 +53,26 @@
   "address_to_freeze": "Address to freeze",
   "address_to_unfreeze": "Address to unfreeze",
   "nonce_to_freeze": "Nonce (optional) leave zero to freeze the whole collection",
-  "nonce_to_unfreeze": "Nonce (optional) leave zero to unfreeze the whole collection"
+  "nonce_to_unfreeze": "Nonce (optional) leave zero to unfreeze the whole collection",
+
+  "canFreeze": "Enable freezing of NFTs in this collection. This allow to freeze and unfreeze NFTs in a specific wallet.",
+  "canWipe": "Enable wiping of NFTs in this collection. This allow to wipe NFTs in a frozen wallet.",
+  "canPause": "Enable pausing of NFTs in this collection. While pause, no NFT transfers can be made.",
+  "canTransferNFTCreateRole": "Allow to transfer the creation role of this collection to another address. This is useful if you want to delegate the creation of NFTs to another account.",
+  "canChangeOwner": "Allow to change the owner of this collection. This is useful if you want to transfer the ownership of the collection to another account.",
+  "canUpgrade": "Allow to change properties of this collection. If unset the collection will be immutable and no properties can be changed.",
+  "canAddSpecialRoles": "Allow to add special roles to this collection. This is useful if you want to assign specific permissions to accounts.",
+
+  "ESDTRoleNFTCreate": "Grants a specific account permission to create NFTs within this collection. Set this role to allow NFT creation.",
+  "ESDTRoleNFTBurn": "Grants a specific account permission to burn NFTs within this collection. Set this role to allow NFT burning.",
+  "ESDTRoleNFTUpdateAttributes": "Grants a specific account permission to update NFT attributes within this collection. Set this role to allow updating NFT attributes.",
+  "ESDTRoleNFTAddURI": "Grants a specific account permission to add a new URI to NFTs within this collection. Set this role to allow adding a new URI.",
+  "ESDTRoleNFTAddQuantity": "Grants a specific account permission to add quantity to NFTs within this collection. Set this role to allow adding quantity.",
+  "ESDTTransferRole": "By default, everyone can transfer NFTs within this collection. Once this role is set, only the accounts with this role can transfer NFTs within this collection.",
+  "ESDTRoleNFTUpdate": "Grants a specific account permission to update NFT properties within this collection. Set this role to allow updating NFT properties.",
+  "ESDTRoleModifyRoyalties": "Grants a specific account permission to modify royalties for NFTs within this collection. Set this role to allow modifying royalties.",
+  "ESDTRoleSetNewURI": "Grants a specific account permission to set a new URI for NFTs within this collection. Set this role to allow setting a new URI.",
+  "ESDTRoleModifyCreator": "Grants a specific account permission to become the creator of NFTs within this collection. Royalties are sent to the creator.",
+  "ESDTRoleNFTRecreate": "Grants a specific account permission to recreate NFTs within this collection. Set this role to allow recreating NFTs.",
+  "claim_creator": "Claim Creator"
 }

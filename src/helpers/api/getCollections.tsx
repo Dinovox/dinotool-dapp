@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetNetworkConfig } from 'hooks';
-import { API_URL } from 'config';
-
-export interface Role {
+import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
+export interface CollectionRole {
   canCreate: boolean;
   canBurn: boolean;
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
-  canTransfer: boolean;
+  canTransfer?: boolean;
   roles: string[];
+  address?: string;
+  canTransferNFTCreateRole: boolean;
 }
 
-export interface RolesCollections {
+export interface Collection {
   collection: string;
   type: string;
   subType: string;
@@ -21,10 +21,12 @@ export interface RolesCollections {
   ticker: string;
   owner: string;
   timestamp: number;
+  roles?: CollectionRole[];
+  role: CollectionRole;
   canFreeze: boolean;
   canWipe: boolean;
   canPause: boolean;
-  canTransferNFTCreateRole: boolean;
+  canTransferNftCreateRole: boolean;
   canChangeOwner: boolean;
   canUpgrade: boolean;
   canAddSpecialRoles: boolean;
@@ -34,62 +36,47 @@ export interface RolesCollections {
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
-  role: Role;
+  canTransferNFTCreateRole: boolean;
 }
 
-export interface UseAccountsRolesOptions {
-  from?: number;
-  size?: number;
-  search?: string;
-  type?: string;
-  subType?: string;
-  owner?: string;
-  canCreate?: boolean;
-  canBurn?: boolean;
-  canAddQuantity?: boolean;
-  canUpdateAttributes?: boolean;
-  canTransferRole?: boolean;
-  excludeMetaESDT?: boolean;
-}
-
-export const useAccountsRolesCollections = (
-  address: string,
-  options: UseAccountsRolesOptions = {}
-) => {
+export const useGetCollections = (collection: string) => {
   const { network } = useGetNetworkConfig();
-  const [data, setData] = useState<RolesCollections[]>([]);
+  const [data, setData] = useState<Collection>({} as Collection);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { hasPendingTransactions } = useGetPendingTransactions();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
-      let url = `/accounts/${address}/roles/collections`;
+      let url = `/collections/${collection}`;
       const config: AxiosRequestConfig = {
-        baseURL: API_URL,
-        params: { ...options }
+        baseURL: network.apiAddress
       };
-      console.log('fetching roles collections', url, config);
 
       try {
-        const response = await axios.get<RolesCollections[]>(url, config);
+        const response = await axios.get<Collection>(url, config);
         console.log('response', response);
-        setData(response.data);
+        setData(response.data as Collection);
       } catch (err: any) {
         setError('Failed to fetch roles collections');
         console.error(err);
-        setData([]);
+        setData({} as Collection);
       } finally {
         setLoading(false);
       }
     };
 
-    if (address) {
+    if (collection) {
+      if (hasPendingTransactions) {
+        return;
+      }
       fetchData();
     }
-  }, [address, JSON.stringify(options), network.apiAddress]);
+  }, [collection, network.apiAddress, hasPendingTransactions]);
 
   return { data, loading, error };
 };

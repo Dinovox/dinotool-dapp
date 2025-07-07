@@ -14,6 +14,7 @@ import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
 import { is } from '@react-spring/shared';
 import { ActionControlChanges } from 'helpers/actions/ActionControlChanges';
 import { t } from 'i18next';
+import { Tooltip } from 'components/Tooltip';
 
 type Props = {
   collection: Record<string, any>; // Pas de typage strict ici
@@ -32,11 +33,11 @@ export const ControlChanges: React.FC<{
     'canFreeze',
     'canWipe',
     'canPause',
-    'canTransferNftCreateRole',
+    'canTransferNFTCreateRole',
     'canChangeOwner',
     'canUpgrade',
     'canAddSpecialRoles'
-  ];
+  ]; //canCreateMultiShard todo explore this argument
 
   useEffect(() => {
     // Initialise le formulaire avec les valeurs actuelles de la collection
@@ -87,7 +88,9 @@ export const ControlChanges: React.FC<{
                       className='h-4 w-4 text-blue-600 border-gray-300 rounded'
                     />
                     <span className='text-sm font-medium text-gray-800 capitalize'>
-                      {ctrl.replace('can', '')}
+                      <Tooltip content={t(`collections:${ctrl}`)}>
+                        {ctrl.replace('can', '')}
+                      </Tooltip>
                     </span>
                   </label>
 
