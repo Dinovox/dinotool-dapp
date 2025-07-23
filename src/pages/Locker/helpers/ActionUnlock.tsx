@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { lotteryContractAddress } from 'config';
+import { vaultContractAddress } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
 import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
@@ -11,7 +11,7 @@ import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 
-export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
+export const ActionUnlockNft = ({ lockId }: any) => {
   const { t } = useTranslation();
 
   const { hasPendingTransactions } = useGetPendingTransactions();
@@ -22,7 +22,7 @@ export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
       string | null
     >(null);
 
-  const addressTobech32 = new Address(lotteryContractAddress);
+  const addressTobech32 = new Address(vaultContractAddress);
   const { address } = useGetAccountInfo();
 
   // 0-50 ? 14000000
@@ -30,7 +30,7 @@ export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
   const sendFundTransaction = async () => {
     const fundTransaction = {
       value: 0,
-      data: 'draw@' + bigToHex(BigInt(lottery_id)),
+      data: 'unlockNft@' + bigToHex(BigInt(lockId)),
       receiver: addressTobech32,
       gasLimit: '60000000'
     };
@@ -40,9 +40,9 @@ export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
     const { sessionId /*, error*/ } = await sendTransactions({
       transactions: fundTransaction,
       transactionsDisplayInfo: {
-        processingMessage: 'Processing draw transaction',
-        errorMessage: 'An error has occured draw',
-        successMessage: 'Draw transaction successful'
+        processingMessage: 'Processing unlock transaction',
+        errorMessage: 'An error has occured unlocking the NFT',
+        successMessage: 'Unlock transaction successful'
       },
       redirectAfterSign: false
     });
@@ -54,18 +54,14 @@ export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
     <>
       {!hasPendingTransactions ? (
         <>
-          <button
-            className='dinoButton'
-            onClick={sendFundTransaction}
-            disabled={disabled}
-          >
-            {t('lotteries:draw_lottery')}
+          <button className='dinoButton' onClick={sendFundTransaction}>
+            {t('locker:unlock_nft')}
           </button>
         </>
       ) : (
         <>
           <button className='dinoButton' disabled>
-            {t('lotteries:processing')}
+            {t('locker:processing')}
           </button>
         </>
       )}

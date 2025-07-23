@@ -26,7 +26,6 @@ export interface Collection {
   canFreeze: boolean;
   canWipe: boolean;
   canPause: boolean;
-  canTransferNftCreateRole: boolean;
   canChangeOwner: boolean;
   canUpgrade: boolean;
   canAddSpecialRoles: boolean;
@@ -36,7 +35,7 @@ export interface Collection {
   canAddQuantity: boolean;
   canUpdateAttributes: boolean;
   canAddUri: boolean;
-  canTransferNFTCreateRole: boolean;
+  canTransferNftCreateRole: boolean;
 }
 
 export const useGetCollections = (collection: string) => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 // https://github.com/twitter/twemoji/tree/master/assets/svg
 
-const LanguageSelector: React.FC = () => {
+const LanguageSelector = () => {
   const { i18n, t } = useTranslation();
 
   const changeLanguage = (lang: string) => {

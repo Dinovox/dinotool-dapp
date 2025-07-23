@@ -10,10 +10,12 @@ import {
   Collections,
   CollectionDetail,
   CollectionIdentifier,
-  Profile
+  Profile,
+  Locker
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
+import { Route } from 'react-router-dom';
 interface RouteWithTitleType extends RouteType {
   title: string;
 }
@@ -26,11 +28,6 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       title: t('home'),
       component: Home
     },
-    // {
-    //   path: RouteNamesEnum.disclaimer,
-    //   title: t('disclaimer'),
-    //   component: Disclaimer
-    // },
     {
       path: RouteNamesEnum.mint,
       title: t('mint'),
@@ -76,11 +73,15 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       title: t('collection'),
       component: CollectionIdentifier
     },
-
     {
       path: RouteNamesEnum.profile,
       title: t('profil'),
       component: Profile
+    },
+    {
+      path: RouteNamesEnum.locker,
+      title: t('locker'),
+      component: Locker
     }
   ];
 };

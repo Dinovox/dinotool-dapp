@@ -11,9 +11,10 @@ export const mintcontractAddress =
   'erd1qqqqqqqqqqqqqpgqe40zc2wv37s48ts04wgsld3p0svfxfsech9sufy67x';
 export const dropContract =
   'erd1qqqqqqqqqqqqqpgqhc8uwawel9treyrc2ltp3r7qqj3520j0ch9sqswc2v';
-
 export const lotteryContractAddress =
   'erd1qqqqqqqqqqqqqpgqpf4zy76u8nhdlvsa0eq0mfsd53qprm46ch9ssyyqm6';
+export const vaultContractAddress =
+  'erd1qqqqqqqqqqqqqpgqmfharjsrrng96rhdxt6jtyjf2klqgpmrch9s6w67j8';
 
 export const API_URL = 'https://devnet-api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];

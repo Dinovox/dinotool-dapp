@@ -10,5 +10,6 @@ export enum RouteNamesEnum {
   vouchers = '/vouchers',
   collections = '/collections',
   nfts = '/nfts',
-  profile = '/profile'
+  profile = '/profile',
+  locker = '/locker'
 }

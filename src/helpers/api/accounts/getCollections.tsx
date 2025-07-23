@@ -10,7 +10,6 @@ export interface CollectionRole {
   canTransfer?: boolean;
   roles: string[];
   address?: string;
-  canTransferNftCreateRole: boolean;
 }
 
 export interface Collection {

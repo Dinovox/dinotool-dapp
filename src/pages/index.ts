@@ -13,3 +13,4 @@ export * from './Collections';
 export * from './CollectionDetail';
 export * from './CollectionIdentifier';
 export * from './Profile';
+export * from './Locker';

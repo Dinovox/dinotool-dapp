@@ -29,7 +29,9 @@ export const ControlChanges: React.FC<{
     Partial<Record<string, boolean>>
   >({});
 
-  const controls: (keyof Collection)[] = [
+  //canCreateMultiShard todo explore this argument
+  //cannot use keyof Collection here because canTransferNFTCreateRole has bad case
+  const controls = [
     'canFreeze',
     'canWipe',
     'canPause',
@@ -37,13 +39,25 @@ export const ControlChanges: React.FC<{
     'canChangeOwner',
     'canUpgrade',
     'canAddSpecialRoles'
-  ]; //canCreateMultiShard todo explore this argument
+  ] as const;
+
+  type VmControl = (typeof controls)[number];
+  const controlToTsKey: Record<VmControl, keyof Collection> = {
+    canFreeze: 'canFreeze',
+    canWipe: 'canWipe',
+    canPause: 'canPause',
+    canTransferNFTCreateRole: 'canTransferNftCreateRole', // mapping nécessaire
+    canChangeOwner: 'canChangeOwner',
+    canUpgrade: 'canUpgrade',
+    canAddSpecialRoles: 'canAddSpecialRoles'
+  };
 
   useEffect(() => {
     // Initialise le formulaire avec les valeurs actuelles de la collection
     const initialValues: Partial<Record<string, boolean>> = {};
     controls.forEach((ctrl) => {
-      initialValues[ctrl] = !!collection[ctrl as keyof Collection];
+      initialValues[ctrl] = !!collection[controlToTsKey[ctrl]];
+      //initialValues[ctrl] = !!collection[ctrl as keyof Collection];
     });
     setFormValues(initialValues);
   }, [collection]);
