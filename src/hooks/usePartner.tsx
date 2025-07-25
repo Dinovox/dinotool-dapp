@@ -8,7 +8,7 @@ export const usePartner = () => {
   const { address } = useGetAccount();
 
   const checkPartnerStatus = async () => {
-    if (address) return;
+    if (!address) return;
 
     setLoading(true);
 

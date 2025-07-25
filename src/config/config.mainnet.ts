@@ -14,9 +14,10 @@ export const mintcontractAddress =
 //DROP CONTRACT MAINNET OK
 export const dropContract =
   'erd1qqqqqqqqqqqqqpgqtmj6zwec4llv8m9fnvyjytcy9gmht78l5gcsev3xm2';
-
 export const lotteryContractAddress =
   'erd1qqqqqqqqqqqqqpgqzkjlnqccnqqyhlhthmxhv6klhx4r0vy4ytsqqqrlxw';
+export const vaultContractAddress =
+  'erd1qqqqqqqqqqqqqpgqmfharjsrrng96rhdxt6jtyjf2klqgpmrch9s6w67j8';
 
 export const API_URL = 'https://api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];

@@ -401,10 +401,12 @@ export const LotteryDetail = () => {
                             new BigNumber(userSftBalance ? userSftBalance : 0)
                           }
                           buyed={
-                            lottery.max_per_wallet > 0 &&
-                            buyed >= lottery.max_per_wallet
-                              ? true
-                              : false
+                            new BigNumber(lottery.max_per_wallet).isGreaterThan(
+                              0
+                            ) &&
+                            new BigNumber(buyed).isGreaterThanOrEqualTo(
+                              lottery.max_per_wallet
+                            )
                           }
                           time_start={timeStart}
                           ended={
