@@ -30,10 +30,14 @@ import { Address } from '@multiversx/sdk-core/out';
 import { duration } from 'moment';
 import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { useGetUserLockedNft } from 'pages/Dashboard/widgets/LockedNftAbi/hooks/useGetUserLockedNft';
+import { t } from 'i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 
 type Step = 'selection' | 'duration' | 'confirmation' | 'success';
 
 export const Locker = () => {
+  const loading = useLoadTranslations('locker');
+
   const { address } = useGetAccount();
   const { isLoggedIn } = useGetLoginInfo();
   const { nfts, loading: nftsLoading, error: nftsError } = useNFTs();
@@ -73,10 +77,11 @@ export const Locker = () => {
   const collections = Array.from(new Set(nfts.map((nft) => nft.collection)));
 
   const locked = useGetUserLockedNft();
-  console.log('Locked NFTs:', locked.lockedNfts);
   useEffect(() => {
     if (locked.lockedNfts.length > 0) {
       setLockedNFTs(locked.lockedNfts);
+    } else {
+      setLockedNFTs([]);
     }
   }, [locked.lockedNfts]);
   const handleNFTSelect = (nft: NFT) => {
@@ -216,11 +221,9 @@ export const Locker = () => {
         <div className='text-center'>
           <Lock className='w-16 h-16 text-gray-400 mx-auto mb-4' />
           <h1 className='text-2xl font-bold text-gray-800 mb-2'>
-            Coffre Dinovox
+            {t('locker:title')}
           </h1>
-          <p className='text-gray-600 mb-6'>
-            Connectez votre wallet pour accéder au système de verrouillage NFT
-          </p>
+          <p className='text-gray-600 mb-6'>{t('locker:description_login')}</p>
         </div>
       </div>
     );
@@ -239,28 +242,35 @@ export const Locker = () => {
                     <Lock className='w-6 h-6 text-white' />
                   </div>
                   <h1 className='text-3xl font-bold text-gray-800'>
-                    Coffre Dinovox
+                    {t('locker:title')}
                   </h1>
                 </div>
                 <p className='text-gray-600 max-w-2xl mx-auto'>
-                  Verrouillez vos NFTs pour une durée déterminée et démontrez
-                  votre engagement en tant que partenaire Dinovox
+                  {t('locker:description')}
                 </p>
               </div>
 
               {/* Informations partenaire */}
-              {!partnerLoading && (
+              {/* {!partnerLoading && (
                 <PartnerInfo partner={partner} address={address} />
-              )}
+              )} */}
 
               {/* Étapes */}
               <div className='flex items-center justify-center space-x-4 mb-8'>
                 {[
-                  { step: 'selection', label: 'Sélection NFT', icon: Grid },
-                  { step: 'duration', label: 'Durée', icon: Lock },
+                  {
+                    step: 'selection',
+                    label: t('locker:select_nft'),
+                    icon: Grid
+                  },
+                  {
+                    step: 'duration',
+                    label: t('locker:select_duration'),
+                    icon: Lock
+                  },
                   {
                     step: 'confirmation',
-                    label: 'Confirmation',
+                    label: t('locker:confirm_lock'),
                     icon: CheckCircle
                   }
                 ].map(({ step, label, icon: Icon }, index) => (
@@ -302,7 +312,7 @@ export const Locker = () => {
                   <div>
                     <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0'>
                       <h2 className='text-xl font-bold text-gray-800'>
-                        Sélectionnez un NFT à verrouiller
+                        {t('locker:select_nft_to_lock')}
                       </h2>
 
                       <div className='flex items-center space-x-4'>
@@ -326,7 +336,9 @@ export const Locker = () => {
                           }
                           className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         >
-                          <option value='all'>Toutes les collections</option>
+                          <option value='all'>
+                            {t('locker:all_collections')}
+                          </option>
                           {collections.map((collection) => (
                             <option key={collection} value={collection}>
                               {collection}
@@ -364,24 +376,21 @@ export const Locker = () => {
                       <div className='flex items-center justify-center py-12'>
                         <div className='w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
                         <span className='ml-3 text-gray-600'>
-                          Chargement des NFTs...
+                          {t('locker:loading_nfts')}
                         </span>
                       </div>
                     ) : nftsError ? (
                       <div className='text-center py-12'>
                         <AlertCircle className='w-12 h-12 text-red-500 mx-auto mb-4' />
                         <p className='text-red-600 mb-2'>
-                          Erreur lors du chargement des NFTs
-                        </p>
-                        <p className='text-sm text-gray-500'>
-                          Affichage des données de démonstration
+                          {t('locker:error_loading_nfts')}
                         </p>
                       </div>
                     ) : filteredNFTs.length === 0 ? (
                       <div className='text-center py-12'>
                         <Grid className='w-12 h-12 text-gray-400 mx-auto mb-4' />
                         <p className='text-gray-600'>
-                          Aucun NFT disponible pour le verrouillage
+                          {t('locker:no_nfts_available')}
                         </p>
                       </div>
                     ) : (
@@ -410,7 +419,7 @@ export const Locker = () => {
                       <div className='mt-12 pt-8 border-t border-gray-200'>
                         <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2'>
                           <Lock className='w-5 h-5 text-red-500' />
-                          <span>NFTs Verrouillés ({lockedNFTs.length})</span>
+                          <span> {t('locker:locked_nfts')}</span>
                         </h3>
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
                           {lockedNFTs.map((nft) => (
@@ -433,20 +442,20 @@ export const Locker = () => {
                   <div>
                     <div className='flex items-center justify-between mb-6'>
                       <h2 className='text-xl font-bold text-gray-800'>
-                        Définir la durée de verrouillage
+                        {t('locker:select_duration')}
                       </h2>
                       <button
                         onClick={() => setCurrentStep('selection')}
                         className='text-gray-500 hover:text-gray-700'
                       >
-                        ← Retour
+                        {t('locker:back')}
                       </button>
                     </div>
 
                     {/* NFT sélectionné */}
                     <div className='bg-gray-50 rounded-lg p-4 mb-6'>
                       <h3 className='font-semibold text-gray-800 mb-3'>
-                        NFT sélectionné :
+                        {t('locker:selected_nft')}
                       </h3>
                       <div className='flex items-center space-x-4'>
                         <img
@@ -484,7 +493,7 @@ export const Locker = () => {
                         disabled={!selectedDuration && !customDate}
                         className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
                       >
-                        Continuer
+                        {t('locker:continue')}
                       </button>
                     </div>
                   </div>
@@ -494,13 +503,13 @@ export const Locker = () => {
                   <div>
                     <div className='flex items-center justify-between mb-6'>
                       <h2 className='text-xl font-bold text-gray-800'>
-                        Confirmation du verrouillage
+                        {t('locker:confirm_lock')}
                       </h2>
                       <button
                         onClick={() => setCurrentStep('duration')}
                         className='text-gray-500 hover:text-gray-700'
                       >
-                        ← Retour
+                        {t('locker:back')}
                       </button>
                     </div>
 
@@ -520,17 +529,16 @@ export const Locker = () => {
                       <CheckCircle className='w-12 h-12 text-green-600' />
                     </div>
                     <h2 className='text-2xl font-bold text-gray-800 mb-4'>
-                      NFT verrouillé avec succès !
+                      {t('locker:lock_success')}
                     </h2>
                     <p className='text-gray-600 mb-6'>
-                      Votre NFT a été verrouillé et ne pourra pas être transféré
-                      jusqu'à la date de déverrouillage.
+                      {t('locker:lock_success_description')}
                     </p>
 
                     {transactionHash && (
                       <div className='bg-gray-50 rounded-lg p-4 mb-6 max-w-md mx-auto'>
                         <p className='text-sm text-gray-600 mb-2'>
-                          Hash de transaction :
+                          {t('locker:transaction_hash')}:
                         </p>
                         <p className='font-mono text-xs text-gray-800 break-all'>
                           {transactionHash}
@@ -542,7 +550,7 @@ export const Locker = () => {
                       onClick={resetFlow}
                       className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200'
                     >
-                      Verrouiller un autre NFT
+                      {t('locker:lock_another_nft')}
                     </button>
                   </div>
                 )}

@@ -3,5 +3,6 @@
   "login": "Se connecter",
   "close": "Fermer",
   "login_method": "Choisissez une méthode de connexion",
-  "profile": "Profil"
+  "profile": "Profil",
+  "cancel": "Annuler"
 }

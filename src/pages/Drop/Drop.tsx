@@ -2,7 +2,6 @@ import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
 import { Transaction } from './Transaction';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import { ActionBuy } from './Transaction/ActionBuy';
-import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import { formatAmount } from 'utils/sdkDappUtils';
 import toHex from 'helpers/toHex';
 import './MintSFT.css';

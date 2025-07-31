@@ -67,10 +67,10 @@ export const Home = () => {
       external: true
     },
     {
-      title: 'Soon',
-      link: '/chests',
+      title: 'NFT Locker',
+      link: '/locker',
       image: cardWip,
-      blured: environment == 'devnet' ? true : true
+      blured: environment == 'devnet' ? false : true
     }
   ];
 

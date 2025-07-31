@@ -80,7 +80,8 @@ export const useGetNftInformations = (
       nonce == '' ||
       nonce == '0' ||
       identifier == 'EGLD-000000' ||
-      type == 'ESDT'
+      type == 'ESDT' ||
+      type == 'ignore'
     ) {
       return;
     }

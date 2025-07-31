@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NFT } from '../../../types/nft';
 import { Lock, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
+import { t } from 'i18next';
 
 interface LockConfirmationProps {
   nft: NFT;
@@ -23,7 +24,7 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
     if (customDate) return customDate;
     if (duration) {
       const date = new Date();
-      date.setDate(date.getDate() + duration);
+      date.setDate(date.getDate() + duration / (24 * 60 * 60));
       return date;
     }
     return null;
@@ -68,11 +69,9 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
           <Lock className='w-8 h-8 text-yellow-600' />
         </div>
         <h2 className='text-2xl font-bold text-gray-800 mb-2'>
-          Confirmer le verrouillage
+          {t('locker:confirm_lock')}
         </h2>
-        <p className='text-gray-600'>
-          Vous êtes sur le point de verrouiller ce NFT
-        </p>
+        <p className='text-gray-600'>{t('locker:confirm_lock_nft')}</p>
       </div>
 
       {/* Récapitulatif du NFT */}
@@ -108,7 +107,9 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
           <div className='flex items-start space-x-2 py-2'>
             <Calendar className='w-5 h-5 text-blue-500 mt-0.5' />
             <div>
-              <div className='text-sm text-gray-600'>Déverrouillage le :</div>
+              <div className='text-sm text-gray-600'>
+                {t('locker:unlock_date_label')}
+              </div>
               <div className='font-semibold text-gray-800'>
                 {formatDate(unlockDate)}
               </div>
@@ -122,12 +123,8 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
         <div className='flex items-start space-x-2'>
           <AlertTriangle className='w-5 h-5 text-orange-500 mt-0.5' />
           <div className='text-sm text-orange-700'>
-            <p className='font-semibold mb-1'>Attention :</p>
-            <p>
-              Une fois verrouillé, ce NFT ne pourra pas être transféré, vendu ou
-              déplacé jusqu'à la date de déverrouillage. Cette action est
-              irréversible.
-            </p>
+            <p className='font-semibold mb-1'>{t('locker:warning')}</p>
+            <p>{t('locker:warning_description')}</p>
           </div>
         </div>
       </div>
@@ -139,7 +136,7 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
           disabled={isLocking}
           className='flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50'
         >
-          Annuler
+          {t('global:cancel')}
         </button>
         <button
           onClick={handleConfirm}
@@ -154,7 +151,7 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
           ) : (
             <>
               <Lock className='w-4 h-4' />
-              <span>Verrouiller le NFT</span>
+              <span>{t('locker:lock_nft')}</span>
             </>
           )}
         </button>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Clock } from 'lucide-react';
+import { t } from 'i18next';
 
 interface VestingDurationSelectorProps {
   selectedDuration: number | null;
@@ -15,14 +16,35 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
   onCustomDateChange
 }) => {
   const presetDurations = [
-    { days: 7, label: '7 jours', description: 'Verrouillage court terme' },
-    { days: 30, label: '30 jours', description: 'Verrouillage mensuel' },
-    { days: 90, label: '90 jours', description: 'Verrouillage trimestriel' },
-    { days: 365, label: '1 an', description: 'Verrouillage long terme' }
+    {
+      days: 1,
+      label: t('locker:duration_days', { days: 1 }),
+      description: t('locker:duration_short_term')
+    },
+    {
+      days: 7,
+      label: t('locker:duration_days', { days: 7 }),
+      description: t('locker:duration_short_term')
+    },
+    {
+      days: 30,
+      label: t('locker:duration_days', { days: 30 }),
+      description: t('locker:duration_monthly')
+    },
+    {
+      days: 90,
+      label: t('locker:duration_days', { days: 90 }),
+      description: t('locker:duration_quarterly')
+    },
+    {
+      days: 365,
+      label: t('locker:duration_days', { days: 365 }),
+      description: t('locker:duration_long_term')
+    }
   ];
 
   const handlePresetSelect = (days: number) => {
-    onDurationChange(days);
+    onDurationChange(days * 24 * 60 * 60); // Convert days to seconds
     onCustomDateChange(null);
   };
 
@@ -32,7 +54,7 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
 
     if (date > now) {
       onCustomDateChange(date);
-      onDurationChange(null);
+      onDurationChange(Math.ceil((date.getTime() - now.getTime()) / 1000));
     }
   };
 
@@ -40,7 +62,7 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
     if (customDate) return customDate;
     if (selectedDuration) {
       const date = new Date();
-      date.setDate(date.getDate() + selectedDuration);
+      date.setDate(date.getDate() + selectedDuration / (24 * 60 * 60));
       return date;
     }
     return null;
@@ -66,7 +88,7 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
       <div>
         <h3 className='text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2'>
           <Clock className='w-5 h-5' />
-          <span>Durée de verrouillage</span>
+          <span>{t('locker:locker_duration_selector')}</span>
         </h3>
 
         {/* Durées prédéfinies */}
@@ -78,7 +100,7 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
               className={`
                 p-4 rounded-lg border-2 transition-all duration-200 text-left
                 ${
-                  selectedDuration === duration.days
+                  selectedDuration === duration.days * 24 * 60 * 60
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 }
@@ -93,7 +115,7 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
         {/* Date personnalisée */}
         <div className='border-t pt-4'>
           <label className='block text-sm font-medium text-gray-700 mb-2'>
-            Ou choisir une date personnalisée :
+            {t('locker:custom_date_label')}
           </label>
           <input
             type='datetime-local'
@@ -109,7 +131,9 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
         <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
           <div className='flex items-center space-x-2 text-green-700'>
             <Calendar className='w-5 h-5' />
-            <span className='font-semibold'>Date de déverrouillage :</span>
+            <span className='font-semibold'>
+              {t('locker:unlock_date_label')}
+            </span>
           </div>
           <p className='text-green-800 mt-1 font-medium'>
             {formatDate(getUnlockDate()!)}

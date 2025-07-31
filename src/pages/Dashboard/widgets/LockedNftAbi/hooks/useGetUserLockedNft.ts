@@ -51,8 +51,6 @@ export const useGetUserLockedNft = () => {
       });
 
       setLockedNfts(nfts);
-
-      console.log('NFTs verrouillés récupérés avec succès :', nfts);
     } catch (err) {
       console.error(
         'Erreur lors de la récupération des NFTs verrouillés :',

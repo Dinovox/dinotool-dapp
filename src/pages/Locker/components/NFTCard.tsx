@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LockedNFT, NFT } from '../../../types/nft';
 import { Lock, Calendar, Star, LockOpen } from 'lucide-react';
 import { ActionUnlockNft } from '../helpers/ActionUnlock';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 import BigNumber from 'bignumber.js';
+import { useGetNftInformations } from 'pages/LotteryList/Transaction/helpers/useGetNftInformation';
+import NftDisplay from 'pages/LotteryDetail/NftDisplay';
+import { t } from 'i18next';
 
 interface NFTCardProps {
   nft: NFT;
@@ -24,8 +27,6 @@ const NFTCard: React.FC<NFTCardProps> = ({
   onSelect,
   selectable = true
 }) => {
-  console.log('NFTCard rendered for:', lockedNft);
-  console.log('NFTCard props:', lockedNft?.lockId);
   const getImageUrl = () => {
     if (nft.media && nft.media.length > 0) {
       return nft.media[0].thumbnailUrl || nft.media[0].url;
@@ -61,6 +62,16 @@ const NFTCard: React.FC<NFTCardProps> = ({
       minute: '2-digit'
     }).format(date);
   };
+
+  // Hook to get NFT information only if the NFT is locked
+  // This avoids unnecessary calls when the NFT is not locked
+  //not locked comes from wallet api
+
+  const nftInfo = useGetNftInformations(
+    nft.identifier,
+    bigNumToHex(new BigNumber(nft.nonce)),
+    isLocked ? 'get' : 'ignore'
+  );
 
   return (
     <div
@@ -99,18 +110,27 @@ const NFTCard: React.FC<NFTCardProps> = ({
       )}
 
       {/* Image du NFT */}
-      <div className='aspect-square overflow-hidden'>
-        <img
-          src={getImageUrl()}
-          alt={nft.name}
-          className='w-full h-full object-cover'
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src =
-              'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400';
-          }}
+      {isLocked && nftInfo ? (
+        <NftDisplay
+          nftInfo={nftInfo}
+          amount={0}
+          showLink={false}
+          showAmount={false}
         />
-      </div>
+      ) : (
+        <div className='aspect-square overflow-hidden'>
+          <img
+            src={getImageUrl()}
+            alt={nft.name}
+            className='w-full h-full object-cover'
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src =
+                'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400';
+            }}
+          />
+        </div>
+      )}
 
       {/* Informations du NFT */}
       <div className='p-4'>
@@ -145,19 +165,21 @@ const NFTCard: React.FC<NFTCardProps> = ({
 
         {/* Date de déverrouillage si verrouillé */}
         {unlockTimestamp && (
-          <div className='flex items-center space-x-1 text-sm text-red-600 bg-red-50 px-2 py-1 rounded'>
+          <div>
             {unlockTimestamp && new Date() > unlockTimestamp ? (
               <ActionUnlockNft lockId={lockedNft?.lockId} />
             ) : (
-              <>
+              <div className='flex items-center space-x-1 text-sm text-red-600 bg-red-50 px-2 py-1 rounded'>
                 {' '}
                 <Calendar className='w-4 h-4' />
-                <span>Verrouillé</span>
-                <span>Jusqu'au {formatDate(unlockTimestamp)}</span>
+                <span>
+                  {' '}
+                  {t('locker:unlock_date_label')}: {formatDate(unlockTimestamp)}
+                </span>
                 {/* <span className='text-xs text-gray-500'>
                   lockID : {lockedNft?.lockId?.toString()}
                 </span> */}
-              </>
+              </div>
             )}
           </div>
         )}
