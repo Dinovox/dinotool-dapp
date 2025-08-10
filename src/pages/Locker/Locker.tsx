@@ -215,22 +215,22 @@ export const Locker = () => {
     }
   }, [transactionSessionId, pendingTransactions]);
 
-  if (!isLoggedIn) {
-    return (
-      <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center'>
-        <div className='text-center'>
-          <Lock className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-          <h1 className='text-2xl font-bold text-gray-800 mb-2'>
-            {t('locker:title')}
-          </h1>
-          <p className='text-gray-600 mb-6'>{t('locker:description_login')}</p>
-        </div>
-      </div>
-    );
-  }
+  // if (!isLoggedIn) {
+  //   return (
+  //     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center'>
+  //       <div className='text-center'>
+  //         <Lock className='w-16 h-16 text-gray-400 mx-auto mb-4' />
+  //         <h1 className='text-2xl font-bold text-gray-800 mb-2'>
+  //           {t('locker:title')}
+  //         </h1>
+  //         <p className='text-gray-600 mb-6'>{t('locker:description_login')}</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
-    <AuthRedirectWrapper requireAuth={false}>
+    <AuthRedirectWrapper requireAuth={true}>
       <PageWrapper>
         <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50'>
           <div className='container mx-auto px-4 py-8'>

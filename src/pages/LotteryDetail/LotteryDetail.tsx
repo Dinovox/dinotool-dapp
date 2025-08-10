@@ -37,13 +37,13 @@ export const LotteryDetail = () => {
   const page = location.state?.page_number;
   const status_filter = location.state?.status;
   const price_filter = location.state?.price;
-  let return_url = '/lotteries?page=${page ? page : 1}';
+  let return_url = `/lotteries?page=${page}`;
 
   if (status_filter) {
-    return_url += '&status=${status_filter}';
+    return_url += `&status=${status_filter}`;
   }
   if (price_filter) {
-    return_url += '&price=${price_filter}';
+    return_url += `&price=${price_filter}`;
   }
 
   const [timeStart, setTimeStart] = useState(60 * 60);
