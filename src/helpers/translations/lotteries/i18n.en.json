@@ -67,13 +67,12 @@
   "leave_empty_end": "Leave empty for no end",
   "fee_percentage": "Fee Deduction & Vendor Payment",
   "fee_percentage_tooltip": "A portion of the creator’s pool will be deducted as fees to support platform development. The vendor amount, after fee deduction, will be sent based on the total number of tickets sold.",
-
   "graou_create_fee": "Creation fee: 100 xGraou or 0.1 EGLD",
   "auto_draw_fee": "Auto draw fee:",
+  "auto_draw_warning": "Auto draw automatically selects a winner at the End Date, even if only one ticket is sold. Leave End Date empty to run auto draw when tickets are sold out.",
   "platform_fee": "Platform fee",
   "royalty_fee": "Royalty fee",
   "vendor_amount": "Expected earnings",
-
   "pay_x_start": "Pay {{x}} {{token}} to start the lottery",
   "you_need_x_graou": "You need <bold>{{x}}</bold> XGRAOU to start the lottery. Get some by staking a <link1>DINOVOX</link1> at <link2>dinovox.com</link2>",
   "you_need_x_egld": "You need <bold>{{x}}</bold> EGLD to start the lottery.",

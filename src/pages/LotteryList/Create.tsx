@@ -1297,6 +1297,12 @@ const CreateLotteryModal: React.FC<{
                       </span>
                     </span>{' '}
                   </Checkbox>
+
+                  {autoDraw && endTime > 0 && (
+                    <div style={{ color: 'orange', marginTop: '8px' }}>
+                      {t('lotteries:auto_draw_warning')}
+                    </div>
+                  )}
                 </Form.Item>
                 <Form.Item>
                   {/* {prizeTicker} */}
