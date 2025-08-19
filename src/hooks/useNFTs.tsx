@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGetAccount } from 'hooks';
+import { useGetAccount } from 'lib';
 import { NFT } from '../types/nft';
 
 export const useNFTs = () => {

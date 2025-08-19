@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGetAccount } from 'hooks';
+import { useGetAccount } from 'lib';
 import { Partner } from '../types/nft';
 
 export const usePartner = () => {

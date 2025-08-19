@@ -14,7 +14,7 @@ import {
 
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
-import { useGetAccountInfo } from 'hooks';
+import { useGetAccountInfo, formatAmount } from 'lib';
 import { ActionCreate } from './Transaction/ActionCreate';
 import BigNumber from 'bignumber.js';
 import { graou_identifier, lottery_cost, xgraou_identifier } from 'config';
@@ -22,7 +22,6 @@ import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
-import { formatAmount } from 'utils';
 import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
 
 const CreateLotteryModal: React.FC<{
@@ -1212,7 +1211,9 @@ const CreateLotteryModal: React.FC<{
                       <Trans
                         i18nKey='lotteries:you_need_x_graou'
                         values={{
-                          x: BigNumber(lottery_cost.graou).div(1e18).toFixed(2)
+                          x: new BigNumber(lottery_cost.graou)
+                            .div(1e18)
+                            .toFixed(2)
                         }}
                         components={{
                           bold: <b />,
@@ -1236,7 +1237,9 @@ const CreateLotteryModal: React.FC<{
                       />
                     ) : (
                       t('lotteries:pay_x_start', {
-                        x: BigNumber(lottery_cost.graou).div(1e18).toFixed(2),
+                        x: new BigNumber(lottery_cost.graou)
+                          .div(1e18)
+                          .toFixed(2),
                         token: 'XGRAOU'
                       })
                     )}
@@ -1253,7 +1256,9 @@ const CreateLotteryModal: React.FC<{
                       <Trans
                         i18nKey='lotteries:you_need_x_egld'
                         values={{
-                          x: BigNumber(lottery_cost.egld).div(1e18).toFixed(2)
+                          x: new BigNumber(lottery_cost.egld)
+                            .div(1e18)
+                            .toFixed(2)
                         }}
                         components={{
                           bold: <b />,
@@ -1277,7 +1282,9 @@ const CreateLotteryModal: React.FC<{
                       />
                     ) : (
                       t('lotteries:pay_x_start', {
-                        x: BigNumber(lottery_cost.egld).div(1e18).toFixed(2),
+                        x: new BigNumber(lottery_cost.egld)
+                          .div(1e18)
+                          .toFixed(2),
                         token: 'EGLD'
                       })
                     )}

@@ -1,4 +1,5 @@
-import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
+import { Outlet } from 'react-router-dom';
+import { PageWrapper } from 'wrappers';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './NavigationCards.css';
@@ -16,10 +17,7 @@ import useLoadTranslations from '../../hooks/useLoadTranslations';
 import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 
-import { ActionESDTNFTTransfer } from 'helpers/actions/ActionESDTNFTTransfer';
-import { ActionMultiESDTNFTTransfer } from 'helpers/actions/ActionMultiESDTNFTTransfer';
-import { useGetAccount } from 'hooks';
-import { a } from 'react-spring';
+import { useGetAccount } from 'lib';
 
 export const Home = () => {
   const loading = useLoadTranslations('home');
@@ -123,67 +121,64 @@ export const Home = () => {
     return <div>Loading...</div>;
   }
   return (
-    <AuthRedirectWrapper requireAuth={false}>
-      <PageWrapper>
-        <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-          <div className='navigation-cards '>
-            {navItems.map((item, index) => (
-              <div
-                className={`nav-card ${item.blured ? 'blured' : ''}`}
-                key={index}
-              >
-                {item.external ? (
-                  <a href={item.link} target='_blank' rel='noopener noreferrer'>
-                    <div className='nav-card-content'>
-                      {' '}
-                      <img src={item.image} alt={item.title} />
-                      <h3>{item.title}</h3>
-                    </div>
-                  </a>
-                ) : (
-                  <Link
-                    onClick={item.blured ? randomizeImage : undefined}
-                    to={item.blured ? '' : item.link}
-                  >
-                    <div className='nav-card-content'>
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        style={{
-                          transition: item?.blured
-                            ? '0.5s ease-in-out'
-                            : 'none',
-                          filter: item.blured ? filter : 'none',
-                          transform: item.blured ? transform : 'none'
-                        }}
-                      />
-                      <h3>
-                        {item.blured
-                          ? item.title
-                              .split('')
-                              .sort(() => 0.5 - Math.random())
-                              .join('')
-                          : item.title}
-                      </h3>
-                    </div>
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>{' '}
-          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-            {' '}
-            <a
-              href='https://x.com/search?q=%23GRAOU&src=typed_query'
-              target='_blank'
-              rel='noopener noreferrer'
+    <PageWrapper>
+      <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+        <div className='navigation-cards '>
+          {navItems.map((item, index) => (
+            <div
+              className={`nav-card ${item.blured ? 'blured' : ''}`}
+              key={index}
             >
-              <div className={`text-container ${isShaking ? 'shake' : ''}`}>
-                {displayText}
-              </div>{' '}
-            </a>
-          </div>
-          {/* <ActionESDTNFTTransfer
+              {item.external ? (
+                <a href={item.link} target='_blank' rel='noopener noreferrer'>
+                  <div className='nav-card-content'>
+                    {' '}
+                    <img src={item.image} alt={item.title} />
+                    <h3>{item.title}</h3>
+                  </div>
+                </a>
+              ) : (
+                <Link
+                  onClick={item.blured ? randomizeImage : undefined}
+                  to={item.blured ? '' : item.link}
+                >
+                  <div className='nav-card-content'>
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      style={{
+                        transition: item?.blured ? '0.5s ease-in-out' : 'none',
+                        filter: item.blured ? filter : 'none',
+                        transform: item.blured ? transform : 'none'
+                      }}
+                    />
+                    <h3>
+                      {item.blured
+                        ? item.title
+                            .split('')
+                            .sort(() => 0.5 - Math.random())
+                            .join('')
+                        : item.title}
+                    </h3>
+                  </div>
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>{' '}
+        <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
+          {' '}
+          <a
+            href='https://x.com/search?q=%23GRAOU&src=typed_query'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <div className={`text-container ${isShaking ? 'shake' : ''}`}>
+              {displayText}
+            </div>{' '}
+          </a>
+        </div>
+        {/* <ActionESDTNFTTransfer
             receiver='erd1qqqqqqqqqqqqqpgq4jt6guxqpvurrkyhx99ung0dcvuxf9xccn0qt3af33'
             batch={[
               { collection: 'DINOCARDS-46ceea', nonce: 18, quantity: 40 },
@@ -242,7 +237,7 @@ export const Home = () => {
               { collection: 'DINOCARDS-46ceea', nonce: 71, quantity: 38 }
             ]}
           /> */}
-          {/* {[
+        {/* {[
             'erd1yfxtk0s7eu9eq8zzwsvgsnuq85xrj0yysjhsp28tc2ldrps25mwqztxgph',
             'erd10p0ke87tg4g2wnpah6ngmqmmlv604avfqwrlw7f3a7xpl8p3ugws7t3828'
           ].includes(address) && (
@@ -307,8 +302,8 @@ export const Home = () => {
               method='addCards'
             />
           )} */}
-        </div>
-      </PageWrapper>
-    </AuthRedirectWrapper>
+        <Outlet />
+      </div>
+    </PageWrapper>
   );
 };

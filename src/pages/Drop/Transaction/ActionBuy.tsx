@@ -1,16 +1,20 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { useGetPendingTransactions, useGetIsLoggedIn } from 'lib';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import { graou_identifier, mintcontractAddress, dropContract } from 'config';
 // import toHex from 'helpers/toHex';
-import { Address } from '@multiversx/sdk-core/out';
-import {
-  useGetAccountInfo,
-  useGetIsLoggedIn
-} from '@multiversx/sdk-dapp/hooks';
-import { Button } from './Button';
 import { BigNumber } from 'bignumber.js';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 import { useNavigate } from 'react-router-dom';
@@ -25,18 +29,20 @@ export const ActionBuy = ({
   onSubmit,
   disabled
 }: any) => {
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
+
   const loading = useLoadTranslations('drop');
   const { t } = useTranslation();
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
+
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
       string | null
     >(null);
-
-  const addressTobech32 = new Address(dropContract);
-  const { address } = useGetAccountInfo();
 
   const sendFundTransaction = async () => {
     if (onSubmit) {
@@ -50,35 +56,40 @@ export const ActionBuy = ({
         sub = sub + '@' + receiver + '@' + bigNumToHex(addr.quantity);
       }
 
-      batchTx.push({
-        value: 0,
-        data:
-          'MultiESDTNFTTransfer@' +
-          addressTobech32.toHex() +
-          '@01@' +
-          Buffer.from(identifier, 'utf8').toString('hex') +
-          '@' +
-          bigNumToHex(nonce > 0 ? nonce : new BigNumber(0)) +
-          '@' +
-          bigNumToHex(batch.totalQuantity) +
-          '@' +
-          Buffer.from('graou', 'utf8').toString('hex') +
-          sub,
-        receiver: address,
-        gasLimit: 3000000 + batch.addresses.length * 580000
-      });
+      const payload =
+        'MultiESDTNFTTransfer@' +
+        new Address(dropContract).toHex() +
+        '@01@' +
+        Buffer.from(identifier, 'utf8').toString('hex') +
+        '@' +
+        bigNumToHex(nonce > 0 ? nonce : new BigNumber(0)) +
+        '@' +
+        bigNumToHex(batch.totalQuantity) +
+        '@' +
+        Buffer.from('graou', 'utf8').toString('hex') +
+        sub;
+      batchTx.push(
+        new Transaction({
+          value: BigInt('0'),
+          data: new TextEncoder().encode(payload),
+          receiver: new Address(dropContract),
+          gasLimit: BigInt(3000000 + batch.addresses.length * 580000),
+
+          gasPrice: BigInt(GAS_PRICE),
+          chainID: network.chainId,
+          sender: new Address(address),
+          version: 1
+        })
+      );
     }
 
-    await refreshAccount();
-
-    const { sessionId /*, error*/ } = await sendTransactions({
+    const sessionId = await signAndSendTransactions({
       transactions: batchTx,
       transactionsDisplayInfo: {
         processingMessage: 'Processing batch transaction',
         errorMessage: 'An error has occured batch',
         successMessage: 'Batch transaction successful'
-      },
-      redirectAfterSign: false
+      }
     });
     if (sessionId != null) {
       setTransactionSessionId(sessionId);

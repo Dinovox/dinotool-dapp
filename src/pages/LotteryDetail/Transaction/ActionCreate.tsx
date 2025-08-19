@@ -1,15 +1,14 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { lotteryContractAddress, xgraou_identifier } from 'config';
-import { Address } from '@multiversx/sdk-core/out';
 import {
+  useGetPendingTransactions,
   useGetAccountInfo,
   useGetNetworkConfig
-} from '@multiversx/sdk-dapp/hooks';
+} from 'lib';
+import { sendTransactions } from '@multiversx/sdk-dapp/services';
+import { lotteryContractAddress, xgraou_identifier } from 'config';
+import { Address } from '@multiversx/sdk-core/out';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -64,8 +63,9 @@ export const ActionCreate = ({
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
 
-  const { hasPendingTransactions, pendingTransactions } =
-    useGetPendingTransactions();
+  const transactions: Record<string, any> = useGetPendingTransactions();
+  const hasPendingTransactions = Object.keys(transactions).length > 0;
+
   const navigate = useNavigate();
   const [transactionSessionId, setTransactionSessionId] = useState<
     string | null
@@ -76,15 +76,14 @@ export const ActionCreate = ({
 
   // 🎯 Vérifier si on a un txHash après l'envoi de la transaction
   useEffect(() => {
-    if (transactionSessionId && pendingTransactions[transactionSessionId]) {
-      const tx =
-        pendingTransactions[transactionSessionId]?.transactions[0]?.hash;
+    if (transactionSessionId && transactions[transactionSessionId]) {
+      const tx = transactions[transactionSessionId]?.transactions[0]?.hash;
       if (tx) {
         setTxHash(tx);
         checkTransactionStatus(tx);
       }
     }
-  }, [transactionSessionId, pendingTransactions]);
+  }, [transactionSessionId, hasPendingTransactions]);
 
   const sendFundTransaction = async () => {
     const graou_identifier =
@@ -181,8 +180,6 @@ export const ActionCreate = ({
       receiver: address,
       gasLimit: '14000000'
     };
-
-    await refreshAccount();
 
     const { sessionId } = await sendTransactions({
       transactions: [fundTransaction],

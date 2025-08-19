@@ -1,8 +1,16 @@
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import { useTranslation } from 'react-i18next';
 
 interface ActionTransferOwnershipProps {
@@ -14,7 +22,8 @@ interface ActionTransferOwnershipProps {
 export const ActionTransferOwnership: React.FC<
   ActionTransferOwnershipProps
 > = ({ tokenIdentifier, newAddress, disabled = false }) => {
-  const { address, account } = useGetAccountInfo();
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
   const { t } = useTranslation();
 
   const handleSend = async () => {
@@ -25,20 +34,24 @@ export const ActionTransferOwnership: React.FC<
     const newAddressHex = new Address(newAddress).toHex();
 
     // Construct the data field
-    const data = `transferOwnership@${tokenIdentifierHex}@${newAddressHex}`;
+    const payload = `transferOwnership@${tokenIdentifierHex}@${newAddressHex}`;
 
-    const createTransaction = {
-      value: '0',
-      data: data,
-      gasLimit: 60000000,
-      receiver:
-        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-      sender: address
-    };
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(
+        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+      ),
+      gasLimit: BigInt('60000000'),
 
-    await refreshAccount();
-    const { sessionId, error } = await sendTransactions({
-      transactions: createTransaction,
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
+
+    await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing set roles transaction',
         errorMessage: 'An error occurred during set roles',

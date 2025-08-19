@@ -1,8 +1,17 @@
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
+
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
 export const ActionRecreateSFT: React.FC<{
@@ -24,27 +33,31 @@ export const ActionRecreateSFT: React.FC<{
   uris,
   disabled
 }) => {
+  const { network } = useGetNetworkConfig();
   const { address } = useGetAccountInfo();
   const handleSend = async () => {
-    const createTransaction = {
-      value: '0',
-      data: `ESDTMetaDataRecreate@${Buffer.from(collection).toString(
-        'hex'
-      )}@${bigNumToHex(nonce)}@${Buffer.from(name).toString(
-        'hex'
-      )}@${bigNumToHex(royalties)}@${Buffer.from(hash).toString(
-        'hex'
-      )}@${Buffer.from(attributes).toString('hex')}${uris
-        .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
-        .join('')}`,
-      receiver: new Address(address).toBech32(),
-      gasLimit: 10000000
-    };
+    const payload = `ESDTMetaDataRecreate@${Buffer.from(collection).toString(
+      'hex'
+    )}@${bigNumToHex(nonce)}@${Buffer.from(name).toString('hex')}@${bigNumToHex(
+      royalties
+    )}@${Buffer.from(hash).toString('hex')}@${Buffer.from(attributes).toString(
+      'hex'
+    )}${uris.map((uri) => `@${Buffer.from(uri).toString('hex')}`).join('')}`;
 
-    await refreshAccount();
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(address),
+      gasLimit: BigInt(10000000),
 
-    const { sessionId, error } = await sendTransactions({
-      transactions: createTransaction,
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
+
+    await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing SFT creation transaction',
         errorMessage: 'An error occurred during SFT creation',

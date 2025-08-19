@@ -1,8 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from 'components/Button';
 import { MxLink } from 'components/MxLink';
-import { logout } from 'helpers';
-import { useGetAccount, useGetIsLoggedIn, useGetNetworkConfig } from 'hooks';
+import {
+  getAccountProvider,
+  useGetAccount,
+  useGetIsLoggedIn,
+  useGetNetworkConfig
+} from 'lib';
 import { RouteNamesEnum } from 'localConstants';
 import { useMatch, useNavigate } from 'react-router-dom';
 import { environment } from 'config';
@@ -28,6 +32,8 @@ export const Header = () => {
   const network = useGetNetworkConfig();
   const currentRouteName = useMatch('*')?.pathname || 'unknown';
   const navigate = useNavigate();
+  const provider = getAccountProvider();
+
   const { address } = useGetAccount();
 
   // Dropdown state
@@ -52,10 +58,12 @@ export const Header = () => {
     };
   }, [open]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setOpen(false);
     sessionStorage.clear();
-    logout(callbackUrl, onRedirect, shouldAttemptReLogin, options);
+    // logout(callbackUrl, onRedirect, shouldAttemptReLogin, options);
+    await provider.logout();
+    navigate(RouteNamesEnum.home);
   };
 
   const handleProfile = () => {

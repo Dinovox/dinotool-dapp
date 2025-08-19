@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetPendingTransactions } from 'hooks';
+import { useGetPendingTransactions } from 'lib';
 import { API_URL } from 'config';
 
 export interface CollectionNft {
@@ -44,7 +44,8 @@ export const useGetCollectionsNfts = (collection: string) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   useEffect(() => {
     const fetchData = async () => {

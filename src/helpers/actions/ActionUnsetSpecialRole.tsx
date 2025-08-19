@@ -1,12 +1,17 @@
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import BigNumber from 'bignumber.js';
-import { bigNumToHex } from '../bigNumToHex';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import { useTranslation } from 'react-i18next';
-import { h } from 'framer-motion/dist/types.d-B50aGbjN';
 
 interface ActionUnsetSpecialRoleProps {
   tokenIdentifier: string;
@@ -21,7 +26,8 @@ export const ActionUnsetSpecialRole: React.FC<ActionUnsetSpecialRoleProps> = ({
   roles,
   disabled = false
 }) => {
-  const { address, account } = useGetAccountInfo();
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
   const { t } = useTranslation();
 
   const handleSend = async () => {
@@ -29,27 +35,31 @@ export const ActionUnsetSpecialRole: React.FC<ActionUnsetSpecialRoleProps> = ({
 
     // Convert token identifier and address to hex
     const tokenIdentifierHex = Buffer.from(tokenIdentifier).toString('hex');
-    const addressHex = new Address(addressToAssign).hex();
+    const addressHex = new Address(addressToAssign).toHex();
     // Convert all roles to hex and join with @
     const rolesHex = roles
       .map((role) => Buffer.from(role).toString('hex'))
       .join('@');
 
     // Construct the data field
-    const data = `unSetSpecialRole@${tokenIdentifierHex}@${addressHex}@${rolesHex}`;
+    const payload = `unSetSpecialRole@${tokenIdentifierHex}@${addressHex}@${rolesHex}`;
 
-    const createTransaction = {
-      value: '0',
-      data: data,
-      gasLimit: 60000000,
-      receiver:
-        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-      sender: address
-    };
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      gasLimit: BigInt('60000000'),
+      receiver: new Address(
+        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+      ),
 
-    await refreshAccount();
-    const { sessionId, error } = await sendTransactions({
-      transactions: createTransaction,
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
+
+    await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing unset role transaction',
         errorMessage: 'An error occurred during unset role',

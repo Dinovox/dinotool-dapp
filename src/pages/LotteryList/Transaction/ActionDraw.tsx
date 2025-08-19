@@ -1,22 +1,20 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
+import { useGetPendingTransactions, useGetAccountInfo } from 'lib';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { lotteryContractAddress } from 'config';
 // import toHex from 'helpers/toHex';
 import { Address } from '@multiversx/sdk-core/out';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import { Button } from './Button';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
-import { lotteryContract } from 'utils/smartContract';
 import { useTranslation } from 'react-i18next';
 
 export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
   const { t } = useTranslation();
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   const fees = new BigNumber(140669180000000);
 
@@ -36,8 +34,6 @@ export const ActionDraw = ({ lottery_id, disabled, tickets }: any) => {
       receiver: addressTobech32,
       gasLimit: '60000000'
     };
-
-    await refreshAccount();
 
     const { sessionId /*, error*/ } = await sendTransactions({
       transactions: fundTransaction,

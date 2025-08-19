@@ -1,13 +1,12 @@
-import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
+import { PageWrapper } from 'wrappers';
 import { Transaction } from './Transaction';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import { ActionBuy } from './Transaction/ActionBuy';
 import { useGetUserHasBuyed } from 'pages/Dashboard/widgets/MintGazAbi/hooks/useGetUserHasBuyed';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
-import { formatAmount } from 'utils/sdkDappUtils';
+import { formatAmount, useGetAccount } from 'lib';
 import toHex from 'helpers/toHex';
 import './MintSFT.css';
-import { useGetAccount } from 'hooks';
 import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -78,168 +77,160 @@ export const Mint = () => {
   // console.log(hasBuyed, esdtAmount);
   // console.log(nft_information);
   return (
-    <AuthRedirectWrapper requireAuth={false}>
-      <PageWrapper>
-        <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-            DINOGAZETTE
-          </div>{' '}
-          <div className='dinocard'>
-            {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
-              <>
-                <div className='sub-dinocard box-item'>
-                  {address && (
-                    <div className='info-item'>
-                      <span className='text-label'>Wallet:</span>{' '}
-                      {mintable && mintable.payment_token == 'EGLD' ? (
-                        <>
-                          {formatAmount({
-                            input: balance,
-                            decimals: 18,
-                            digits: 2,
-                            showLastNonZeroDecimal: false,
-                            addCommas: true
-                          })}
-                        </>
-                      ) : (
-                        <>
-                          {formatAmount({
-                            input: esdtAmount.toFixed(),
-                            decimals: 18,
-                            digits: 2,
-                            showLastNonZeroDecimal: false,
-                            addCommas: true
-                          })}
-                        </>
-                      )}{' '}
-                      <span className='identifier'>
-                        {' '}
-                        {mintable.payment_token}
-                      </span>
-                    </div>
-                  )}
+    <PageWrapper>
+      <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+        <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
+          DINOGAZETTE
+        </div>{' '}
+        <div className='dinocard'>
+          {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
+            <>
+              <div className='sub-dinocard box-item'>
+                {address && (
                   <div className='info-item'>
-                    <span className='text-label'>{t('mint:price')}: </span>
-                    {formatAmount({
-                      input: mintable?.payment_price?.toFixed(),
-                      decimals: 18,
-                      digits: 2,
-                      showLastNonZeroDecimal: false,
-                      addCommas: true
-                    })}{' '}
+                    <span className='text-label'>Wallet:</span>{' '}
+                    {mintable && mintable.payment_token == 'EGLD' ? (
+                      <>
+                        {formatAmount({
+                          input: balance,
+                          decimals: 18,
+                          digits: 2,
+                          showLastNonZeroDecimal: false,
+                          addCommas: true
+                        })}
+                      </>
+                    ) : (
+                      <>
+                        {formatAmount({
+                          input: esdtAmount.toFixed(),
+                          decimals: 18,
+                          digits: 2,
+                          showLastNonZeroDecimal: false,
+                          addCommas: true
+                        })}
+                      </>
+                    )}{' '}
                     <span className='identifier'>
                       {' '}
                       {mintable.payment_token}
                     </span>
                   </div>
+                )}
+                <div className='info-item'>
+                  <span className='text-label'>{t('mint:price')}: </span>
+                  {formatAmount({
+                    input: mintable?.payment_price?.toFixed(),
+                    decimals: 18,
+                    digits: 2,
+                    showLastNonZeroDecimal: false,
+                    addCommas: true
+                  })}{' '}
+                  <span className='identifier'> {mintable.payment_token}</span>
+                </div>
+                <div className='info-item'>
+                  <span className='text-label'>{t('mint:mint_left')}: </span>{' '}
+                  {formatAmount({
+                    input: mintable.amount.toFixed(),
+                    decimals: 0,
+                    digits: 0,
+                    showLastNonZeroDecimal: false,
+                    addCommas: true
+                  })}
+                </div>
+                {nft_information.supply && (
                   <div className='info-item'>
-                    <span className='text-label'>{t('mint:mint_left')}: </span>{' '}
+                    <span className='text-label'>{t('mint:supply')}: </span>{' '}
                     {formatAmount({
-                      input: mintable.amount.toFixed(),
-                      decimals: 0,
+                      input: nft_information.supply,
                       digits: 0,
+                      decimals: 0,
                       showLastNonZeroDecimal: false,
                       addCommas: true
                     })}
                   </div>
-                  {nft_information.supply && (
-                    <div className='info-item'>
-                      <span className='text-label'>{t('mint:supply')}: </span>{' '}
-                      {formatAmount({
-                        input: nft_information.supply,
-                        digits: 0,
-                        decimals: 0,
-                        showLastNonZeroDecimal: false,
-                        addCommas: true
-                      })}
-                    </div>
-                  )}
+                )}
 
-                  <div className='info-item'>
-                    <span className='text-label'>SFT: </span>{' '}
-                    {mintable?.token_identifier}-
-                    {toHex(mintable?.nonce.toFixed())}
-                  </div>
-
-                  <div className='info-item'>
-                    <span className='text-label'>{t('mint:start')}: </span>{' '}
-                    {blockToTime(mintable?.start_time)}{' '}
-                  </div>
-
-                  <div className='info-item'>
-                    <span className='text-label'>{t('mint:end')}: </span>{' '}
-                    {blockToTime(mintable?.end_time)}{' '}
-                  </div>
+                <div className='info-item'>
+                  <span className='text-label'>SFT: </span>{' '}
+                  {mintable?.token_identifier}-
+                  {toHex(mintable?.nonce.toFixed())}
                 </div>
-                <div className='sub-dinocard'>
-                  <div className='mint-image' style={{ margin: 'auto' }}>
-                    {mintable.amount.isGreaterThan(0) ? (
+
+                <div className='info-item'>
+                  <span className='text-label'>{t('mint:start')}: </span>{' '}
+                  {blockToTime(mintable?.start_time)}{' '}
+                </div>
+
+                <div className='info-item'>
+                  <span className='text-label'>{t('mint:end')}: </span>{' '}
+                  {blockToTime(mintable?.end_time)}{' '}
+                </div>
+              </div>
+              <div className='sub-dinocard'>
+                <div className='mint-image' style={{ margin: 'auto' }}>
+                  {mintable.amount.isGreaterThan(0) ? (
+                    <>
+                      {nft_information?.media?.length > 0 &&
+                        nft_information?.media[0]?.url && (
+                          <img src={nft_information?.media[0]?.url} alt='SFT' />
+                        )}
+                    </>
+                  ) : (
+                    <img src={sold_graout} className='mint-image' />
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className='sub-dinocard'>{displayText}</div>
+          )}
+        </div>
+        <div
+          style={{ width: '100%', justifyContent: 'center', display: 'grid' }}
+        >
+          <div className='text-label' style={{ margin: 'auto' }}>
+            {mintable.amount.isGreaterThan(0) ? (
+              <>
+                {timeStart > 0 ? (
+                  <div>Open in : {formatTime(timeStart)}</div>
+                ) : (
+                  <>
+                    {timeEnd > 0 ? (
                       <>
-                        {nft_information?.media?.length > 0 &&
-                          nft_information?.media[0]?.url && (
-                            <img
-                              src={nft_information?.media[0]?.url}
-                              alt='SFT'
-                            />
-                          )}
+                        <ActionBuy
+                          price={mintable?.payment_price}
+                          balance={new BigNumber(balance ? balance : 0)}
+                          hasBuyed={hasBuyed}
+                          payment_token={mintable.payment_token}
+                        />
+                        <div>End in : {formatTime(timeEnd)}</div>
                       </>
                     ) : (
-                      <img src={sold_graout} className='mint-image' />
+                      <>Sale ended</>
                     )}
-                  </div>
-                </div>
+                  </>
+                )}
               </>
             ) : (
-              <div className='sub-dinocard'>{displayText}</div>
-            )}
-          </div>
-          <div
-            style={{ width: '100%', justifyContent: 'center', display: 'grid' }}
-          >
-            <div className='text-label' style={{ margin: 'auto' }}>
-              {mintable.amount.isGreaterThan(0) ? (
-                <>
-                  {timeStart > 0 ? (
-                    <div>Open in : {formatTime(timeStart)}</div>
-                  ) : (
-                    <>
-                      {timeEnd > 0 ? (
-                        <>
-                          <ActionBuy
-                            price={mintable?.payment_price}
-                            balance={new BigNumber(balance ? balance : 0)}
-                            hasBuyed={hasBuyed}
-                            payment_token={mintable.payment_token}
-                          />
-                          <div>End in : {formatTime(timeEnd)}</div>
-                        </>
-                      ) : (
-                        <>Sale ended</>
-                      )}
-                    </>
+              <>
+                {mintable &&
+                  mintable.token_identifier &&
+                  new BigNumber(mintable.amount.isEqual).isZero() && (
+                    <> SOLD GRAOUT</>
                   )}
-                </>
-              ) : (
-                <>
-                  {mintable &&
-                    mintable.token_identifier &&
-                    new BigNumber(mintable.amount.isEqual).isZero() && (
-                      <> SOLD GRAOUT</>
-                    )}
-                </>
-              )}
-              <div></div>
-            </div>
-            {/* <MxLink
+              </>
+            )}
+            <div></div>
+          </div>
+          {/* <MxLink
               className='dinoButton  rounded-lg px-3 py-2 text-center hover:no-underline my-0 bg-blue-600 '
               to={RouteNamesEnum.unlock}
             >
               Connect
             </MxLink> */}
-          </div>{' '}
-        </div>
-      </PageWrapper>
-    </AuthRedirectWrapper>
+        </div>{' '}
+      </div>
+    </PageWrapper>
   );
 };
 

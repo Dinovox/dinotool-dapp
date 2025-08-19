@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './ShortenedAddress.css'; // Assurez-vous de créer un fichier CSS pour les styles
 import { FaRegCopy } from 'react-icons/fa'; // Utilisez react-icons pour l'icône de copie
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig } from 'lib';
 
 const ShortenedAddress = ({ address, herotag }: any) => {
   const [copied, setCopied] = useState(false);

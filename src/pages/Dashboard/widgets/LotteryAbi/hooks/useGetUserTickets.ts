@@ -7,27 +7,31 @@ import {
   U64Value
 } from '@multiversx/sdk-core';
 import { lotteryContractAddress } from 'config';
-import { useGetNetworkConfig } from 'hooks';
 import abi_json from 'contracts/dinodraw.abi.json';
 
-import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
+import {
+  useGetAccount,
+  useGetPendingTransactions,
+  useGetNetworkConfig
+} from 'lib';
 import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers';
 import { BigNumber } from 'bignumber.js';
-import { useGetPendingTransactions } from 'hooks';
 
 export const useGetUserTickets = (lottery_id: any) => {
   const [buyed, setHasBuyed] = useState(0);
   // const [esdtAmount, setEsdtAmount] = useState(new BigNumber(0));
 
   const { network } = useGetNetworkConfig();
-  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const entrypoint = new DevnetEntrypoint({ url: network.apiAddress });
   const contractAddress = Address.newFromBech32(lotteryContractAddress);
   const abi = Abi.create(abi_json);
   const controller = entrypoint.createSmartContractController(abi);
 
   const { address } = useGetAccount();
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
+
   // const proxy = new ProxyNetworkProvider(network.apiAddress);
 
   const getHasBuyed = async () => {

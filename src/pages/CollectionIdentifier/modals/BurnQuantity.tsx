@@ -3,7 +3,7 @@ import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
 import { ActionCreateSFT } from 'helpers/actions/ActionCreateSFT';
 import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
-import { useGetLoginInfo } from 'hooks';
+import { useGetLoginInfo } from 'lib';
 import { m } from 'framer-motion';
 import { Nfts } from 'helpers/api/accounts/getNfts';
 import { ActionAddQuantity } from 'helpers/actions/ActionAddQuantity';

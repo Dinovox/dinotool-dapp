@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
+import { useGetPendingTransactions, useGetAccountInfo } from 'lib';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import { lotteryContractAddress } from 'config';
 import { Address } from '@multiversx/sdk-core/out';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import bigToHex from 'helpers/bigToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +13,8 @@ export const ActionDelete = ({ lottery_id }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
       string | null
@@ -34,8 +33,6 @@ export const ActionDelete = ({ lottery_id }: any) => {
       receiver: addressTobech32,
       gasLimit: '14000000'
     };
-
-    await refreshAccount();
 
     const { sessionId /*, error*/ } = await sendTransactions({
       transactions: fundTransaction,

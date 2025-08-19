@@ -1,46 +1,30 @@
 import { PropsWithChildren, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
+import { useGetIsLoggedIn } from 'lib';
 import { RouteNamesEnum } from 'localConstants';
-import { useGetIsLoggedIn } from '../../hooks';
+import { useRoutesWithTranslation } from 'routes';
 
-interface AuthRedirectWrapperPropsType extends PropsWithChildren {
-  requireAuth?: boolean;
-}
-
-export const AuthRedirectWrapper = ({
-  children,
-  requireAuth = true
-}: AuthRedirectWrapperPropsType) => {
+export const AuthRedirectWrapper = ({ children }: PropsWithChildren) => {
+  const routes = useRoutesWithTranslation();
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
-  const location = useLocation(); // Permet d'obtenir la page actuelle
-  const isUnlockPage = location.pathname === RouteNamesEnum.unlock;
-  const isHomePage = location.pathname === RouteNamesEnum.home;
+  const { pathname } = useLocation();
+
+  const currentRoute = routes.find((route) => matchPath(route.path, pathname));
+
+  const requireAuth = Boolean(currentRoute?.authenticatedRoute);
 
   useEffect(() => {
-    //Pas co et pas sur la page de déverrouillage
-    //on garde la page actuelle avant la redirection
-    if (!isLoggedIn && !isUnlockPage && !isHomePage) {
-      sessionStorage.setItem('redirectAfterLogin', location.pathname);
-      // console.log('redirectAfterLogin', location.pathname);
+    if (isLoggedIn && !requireAuth) {
+      // navigate(RouteNamesEnum.home);
+
+      return;
     }
 
-    //pas co et besoin d'authentification
-    //on redirige vers la page de déverrouillage
     if (!isLoggedIn && requireAuth) {
-      navigate(RouteNamesEnum.unlock);
+      navigate(RouteNamesEnum.home);
     }
-
-    //co et sur la page de déverrouillage
-    //on récupère la page stockée et on redirige l'utilisateur
-    //Mais la page Unlock onLogin aura le contrôle de la redirection
-    if (isLoggedIn && isUnlockPage) {
-      // Récupérer la page stockée et rediriger l'utilisateur
-      const previousPage =
-        sessionStorage.getItem('redirectAfterLogin') || RouteNamesEnum.home;
-      navigate(previousPage);
-    }
-  }, [isLoggedIn, location]);
+  }, [isLoggedIn, currentRoute]);
 
   return <>{children}</>;
 };

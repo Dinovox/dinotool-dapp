@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { Abi, Address, DevnetEntrypoint, U64Value } from '@multiversx/sdk-core';
 import { lotteryContractAddress } from 'config';
-import { useGetNetworkConfig } from 'hooks';
 import abi_json from 'contracts/dinodraw.abi.json';
 
-import { useGetPendingTransactions } from 'hooks';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import { BigNumber } from 'bignumber.js';
 import { internal_api } from 'config';
 import { useNavigate } from 'react-router-dom';
@@ -50,12 +49,15 @@ export const useGetLottery = (lottery_id: any) => {
     loading: true
   });
   const { network } = useGetNetworkConfig();
-  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const entrypoint = new DevnetEntrypoint({
+    url: network.apiAddress
+  });
   const contractAddress = Address.newFromBech32(lotteryContractAddress);
   const abi = Abi.create(abi_json);
   const controller = entrypoint.createSmartContractController(abi);
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   const getMintableOffChain = async () => {
     // if (hasPendingTransactions) {

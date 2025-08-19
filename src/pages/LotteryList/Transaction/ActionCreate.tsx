@@ -1,19 +1,24 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { useGetPendingTransactions } from 'lib';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import {
   lottery_cost,
   lotteryContractAddress,
   xgraou_identifier
 } from 'config';
-import { Address } from '@multiversx/sdk-core/out';
-import {
-  useGetAccountInfo,
-  useGetNetworkConfig
-} from '@multiversx/sdk-dapp/hooks';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -68,8 +73,9 @@ export const ActionCreate = ({
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
 
-  const { hasPendingTransactions, pendingTransactions } =
-    useGetPendingTransactions();
+  const transactions: Record<string, any> = useGetPendingTransactions();
+  const hasPendingTransactions = Object.keys(transactions).length > 0;
+
   const navigate = useNavigate();
   const [transactionSessionId, setTransactionSessionId] = useState<
     string | null
@@ -80,15 +86,14 @@ export const ActionCreate = ({
 
   // 🎯 Vérifier si on a un txHash après l'envoi de la transaction
   useEffect(() => {
-    if (transactionSessionId && pendingTransactions[transactionSessionId]) {
-      const tx =
-        pendingTransactions[transactionSessionId]?.transactions[0]?.hash;
+    if (transactionSessionId && transactions[transactionSessionId]) {
+      const tx = transactions[transactionSessionId]?.transactions[0]?.hash;
       if (tx) {
         setTxHash(tx);
         checkTransactionStatus(tx);
       }
     }
-  }, [transactionSessionId, pendingTransactions]);
+  }, [transactionSessionId, hasPendingTransactions]);
 
   const sendFundTransaction = async () => {
     const graou_identifier =
@@ -184,23 +189,28 @@ export const ActionCreate = ({
       ) +
       '@' +
       bigNumToHex(new BigNumber(auto_draw ? 1 : 0));
-    const fundTransaction = {
-      value: 0,
-      data: data + sub,
-      receiver: address,
-      gasLimit: '14000000'
-    };
 
-    await refreshAccount();
+    const payload = data + sub;
 
-    const { sessionId } = await sendTransactions({
-      transactions: [fundTransaction],
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(address),
+      gasLimit: BigInt(14000000),
+
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
+
+    const sessionId = await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing create transaction',
         errorMessage: 'An error occurred during creation',
         successMessage: 'Create transaction successful'
-      },
-      redirectAfterSign: false
+      }
     });
 
     if (sessionId) {

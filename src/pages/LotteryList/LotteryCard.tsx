@@ -11,7 +11,7 @@ import BigNumber from 'bignumber.js';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
-import { useGetAccountInfo } from 'hooks';
+import { useGetAccountInfo } from 'lib';
 
 const LotteryCard: React.FC<{ lottery_id: string }> = ({ lottery_id }) => {
   const loading = useLoadTranslations('lotteries');

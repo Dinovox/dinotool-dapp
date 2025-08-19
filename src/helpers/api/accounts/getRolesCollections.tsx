@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig } from 'lib';
 import { API_URL } from 'config';
 
 export interface Role {

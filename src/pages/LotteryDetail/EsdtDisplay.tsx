@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatAmount } from 'utils';
+import { formatAmount } from 'lib';
 import notFound from './esdtnotfound.svg';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';

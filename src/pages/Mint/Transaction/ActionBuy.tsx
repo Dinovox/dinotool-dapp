@@ -1,21 +1,33 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { useGetPendingTransactions, useGetIsLoggedIn } from 'lib';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
+
 import { mintcontractAddress } from 'config';
 // import toHex from 'helpers/toHex';
-import { Address } from '@multiversx/sdk-core/out';
-import {
-  useGetAccountInfo,
-  useGetIsLoggedIn
-} from '@multiversx/sdk-dapp/hooks';
+
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { useNavigate } from 'react-router-dom';
+import { t } from 'i18next';
 
 export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
+
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
   const fees = new BigNumber(140669180000000);
@@ -24,42 +36,50 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
       string | null
     >(null);
 
-  const addressTobech32 = new Address(mintcontractAddress);
-  const { address } = useGetAccountInfo();
-
   const sendFundTransaction = async () => {
-    let fundTransaction;
-    if (payment_token == 'EGLD') {
-      fundTransaction = {
-        value: price,
-        data: 'buy',
-        receiver: addressTobech32,
-        gasLimit: '14000000'
-      };
-    } else {
-      fundTransaction = {
-        value: 0,
-        data:
-          'ESDTTransfer@' +
-          Buffer.from(payment_token, 'utf8').toString('hex') +
-          '@' +
-          bigToHex(BigInt(price)) +
-          '@' +
-          Buffer.from('buy', 'utf8').toString('hex'),
-        receiver: addressTobech32,
-        gasLimit: '14000000'
-      };
-    }
-    await refreshAccount();
+    let transaction: Transaction | Transaction[] = [];
+    let payload = 'buy';
 
-    const { sessionId /*, error*/ } = await sendTransactions({
-      transactions: fundTransaction,
+    if (payment_token == 'EGLD') {
+      transaction = new Transaction({
+        value: BigInt(price),
+        data: new TextEncoder().encode(payload),
+        receiver: new Address(mintcontractAddress),
+        gasLimit: BigInt('14000000'),
+
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
+    } else {
+      payload =
+        'ESDTTransfer@' +
+        Buffer.from(payment_token, 'utf8').toString('hex') +
+        '@' +
+        bigToHex(BigInt(price)) +
+        '@' +
+        Buffer.from('buy', 'utf8').toString('hex');
+      transaction = new Transaction({
+        value: BigInt(0),
+        data: new TextEncoder().encode(payload),
+        receiver: new Address(mintcontractAddress),
+        gasLimit: BigInt('14000000'),
+
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
+    }
+
+    const sessionId = await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing mint transaction',
         errorMessage: 'An error has occured mint',
         successMessage: 'Mint transaction successful'
-      },
-      redirectAfterSign: false
+      }
     });
     if (sessionId != null) {
       setTransactionSessionId(sessionId);

@@ -5,7 +5,7 @@ import {
   RolesCollections,
   useAccountsRolesCollections
 } from 'helpers/api/accounts/getRolesCollections';
-import { useGetAccount } from 'hooks';
+import { useGetAccount } from 'lib';
 import { ActionUnsetSpecialRole } from 'helpers/actions/ActionUnsetSpecialRole';
 import { Collection } from 'helpers/api/accounts/getCollections';
 import { t } from 'i18next';

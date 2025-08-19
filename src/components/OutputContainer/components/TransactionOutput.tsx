@@ -1,12 +1,17 @@
+import { Label } from 'components';
 import {
+  ACCOUNTS_ENDPOINT,
+  DECIMALS,
+  DIGITS,
+  FormatAmountController,
+  getExplorerLink,
+  MvxExplorerLink,
+  MvxFormatAmount,
+  SignedTransactionType,
   TRANSACTIONS_ENDPOINT,
-  ACCOUNTS_ENDPOINT
-} from '@multiversx/sdk-dapp/apiCalls/endpoints';
-import { useGetNetworkConfig } from '@multiversx/sdk-dapp/hooks/useGetNetworkConfig';
-import { ExplorerLink } from '@multiversx/sdk-dapp/UI/ExplorerLink';
-import { Label } from 'components/Label';
-import { FormatAmount } from 'components/sdkDappComponents';
-import { SignedTransactionType } from 'types';
+  useGetAccountInfo,
+  useGetNetworkConfig
+} from 'lib';
 
 export const TransactionOutput = ({
   transaction
@@ -14,36 +19,57 @@ export const TransactionOutput = ({
   transaction: SignedTransactionType;
 }) => {
   const { network } = useGetNetworkConfig();
+  const { account } = useGetAccountInfo();
   const decodedData = transaction.data
     ? Buffer.from(transaction.data, 'base64').toString('ascii')
     : 'N/A';
+
+  const { isValid, valueDecimal, valueInteger, label } =
+    FormatAmountController.getData({
+      digits: DIGITS,
+      decimals: DECIMALS,
+      egldLabel: network.egldLabel,
+      input: account.balance
+    });
+
+  const explorerAddress = network.explorerAddress;
+  const hashExplorerLink = getExplorerLink({
+    to: `/${TRANSACTIONS_ENDPOINT}/${transaction.hash}`,
+    explorerAddress
+  });
+  const receiverExplorerLink = getExplorerLink({
+    to: `/${ACCOUNTS_ENDPOINT}/${transaction.receiver}`,
+    explorerAddress
+  });
+
   return (
     <div className='flex flex-col'>
       <p>
         <Label>Hash:</Label>
-        <ExplorerLink
-          page={`/${TRANSACTIONS_ENDPOINT}/${transaction.hash}`}
+        <MvxExplorerLink
+          link={hashExplorerLink}
           className='border-b border-dotted border-gray-500 hover:border-solid hover:border-gray-800'
         >
           {transaction.hash}
-        </ExplorerLink>
+        </MvxExplorerLink>
       </p>
       <p>
         <Label>Receiver:</Label>
-        <ExplorerLink
-          page={`/${ACCOUNTS_ENDPOINT}/${transaction.receiver}`}
+        <MvxExplorerLink
+          link={receiverExplorerLink}
           className='border-b border-dotted border-gray-500 hover:border-solid hover:border-gray-800'
         >
           {transaction.receiver}
-        </ExplorerLink>
+        </MvxExplorerLink>
       </p>
 
       <p>
         <Label>Amount: </Label>
-        <FormatAmount
-          value={transaction.value}
-          showLabel={transaction.value !== '0'}
-          egldLabel={network.egldLabel}
+        <MvxFormatAmount
+          isValid={isValid}
+          valueInteger={valueInteger}
+          valueDecimal={valueDecimal}
+          label={label}
           data-testid='balance'
         />
       </p>

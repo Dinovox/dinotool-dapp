@@ -9,7 +9,7 @@ import {
   Collection,
   CollectionRole
 } from 'helpers/api/accounts/getCollections';
-import { useGetAccount } from 'hooks';
+import { useGetAccount } from 'lib';
 import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
 import { is } from '@react-spring/shared';
 import { ActionChangeToDynamic } from 'helpers/actions/ActionChangeToDynamic';

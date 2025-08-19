@@ -1,8 +1,7 @@
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo } from 'lib';
 import { sendTransactions } from '@multiversx/sdk-dapp/services';
 import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
 import { t } from 'i18next';
@@ -45,8 +44,6 @@ export const ActionESDTNFTTransfer: React.FC<{
         gasLimit: 3000000
       });
     }
-
-    await refreshAccount();
 
     const { sessionId, error } = await sendTransactions({
       transactions: transactions,

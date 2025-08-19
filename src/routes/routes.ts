@@ -11,13 +11,16 @@ import {
   CollectionDetail,
   CollectionIdentifier,
   Profile,
-  Locker
+  Locker,
+  Unlock
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
 import { Route } from 'react-router-dom';
 interface RouteWithTitleType extends RouteType {
   title: string;
+  authenticatedRoute?: boolean;
+  children?: RouteWithTitleType[];
 }
 export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
   const { t } = useTranslation();
@@ -26,7 +29,14 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.home,
       title: t('home'),
-      component: Home
+      component: Home,
+      children: [
+        {
+          path: RouteNamesEnum.unlock,
+          title: 'Unlock',
+          component: Unlock
+        }
+      ]
     },
     {
       path: RouteNamesEnum.mint,

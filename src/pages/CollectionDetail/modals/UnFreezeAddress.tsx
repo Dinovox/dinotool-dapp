@@ -68,7 +68,7 @@ export const UnFreezeAddress: React.FC<{
             </div>
           </form>
           <ActionUnFreeze
-            address={address}
+            addressTarget={address}
             nonce={nonce}
             tokenIdentifier={collection.collection}
           />

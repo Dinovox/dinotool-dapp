@@ -3,13 +3,15 @@ import {
   useGetAccountInfo,
   useGetNetworkConfig,
   useGetPendingTransactions
-} from '@multiversx/sdk-dapp/hooks';
+} from 'lib';
 import axios from 'axios';
 export const useGetUserESDT = (identifier?: string) => {
   const { network } = useGetNetworkConfig();
   const [esdtBalance, setEsdtBalance] = useState<any>([]);
   const address = useGetAccountInfo().address;
-  const { hasPendingTransactions } = useGetPendingTransactions();
+
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   let url = '/accounts/' + address + '/tokens?size=1000';
   if (identifier) {

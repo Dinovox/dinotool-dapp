@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useGetLoginInfo } from 'hooks';
+import { useGetLoginInfo } from 'lib';
 import { internal_api } from 'config';
 
 export const useGetVouchers = () => {

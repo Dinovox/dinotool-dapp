@@ -1,22 +1,33 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { useGetPendingTransactions, useGetIsLoggedIn } from 'lib';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
+
 import { mintcontractAddress } from 'config';
 // import toHex from 'helpers/toHex';
-import { Address } from '@multiversx/sdk-core/out';
-import {
-  useGetAccountInfo,
-  useGetIsLoggedIn
-} from '@multiversx/sdk-dapp/hooks';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export const ActionBurn = ({ identifier, nonce, quantity }: any) => {
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
+
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
+
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
   const fees = new BigNumber(140669180000000);
@@ -26,33 +37,34 @@ export const ActionBurn = ({ identifier, nonce, quantity }: any) => {
       string | null
     >(null);
 
-  // const addressTobech32 = new Address(mintcontractAddress);
-  const { address } = useGetAccountInfo();
-
   const sendTransaction = async () => {
-    const transaction = {
-      value: 0,
-      data:
-        'ESDTNFTBurn@' +
-        Buffer.from(identifier, 'utf8').toString('hex') +
-        '@' +
-        bigToHex(BigInt(nonce)) +
-        '@' +
-        bigToHex(BigInt(quantity)),
-      receiver: address,
-      gasLimit: '300000'
-    };
+    const payload =
+      'ESDTNFTBurn@' +
+      Buffer.from(identifier, 'utf8').toString('hex') +
+      '@' +
+      bigToHex(BigInt(nonce)) +
+      '@' +
+      bigToHex(BigInt(quantity));
 
-    await refreshAccount();
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(address),
+      gasLimit: BigInt('300000'),
 
-    const { sessionId /*, error*/ } = await sendTransactions({
-      transactions: transaction,
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
+
+    const sessionId = await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing burn transaction',
         errorMessage: 'An error has occured burn',
         successMessage: 'Burn transaction successful'
-      },
-      redirectAfterSign: false
+      }
     });
     if (sessionId != null) {
       setTransactionSessionId(sessionId);

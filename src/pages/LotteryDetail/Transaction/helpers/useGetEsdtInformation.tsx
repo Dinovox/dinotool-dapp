@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig } from 'lib';
 export const useGetEsdtInformations = (identifier: string) => {
   const { network } = useGetNetworkConfig();
   const time = new Date();

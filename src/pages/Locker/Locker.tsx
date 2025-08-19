@@ -1,4 +1,4 @@
-import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
+import { PageWrapper } from 'wrappers';
 import { useEffect, useState } from 'react';
 import { useNFTs } from '../../hooks/useNFTs';
 import { usePartner } from '../../hooks/usePartner';
@@ -7,15 +7,21 @@ import PartnerInfo from './components/PartnerInfo';
 import LockConfirmation from './components/LockConfirmation';
 import NFTCard from './components/NFTCard';
 import VestingDurationSelector from './components/VestingDurationSelector';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import BigNumber from 'bignumber.js';
+import { signAndSendTransactions } from 'helpers';
 import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
   useGetAccount,
-  useGetAccountInfo,
-  useGetLoginInfo,
-  useGetNetworkConfig
-} from 'hooks';
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
+
+import BigNumber from 'bignumber.js';
+import { useGetLoginInfo, useGetPendingTransactions } from 'lib';
 import {
   Lock,
   Grid,
@@ -26,9 +32,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { bigNumToHex } from 'helpers/bigNumToHex';
-import { Address } from '@multiversx/sdk-core/out';
 import { duration } from 'moment';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
 import { useGetUserLockedNft } from 'pages/Dashboard/widgets/LockedNftAbi/hooks/useGetUserLockedNft';
 import { t } from 'i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -57,7 +61,7 @@ export const Locker = () => {
   const [transactionSessionId, setTransactionSessionId] = useState<
     string | null
   >(null);
-  const { pendingTransactions } = useGetPendingTransactions();
+  const pendingTransactions = useGetPendingTransactions();
 
   // Filtrage des NFTs
   const filteredNFTs = nfts.filter((nft) => {
@@ -136,25 +140,28 @@ export const Locker = () => {
       bigNumToHex(new BigNumber(selectedDuration || 0))
     ];
 
-    const data = dataParts.join('@');
+    const payload = dataParts.join('@');
 
-    const tx = {
-      value: '0',
-      data,
-      receiver: address,
-      gasLimit: '60000000'
-    };
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(address),
+      gasLimit: BigInt('60000000'),
+
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
 
     try {
-      await refreshAccount();
-      const { sessionId } = await sendTransactions({
-        transactions: [tx],
+      const sessionId = await signAndSendTransactions({
+        transactions: [transaction],
         transactionsDisplayInfo: {
           processingMessage: 'Locking NFT...',
           errorMessage: 'Failed to lock NFT',
           successMessage: 'NFT successfully locked'
-        },
-        redirectAfterSign: false
+        }
       });
 
       if (sessionId) {
@@ -204,7 +211,13 @@ export const Locker = () => {
   useEffect(() => {
     if (!transactionSessionId) return;
 
-    const tx = pendingTransactions[transactionSessionId]?.transactions[0];
+    console.log('! Waiting for transaction session ID:', transactionSessionId);
+    console.log('! Pending transactions:', pendingTransactions);
+
+    // const tx = pendingTransactions[transactionSessionId]?.transactions[0];
+    const tx = pendingTransactions[0];
+    // txManager.setCallbacks
+
     console.log('Pending transactions:', pendingTransactions);
     console.log('Transaction session ID:', transactionSessionId);
     if (tx?.hash) {
@@ -230,53 +243,52 @@ export const Locker = () => {
   // }
 
   return (
-    <AuthRedirectWrapper requireAuth={true}>
-      <PageWrapper>
-        <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50'>
-          <div className='container mx-auto px-4 py-8'>
-            <div className='max-w-6xl mx-auto'>
-              {/* En-tête */}
-              <div className='text-center mb-8'>
-                <div className='flex items-center justify-center space-x-3 mb-4'>
-                  <div className='w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center'>
-                    <Lock className='w-6 h-6 text-white' />
-                  </div>
-                  <h1 className='text-3xl font-bold text-gray-800'>
-                    {t('locker:title')}
-                  </h1>
+    <PageWrapper>
+      <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50'>
+        <div className='container mx-auto px-4 py-8'>
+          <div className='max-w-6xl mx-auto'>
+            {/* En-tête */}
+            <div className='text-center mb-8'>
+              <div className='flex items-center justify-center space-x-3 mb-4'>
+                <div className='w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center'>
+                  <Lock className='w-6 h-6 text-white' />
                 </div>
-                <p className='text-gray-600 max-w-2xl mx-auto'>
-                  {t('locker:description')}
-                </p>
+                <h1 className='text-3xl font-bold text-gray-800'>
+                  {t('locker:title')}
+                </h1>
               </div>
+              <p className='text-gray-600 max-w-2xl mx-auto'>
+                {t('locker:description')}
+              </p>
+            </div>
 
-              {/* Informations partenaire */}
-              {/* {!partnerLoading && (
+            {/* Informations partenaire */}
+            {/* {!partnerLoading && (
                 <PartnerInfo partner={partner} address={address} />
               )} */}
 
-              {/* Étapes */}
-              <div className='flex items-center justify-center space-x-4 mb-8'>
-                {[
-                  {
-                    step: 'selection',
-                    label: t('locker:select_nft'),
-                    icon: Grid
-                  },
-                  {
-                    step: 'duration',
-                    label: t('locker:select_duration'),
-                    icon: Lock
-                  },
-                  {
-                    step: 'confirmation',
-                    label: t('locker:confirm_lock'),
-                    icon: CheckCircle
-                  }
-                ].map(({ step, label, icon: Icon }, index) => (
-                  <div key={step} className='flex items-center'>
-                    <div
-                      className={`
+            {/* Étapes */}
+            <div className='flex items-center justify-center space-x-4 mb-8'>
+              {[
+                {
+                  step: 'selection',
+                  label: t('locker:select_nft'),
+                  icon: Grid
+                },
+                {
+                  step: 'duration',
+                  label: t('locker:select_duration'),
+                  icon: Lock
+                },
+                {
+                  step: 'confirmation',
+                  label: t('locker:confirm_lock'),
+                  icon: CheckCircle
+                }
+              ].map(({ step, label, icon: Icon }, index) => (
+                <div key={step} className='flex items-center'>
+                  <div
+                    className={`
                   w-10 h-10 rounded-full flex items-center justify-center
                   ${
                     currentStep === step
@@ -289,276 +301,271 @@ export const Locker = () => {
                       : 'bg-gray-200 text-gray-500'
                   }
                 `}
-                    >
-                      <Icon className='w-5 h-5' />
-                    </div>
-                    <span
-                      className={`ml-2 text-sm font-medium ${
-                        currentStep === step ? 'text-blue-600' : 'text-gray-500'
-                      }`}
-                    >
-                      {label}
-                    </span>
-                    {index < 2 && (
-                      <div className='w-8 h-0.5 bg-gray-300 mx-4' />
-                    )}
+                  >
+                    <Icon className='w-5 h-5' />
                   </div>
-                ))}
-              </div>
+                  <span
+                    className={`ml-2 text-sm font-medium ${
+                      currentStep === step ? 'text-blue-600' : 'text-gray-500'
+                    }`}
+                  >
+                    {label}
+                  </span>
+                  {index < 2 && <div className='w-8 h-0.5 bg-gray-300 mx-4' />}
+                </div>
+              ))}
+            </div>
 
-              {/* Contenu principal */}
-              <div className='bg-white rounded-2xl shadow-lg p-6'>
-                {currentStep === 'selection' && (
-                  <div>
-                    <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0'>
-                      <h2 className='text-xl font-bold text-gray-800'>
-                        {t('locker:select_nft_to_lock')}
-                      </h2>
+            {/* Contenu principal */}
+            <div className='bg-white rounded-2xl shadow-lg p-6'>
+              {currentStep === 'selection' && (
+                <div>
+                  <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0'>
+                    <h2 className='text-xl font-bold text-gray-800'>
+                      {t('locker:select_nft_to_lock')}
+                    </h2>
 
-                      <div className='flex items-center space-x-4'>
-                        {/* Recherche */}
-                        <div className='relative'>
-                          <Search className='w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400' />
-                          <input
-                            type='text'
-                            placeholder='Rechercher...'
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                          />
-                        </div>
+                    <div className='flex items-center space-x-4'>
+                      {/* Recherche */}
+                      <div className='relative'>
+                        <Search className='w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400' />
+                        <input
+                          type='text'
+                          placeholder='Rechercher...'
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        />
+                      </div>
 
-                        {/* Filtre collection */}
-                        <select
-                          value={selectedCollection}
-                          onChange={(e) =>
-                            setSelectedCollection(e.target.value)
-                          }
-                          className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        >
-                          <option value='all'>
-                            {t('locker:all_collections')}
+                      {/* Filtre collection */}
+                      <select
+                        value={selectedCollection}
+                        onChange={(e) => setSelectedCollection(e.target.value)}
+                        className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      >
+                        <option value='all'>
+                          {t('locker:all_collections')}
+                        </option>
+                        {collections.map((collection) => (
+                          <option key={collection} value={collection}>
+                            {collection}
                           </option>
-                          {collections.map((collection) => (
-                            <option key={collection} value={collection}>
-                              {collection}
-                            </option>
-                          ))}
-                        </select>
+                        ))}
+                      </select>
 
-                        {/* Mode d'affichage */}
-                        <div className='flex border border-gray-300 rounded-lg overflow-hidden'>
-                          <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 ${
-                              viewMode === 'grid'
-                                ? 'bg-blue-500 text-white'
-                                : 'text-gray-500 hover:bg-gray-100'
-                            }`}
-                          >
-                            <Grid className='w-4 h-4' />
-                          </button>
-                          <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 ${
-                              viewMode === 'list'
-                                ? 'bg-blue-500 text-white'
-                                : 'text-gray-500 hover:bg-gray-100'
-                            }`}
-                          >
-                            <List className='w-4 h-4' />
-                          </button>
-                        </div>
+                      {/* Mode d'affichage */}
+                      <div className='flex border border-gray-300 rounded-lg overflow-hidden'>
+                        <button
+                          onClick={() => setViewMode('grid')}
+                          className={`p-2 ${
+                            viewMode === 'grid'
+                              ? 'bg-blue-500 text-white'
+                              : 'text-gray-500 hover:bg-gray-100'
+                          }`}
+                        >
+                          <Grid className='w-4 h-4' />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('list')}
+                          className={`p-2 ${
+                            viewMode === 'list'
+                              ? 'bg-blue-500 text-white'
+                              : 'text-gray-500 hover:bg-gray-100'
+                          }`}
+                        >
+                          <List className='w-4 h-4' />
+                        </button>
                       </div>
                     </div>
+                  </div>
 
-                    {nftsLoading ? (
-                      <div className='flex items-center justify-center py-12'>
-                        <div className='w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
-                        <span className='ml-3 text-gray-600'>
-                          {t('locker:loading_nfts')}
-                        </span>
-                      </div>
-                    ) : nftsError ? (
-                      <div className='text-center py-12'>
-                        <AlertCircle className='w-12 h-12 text-red-500 mx-auto mb-4' />
-                        <p className='text-red-600 mb-2'>
-                          {t('locker:error_loading_nfts')}
-                        </p>
-                      </div>
-                    ) : filteredNFTs.length === 0 ? (
-                      <div className='text-center py-12'>
-                        <Grid className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                        <p className='text-gray-600'>
-                          {t('locker:no_nfts_available')}
-                        </p>
-                      </div>
-                    ) : (
-                      <div
-                        className={`
+                  {nftsLoading ? (
+                    <div className='flex items-center justify-center py-12'>
+                      <div className='w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
+                      <span className='ml-3 text-gray-600'>
+                        {t('locker:loading_nfts')}
+                      </span>
+                    </div>
+                  ) : nftsError ? (
+                    <div className='text-center py-12'>
+                      <AlertCircle className='w-12 h-12 text-red-500 mx-auto mb-4' />
+                      <p className='text-red-600 mb-2'>
+                        {t('locker:error_loading_nfts')}
+                      </p>
+                    </div>
+                  ) : filteredNFTs.length === 0 ? (
+                    <div className='text-center py-12'>
+                      <Grid className='w-12 h-12 text-gray-400 mx-auto mb-4' />
+                      <p className='text-gray-600'>
+                        {t('locker:no_nfts_available')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div
+                      className={`
                     ${
                       viewMode === 'grid'
                         ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
                         : 'space-y-4'
                     }
                   `}
-                      >
-                        {filteredNFTs.map((nft) => (
+                    >
+                      {filteredNFTs.map((nft) => (
+                        <NFTCard
+                          key={nft.identifier}
+                          nft={nft}
+                          onSelect={handleNFTSelect}
+                          selectable={true}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* NFTs verrouillés */}
+                  {lockedNFTs.length > 0 && (
+                    <div className='mt-12 pt-8 border-t border-gray-200'>
+                      <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2'>
+                        <Lock className='w-5 h-5 text-red-500' />
+                        <span> {t('locker:locked_nfts')}</span>
+                      </h3>
+                      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+                        {lockedNFTs.map((nft) => (
                           <NFTCard
                             key={nft.identifier}
                             nft={nft}
-                            onSelect={handleNFTSelect}
-                            selectable={true}
+                            lockedNft={nft}
+                            isLocked={true}
+                            unlockTimestamp={nft.unlockTimestamp}
+                            selectable={false}
                           />
                         ))}
                       </div>
-                    )}
-
-                    {/* NFTs verrouillés */}
-                    {lockedNFTs.length > 0 && (
-                      <div className='mt-12 pt-8 border-t border-gray-200'>
-                        <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2'>
-                          <Lock className='w-5 h-5 text-red-500' />
-                          <span> {t('locker:locked_nfts')}</span>
-                        </h3>
-                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-                          {lockedNFTs.map((nft) => (
-                            <NFTCard
-                              key={nft.identifier}
-                              nft={nft}
-                              lockedNft={nft}
-                              isLocked={true}
-                              unlockTimestamp={nft.unlockTimestamp}
-                              selectable={false}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {currentStep === 'duration' && selectedNFT && (
-                  <div>
-                    <div className='flex items-center justify-between mb-6'>
-                      <h2 className='text-xl font-bold text-gray-800'>
-                        {t('locker:select_duration')}
-                      </h2>
-                      <button
-                        onClick={() => setCurrentStep('selection')}
-                        className='text-gray-500 hover:text-gray-700'
-                      >
-                        {t('locker:back')}
-                      </button>
                     </div>
+                  )}
+                </div>
+              )}
 
-                    {/* NFT sélectionné */}
-                    <div className='bg-gray-50 rounded-lg p-4 mb-6'>
-                      <h3 className='font-semibold text-gray-800 mb-3'>
-                        {t('locker:selected_nft')}
-                      </h3>
-                      <div className='flex items-center space-x-4'>
-                        <img
-                          src={
-                            selectedNFT.media?.[0]?.thumbnailUrl ||
-                            selectedNFT.url
-                          }
-                          alt={selectedNFT.name}
-                          className='w-16 h-16 rounded-lg object-cover'
-                        />
-                        <div>
-                          <h4 className='font-semibold text-gray-800'>
-                            {selectedNFT.name}
-                          </h4>
-                          <p className='text-sm text-gray-500'>
-                            #{selectedNFT.nonce}
-                          </p>
-                          <p className='text-xs text-gray-400'>
-                            {selectedNFT.collection}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <VestingDurationSelector
-                      selectedDuration={selectedDuration}
-                      customDate={customDate}
-                      onDurationChange={setSelectedDuration}
-                      onCustomDateChange={setCustomDate}
-                    />
-
-                    <div className='flex justify-end mt-6'>
-                      <button
-                        onClick={handleDurationConfirm}
-                        disabled={!selectedDuration && !customDate}
-                        className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
-                      >
-                        {t('locker:continue')}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 'confirmation' && selectedNFT && (
-                  <div>
-                    <div className='flex items-center justify-between mb-6'>
-                      <h2 className='text-xl font-bold text-gray-800'>
-                        {t('locker:confirm_lock')}
-                      </h2>
-                      <button
-                        onClick={() => setCurrentStep('duration')}
-                        className='text-gray-500 hover:text-gray-700'
-                      >
-                        {t('locker:back')}
-                      </button>
-                    </div>
-
-                    <LockConfirmation
-                      nft={selectedNFT}
-                      duration={selectedDuration}
-                      customDate={customDate}
-                      onConfirm={handleLockConfirm}
-                      onCancel={() => setCurrentStep('duration')}
-                    />
-                  </div>
-                )}
-
-                {currentStep === 'success' && (
-                  <div className='text-center py-12'>
-                    <div className='w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6'>
-                      <CheckCircle className='w-12 h-12 text-green-600' />
-                    </div>
-                    <h2 className='text-2xl font-bold text-gray-800 mb-4'>
-                      {t('locker:lock_success')}
+              {currentStep === 'duration' && selectedNFT && (
+                <div>
+                  <div className='flex items-center justify-between mb-6'>
+                    <h2 className='text-xl font-bold text-gray-800'>
+                      {t('locker:select_duration')}
                     </h2>
-                    <p className='text-gray-600 mb-6'>
-                      {t('locker:lock_success_description')}
-                    </p>
-
-                    {transactionHash && (
-                      <div className='bg-gray-50 rounded-lg p-4 mb-6 max-w-md mx-auto'>
-                        <p className='text-sm text-gray-600 mb-2'>
-                          {t('locker:transaction_hash')}:
-                        </p>
-                        <p className='font-mono text-xs text-gray-800 break-all'>
-                          {transactionHash}
-                        </p>
-                      </div>
-                    )}
-
                     <button
-                      onClick={resetFlow}
-                      className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200'
+                      onClick={() => setCurrentStep('selection')}
+                      className='text-gray-500 hover:text-gray-700'
                     >
-                      {t('locker:lock_another_nft')}
+                      {t('locker:back')}
                     </button>
                   </div>
-                )}
-              </div>
+
+                  {/* NFT sélectionné */}
+                  <div className='bg-gray-50 rounded-lg p-4 mb-6'>
+                    <h3 className='font-semibold text-gray-800 mb-3'>
+                      {t('locker:selected_nft')}
+                    </h3>
+                    <div className='flex items-center space-x-4'>
+                      <img
+                        src={
+                          selectedNFT.media?.[0]?.thumbnailUrl ||
+                          selectedNFT.url
+                        }
+                        alt={selectedNFT.name}
+                        className='w-16 h-16 rounded-lg object-cover'
+                      />
+                      <div>
+                        <h4 className='font-semibold text-gray-800'>
+                          {selectedNFT.name}
+                        </h4>
+                        <p className='text-sm text-gray-500'>
+                          #{selectedNFT.nonce}
+                        </p>
+                        <p className='text-xs text-gray-400'>
+                          {selectedNFT.collection}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <VestingDurationSelector
+                    selectedDuration={selectedDuration}
+                    customDate={customDate}
+                    onDurationChange={setSelectedDuration}
+                    onCustomDateChange={setCustomDate}
+                  />
+
+                  <div className='flex justify-end mt-6'>
+                    <button
+                      onClick={handleDurationConfirm}
+                      disabled={!selectedDuration && !customDate}
+                      className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
+                    >
+                      {t('locker:continue')}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'confirmation' && selectedNFT && (
+                <div>
+                  <div className='flex items-center justify-between mb-6'>
+                    <h2 className='text-xl font-bold text-gray-800'>
+                      {t('locker:confirm_lock')}
+                    </h2>
+                    <button
+                      onClick={() => setCurrentStep('duration')}
+                      className='text-gray-500 hover:text-gray-700'
+                    >
+                      {t('locker:back')}
+                    </button>
+                  </div>
+
+                  <LockConfirmation
+                    nft={selectedNFT}
+                    duration={selectedDuration}
+                    customDate={customDate}
+                    onConfirm={handleLockConfirm}
+                    onCancel={() => setCurrentStep('duration')}
+                  />
+                </div>
+              )}
+
+              {currentStep === 'success' && (
+                <div className='text-center py-12'>
+                  <div className='w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6'>
+                    <CheckCircle className='w-12 h-12 text-green-600' />
+                  </div>
+                  <h2 className='text-2xl font-bold text-gray-800 mb-4'>
+                    {t('locker:lock_success')}
+                  </h2>
+                  <p className='text-gray-600 mb-6'>
+                    {t('locker:lock_success_description')}
+                  </p>
+
+                  {transactionHash && (
+                    <div className='bg-gray-50 rounded-lg p-4 mb-6 max-w-md mx-auto'>
+                      <p className='text-sm text-gray-600 mb-2'>
+                        {t('locker:transaction_hash')}:
+                      </p>
+                      <p className='font-mono text-xs text-gray-800 break-all'>
+                        {transactionHash}
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={resetFlow}
+                    className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200'
+                  >
+                    {t('locker:lock_another_nft')}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        </div>{' '}
-      </PageWrapper>
-    </AuthRedirectWrapper>
+        </div>
+      </div>{' '}
+    </PageWrapper>
   );
 };

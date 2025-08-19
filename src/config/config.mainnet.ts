@@ -1,4 +1,10 @@
-import { EnvironmentsEnum } from 'types';
+// If EnvironmentsEnum is defined elsewhere, import from the correct path, e.g.:
+// Or define it locally if missing:
+export enum EnvironmentsEnum {
+  mainnet = 'mainnet',
+  testnet = 'testnet',
+  devnet = 'devnet'
+}
 export const environment: EnvironmentsEnum = EnvironmentsEnum.mainnet;
 export const internal_api = 'https://internal.mvx.fr';
 export const internal_api_v2 = 'https://api.dinovox.com';

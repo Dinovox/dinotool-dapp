@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 export interface CollectionRole {
   canCreate: boolean;
   canBurn: boolean;
@@ -43,7 +43,8 @@ export const useGetCollections = (collection: string) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   useEffect(() => {
     const fetchData = async () => {

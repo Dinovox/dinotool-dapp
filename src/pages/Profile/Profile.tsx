@@ -1,8 +1,8 @@
-import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
+import { PageWrapper } from 'wrappers';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 import { useLocation } from 'react-router-dom';
-import { useGetLoginInfo, useGetAccountInfo } from 'hooks';
+import { useGetLoginInfo, useGetAccountInfo } from 'lib';
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
 import { internal_api_v2, graou_identifier } from 'config';
@@ -138,133 +138,127 @@ export const Profile = () => {
 
   if (loading || !profile) {
     return (
-      <AuthRedirectWrapper requireAuth={true}>
-        <PageWrapper>
-          <div className='flex flex-col items-center justify-center min-h-[300px]'>
-            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4'></div>
-            <span className='text-gray-500'>
-              {t('profile:loading_profile')}
-            </span>
-          </div>
-        </PageWrapper>
-      </AuthRedirectWrapper>
+      <PageWrapper>
+        <div className='flex flex-col items-center justify-center min-h-[300px]'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4'></div>
+          <span className='text-gray-500'>{t('profile:loading_profile')}</span>
+        </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <AuthRedirectWrapper requireAuth={true}>
-      <PageWrapper>
-        <div className='w-full flex justify-center items-center py-8'>
-          <div className='bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full flex flex-col items-center gap-6 border border-yellow-100'>
-            {/* Avatar */}
-            <div className='relative'>
-              <FaUserCircle
-                className='text-yellow-400'
-                style={{ fontSize: 80 }}
-              />
-              <span className='absolute bottom-0 right-0 bg-green-400 border-2 border-white rounded-full w-5 h-5'></span>
+    <PageWrapper>
+      <div className='w-full flex justify-center items-center py-8'>
+        <div className='bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full flex flex-col items-center gap-6 border border-yellow-100'>
+          {/* Avatar */}
+          <div className='relative'>
+            <FaUserCircle
+              className='text-yellow-400'
+              style={{ fontSize: 80 }}
+            />
+            <span className='absolute bottom-0 right-0 bg-green-400 border-2 border-white rounded-full w-5 h-5'></span>
+          </div>
+          {/* Username */}
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-gray-800 mb-1'>
+              {profile?.twitter?.username ||
+                profile?.discord?.username ||
+                'Utilisateur'}
             </div>
-            {/* Username */}
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-gray-800 mb-1'>
-                {profile?.twitter?.username ||
-                  profile?.discord?.username ||
-                  'Utilisateur'}
-              </div>
-              <div className='text-sm text-gray-400'>
-                {profile?.twitter
-                  ? 'Connecté via Twitter'
-                  : profile?.discord
-                  ? 'Connecté via Discord'
-                  : 'Connecté via Wallet'}
-              </div>
+            <div className='text-sm text-gray-400'>
+              {profile?.twitter
+                ? 'Connecté via Twitter'
+                : profile?.discord
+                ? 'Connecté via Discord'
+                : 'Connecté via Wallet'}
             </div>
-            {/* Adresse */}
-            <div className='w-full flex flex-col items-center gap-1'>
-              <span className='text-xs text-gray-400'>
+          </div>
+          {/* Adresse */}
+          <div className='w-full flex flex-col items-center gap-1'>
+            <span className='text-xs text-gray-400'>
+              {' '}
+              {t('profile:multiversx_address')}
+            </span>
+            <div className='flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200'>
+              <ShortenedAddress address={address} />
+            </div>
+          </div>
+          {/* Soldes */}
+          <div className='w-full flex flex-col gap-2 mt-2'>
+            <div className='flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200'>
+              <span className='font-medium text-gray-700'>
                 {' '}
-                {t('profile:multiversx_address')}
+                {t('profile:balance_token', {
+                  token: 'EGLD'
+                })}
               </span>
-              <div className='flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200'>
-                <ShortenedAddress address={address} />
-              </div>
+              <span className='font-mono text-yellow-600 font-bold'>
+                {egldBalance.toFixed(4)} EGLD
+              </span>
             </div>
-            {/* Soldes */}
-            <div className='w-full flex flex-col gap-2 mt-2'>
-              <div className='flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200'>
-                <span className='font-medium text-gray-700'>
-                  {' '}
-                  {t('profile:balance_token', {
-                    token: 'EGLD'
-                  })}
-                </span>
-                <span className='font-mono text-yellow-600 font-bold'>
-                  {egldBalance.toFixed(4)} EGLD
-                </span>
-              </div>
-              <div className='flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200'>
-                <span className='font-medium text-gray-700'>
-                  {t('profile:balance_token', {
-                    token: graou_identifier
-                  })}
-                </span>
-                <span className='font-mono text-yellow-600 font-bold'>
-                  {graouBalance.toFixed(2)} GRAOU
-                </span>
-              </div>
+            <div className='flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200'>
+              <span className='font-medium text-gray-700'>
+                {t('profile:balance_token', {
+                  token: graou_identifier
+                })}
+              </span>
+              <span className='font-mono text-yellow-600 font-bold'>
+                {graouBalance.toFixed(2)} GRAOU
+              </span>
             </div>
-            {/* Réseaux sociaux */}
-            <div className='flex flex-col gap-2 w-full mt-4'>
-              <div className='flex items-center gap-3 justify-center'>
-                {/* Discord */}
-                {profile?.discord ? (
-                  <button
-                    onClick={handleDisconnectDiscord}
-                    className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752c4] transition'
-                  >
-                    <FaDiscord className='text-xl' />
-                    {t('profile:disconnect_network', {
-                      network: 'Discord'
-                    })}{' '}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleConnectDiscord}
-                    className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752c4] transition'
-                  >
-                    <FaDiscord className='text-xl' />
-                    {t('profile:connect_network', {
-                      network: 'Discord'
-                    })}{' '}
-                  </button>
-                )}
-                {/* Twitter */}
-                {profile?.twitter ? (
-                  <button
-                    onClick={handleDisconnectTwitter}
-                    className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DA1F2] text-white font-semibold hover:bg-[#0d8ddb] transition'
-                  >
-                    <FaTwitter className='text-xl' />
-                    {t('profile:disconnect_network', {
-                      network: 'Twitter'
-                    })}{' '}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleConnectTwitter}
-                    className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DA1F2] text-white font-semibold hover:bg-[#0d8ddb] transition'
-                  >
-                    <FaTwitter className='text-xl' />
-                    {t('profile:connect_network', {
-                      network: 'Twitter'
-                    })}
-                  </button>
-                )}
-              </div>
+          </div>
+          {/* Réseaux sociaux */}
+          <div className='flex flex-col gap-2 w-full mt-4'>
+            <div className='flex items-center gap-3 justify-center'>
+              {/* Discord */}
+              {profile?.discord ? (
+                <button
+                  onClick={handleDisconnectDiscord}
+                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752c4] transition'
+                >
+                  <FaDiscord className='text-xl' />
+                  {t('profile:disconnect_network', {
+                    network: 'Discord'
+                  })}{' '}
+                </button>
+              ) : (
+                <button
+                  onClick={handleConnectDiscord}
+                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752c4] transition'
+                >
+                  <FaDiscord className='text-xl' />
+                  {t('profile:connect_network', {
+                    network: 'Discord'
+                  })}{' '}
+                </button>
+              )}
+              {/* Twitter */}
+              {profile?.twitter ? (
+                <button
+                  onClick={handleDisconnectTwitter}
+                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DA1F2] text-white font-semibold hover:bg-[#0d8ddb] transition'
+                >
+                  <FaTwitter className='text-xl' />
+                  {t('profile:disconnect_network', {
+                    network: 'Twitter'
+                  })}{' '}
+                </button>
+              ) : (
+                <button
+                  onClick={handleConnectTwitter}
+                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DA1F2] text-white font-semibold hover:bg-[#0d8ddb] transition'
+                >
+                  <FaTwitter className='text-xl' />
+                  {t('profile:connect_network', {
+                    network: 'Twitter'
+                  })}
+                </button>
+              )}
             </div>
           </div>
         </div>
-      </PageWrapper>
-    </AuthRedirectWrapper>
+      </div>
+    </PageWrapper>
   );
 };

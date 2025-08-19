@@ -1,19 +1,24 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useGetPendingTransactions } from '@multiversx/sdk-dapp/hooks/transactions/useGetPendingTransactions';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { useGetPendingTransactions, useGetIsLoggedIn } from 'lib';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import {
   lotteryContractAddress,
   xgraou_identifier,
   graou_identifier
 } from 'config';
 // import toHex from 'helpers/toHex';
-import { Address } from '@multiversx/sdk-core/out';
-import {
-  useGetAccountInfo,
-  useGetIsLoggedIn
-} from '@multiversx/sdk-dapp/hooks';
 import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -36,12 +41,16 @@ export const ActionBuy = ({
   time_start,
   ended
 }: any) => {
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
+
   const loading = useLoadTranslations('lotteries');
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
 
   const { t } = useTranslation();
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   const fees = new BigNumber(100000000000000);
 
@@ -50,77 +59,98 @@ export const ActionBuy = ({
     >(null);
 
   const addressTobech32 = new Address(lotteryContractAddress);
-  const { address } = useGetAccountInfo();
 
   const sendFundTransaction = async () => {
-    let fundTransaction;
+    let transaction: Transaction | Transaction[] = [];
+    let payload = 'buy@' + bigToHex(BigInt(lottery_id));
     if (price_identifier == 'EGLD-000000') {
-      fundTransaction = {
-        value: price_amount,
-        data: 'buy@' + bigToHex(BigInt(lottery_id)),
+      transaction = new Transaction({
+        value: BigInt(price_amount),
+        data: new TextEncoder().encode(payload),
         receiver: addressTobech32,
-        gasLimit: '20000000'
-      };
-    } else if (price_identifier == 'FREE-000000') {
-      fundTransaction = {
-        value: 0,
-        data:
-          'ESDTTransfer@' +
-          Buffer.from(graou_identifier, 'utf8').toString('hex') +
-          '@' +
-          bigToHex(price_amount.toFixed()) +
-          '@' +
-          Buffer.from('buy', 'utf8').toString('hex') +
-          '@' +
-          bigToHex(BigInt(lottery_id)),
-        receiver: addressTobech32,
-        gasLimit: '20000000'
-      };
-    } else if (price_nonce == 0) {
-      fundTransaction = {
-        value: 0,
-        data:
-          'ESDTTransfer@' +
-          Buffer.from(price_identifier, 'utf8').toString('hex') +
-          '@' +
-          bigToHex(price_amount.toFixed()) +
-          '@' +
-          Buffer.from('buy', 'utf8').toString('hex') +
-          '@' +
-          bigToHex(BigInt(lottery_id)),
-        receiver: addressTobech32,
-        gasLimit: '20000000'
-      };
-    } else {
-      fundTransaction = {
-        value: 0,
-        data:
-          'ESDTNFTTransfer@' +
-          Buffer.from(price_identifier, 'utf8').toString('hex') +
-          '@' +
-          bigToHex(BigInt(price_nonce)) +
-          '@' +
-          bigToHex(price_amount.toFixed()) +
-          '@' +
-          addressTobech32.hex() +
-          '@' +
-          Buffer.from('buy', 'utf8').toString('hex') +
-          '@' +
-          bigToHex(BigInt(lottery_id)),
-        receiver: address,
-        gasLimit: '20000000'
-      };
-    }
-    await refreshAccount();
+        gasLimit: BigInt('20000000'),
 
-    const { sessionId /*, error*/ } = await sendTransactions({
-      transactions: [fundTransaction],
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
+    } else if (price_identifier == 'FREE-000000') {
+      payload =
+        'ESDTTransfer@' +
+        Buffer.from(graou_identifier, 'utf8').toString('hex') +
+        '@' +
+        bigToHex(price_amount.toFixed()) +
+        '@' +
+        Buffer.from('buy', 'utf8').toString('hex') +
+        '@' +
+        bigToHex(BigInt(lottery_id));
+      transaction = new Transaction({
+        value: BigInt('0'),
+        data: new TextEncoder().encode(payload),
+        receiver: addressTobech32,
+        gasLimit: BigInt('20000000'),
+
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
+    } else if (price_nonce == 0) {
+      payload =
+        'ESDTTransfer@' +
+        Buffer.from(price_identifier, 'utf8').toString('hex') +
+        '@' +
+        bigToHex(price_amount.toFixed()) +
+        '@' +
+        Buffer.from('buy', 'utf8').toString('hex') +
+        '@' +
+        bigToHex(BigInt(lottery_id));
+      transaction = new Transaction({
+        value: BigInt('0'),
+        data: new TextEncoder().encode(payload),
+        receiver: addressTobech32,
+        gasLimit: BigInt('20000000'),
+
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
+    } else {
+      payload =
+        'ESDTNFTTransfer@' +
+        Buffer.from(price_identifier, 'utf8').toString('hex') +
+        '@' +
+        bigToHex(BigInt(price_nonce)) +
+        '@' +
+        bigToHex(price_amount.toFixed()) +
+        '@' +
+        addressTobech32.toHex() +
+        '@' +
+        Buffer.from('buy', 'utf8').toString('hex') +
+        '@' +
+        bigToHex(BigInt(lottery_id));
+      transaction = new Transaction({
+        value: BigInt('0'),
+        data: new TextEncoder().encode(payload),
+        receiver: new Address(address),
+        gasLimit: BigInt('20000000'),
+
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
+    }
+
+    const sessionId = await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing buy transaction',
         errorMessage: 'An error has occured buy',
         successMessage: 'Buy transaction successful'
-      },
-      redirectAfterSign: false
+      }
     });
     if (sessionId != null) {
       setTransactionSessionId(sessionId);

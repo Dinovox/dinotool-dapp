@@ -1,6 +1,6 @@
-import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
+import { PageWrapper } from 'wrappers';
 import './MintSFT.css';
-import { useGetAccount } from 'hooks';
+import { useGetAccount } from 'lib';
 import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import CreateLotteryModal from './Create';
@@ -188,18 +188,17 @@ export const LotteryList = () => {
 
   const maxButtons = totalPages - page > 3 ? 3 : totalPages - page;
   return (
-    <AuthRedirectWrapper requireAuth={false}>
-      <PageWrapper>
-        <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-          <>
-            <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-              {t('lotteries:lotteries')}
-            </div>
-            <div
-              className='filter-options'
-              style={{ margin: '3px', width: '100%' }}
-            >
-              {/* <button
+    <PageWrapper>
+      <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+        <>
+          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
+            {t('lotteries:lotteries')}
+          </div>
+          <div
+            className='filter-options'
+            style={{ margin: '3px', width: '100%' }}
+          >
+            {/* <button
                 className={`dinoButton ${status !== 'all' ? 'reverse' : ''}`}
                 name='filter'
                 value='all'
@@ -207,7 +206,7 @@ export const LotteryList = () => {
               >
                 {t('lotteries:status_all')}
               </button> */}
-              {/* <button
+            {/* <button
                 className={`dinoButton ${
                   status !== 'ongoing' ? 'reverse' : ''
                 }`}
@@ -218,7 +217,7 @@ export const LotteryList = () => {
                 {t('lotteries:status_ongoing')}
               </button> */}
 
-              {/* <button
+            {/* <button
                 className={`dinoButton ${status !== 'ended' ? 'reverse' : ''}`}
                 name='filter'
                 value='ended'
@@ -227,7 +226,7 @@ export const LotteryList = () => {
                 {t('lotteries:status_ended')}
               </button> */}
 
-              {/* {lotteriesVM.user_owned.length > 0 && (
+            {/* {lotteriesVM.user_owned.length > 0 && (
                 <button
                   className={`dinoButton ${
                     status !== 'owned' ? 'reverse' : ''
@@ -239,7 +238,7 @@ export const LotteryList = () => {
                   {t('lotteries:status_owned')}
                 </button>
               )} */}
-              {/* {lotteriesVM.user_tickets.length > 0 && (
+            {/* {lotteriesVM.user_tickets.length > 0 && (
                 <button
                   className={`dinoButton ${status !== 'user' ? 'reverse' : ''}`}
                   name='filter'
@@ -250,212 +249,209 @@ export const LotteryList = () => {
                 </button>
               )} */}
 
-              <select
-                className='dinoButton dropdownButton'
-                value={status}
-                onChange={(e) => {
-                  setStatus(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value='ongoing'>{t('lotteries:status_ongoing')}</option>
-                <option value='all'>{t('lotteries:status_all')}</option>
-                <option value='ended'>{t('lotteries:status_ended')}</option>
-                {lotteriesVM.user_tickets.length > 0 && (
-                  <option value='user'>
-                    {t('lotteries:status_participated')}
-                  </option>
-                )}
-                {lotteriesVM.user_owned.length > 0 && (
-                  <option value='owned'>{t('lotteries:status_owned')}</option>
-                )}
-              </select>
-
-              <select
-                className='dinoButton dropdownButton'
-                value={price}
-                onChange={(e) => {
-                  setPrice(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value=''>{t('lotteries:all_price_types')}</option>
-                <option value='xgraou'>XGRAOU</option>
-                <option value='bee'>BEE</option>
-                <option value='egld'>EGLD</option>
-                <option value='kwak'>KWAK</option>
-                <option value='poxp'>POXP</option>
-                <option value='qwt'>QWT</option>
-              </select>
-            </div>
-
-            {/* Affichage des cartes de loterie */}
-            <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6 p-3'>
-              {loading || isLoading ? (
-                <div>Chargement...</div>
-              ) : lotteriesDB && lotteriesDB.length > 0 ? (
-                lotteriesDB.map((lottery: DBLottery) => (
-                  <LotteryCard2
-                    key={lottery.id}
-                    page_number={page}
-                    status_filter={status}
-                    price_filter={price}
-                    data={{
-                      id: lottery.id,
-                      lottery_name: 'N/A',
-                      prize_identifier: lottery.prize_identifier || 'N/A',
-                      prize_nonce: lottery.prize_nonce || 0,
-                      tickets_sold: lottery.tickets_sold || 0,
-                      max_tickets: lottery.max_tickets || 0,
-                      start_time: lottery.start_time || '0',
-                      end_time: lottery.end_time || '0',
-                      price_type: lottery.price_type || 'N/A',
-                      price_amount: new BigNumber(lottery.price_amount || 0),
-                      price_identifier: lottery.price_identifier || 'N/A',
-                      cancelled: lottery.cancelled || false,
-                      price_data: lottery.price_data,
-                      image_url:
-                        lottery?.prize_data?.media[0]?.thumbnailUrl ||
-                        lottery?.price_data?.media[0]?.url ||
-                        '/default-lottery-image.png',
-                      winner_id: lottery.winner_id
-                    }}
-                  />
-                ))
-              ) : (
-                <div>Aucune loterie disponible</div>
+            <select
+              className='dinoButton dropdownButton'
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value='ongoing'>{t('lotteries:status_ongoing')}</option>
+              <option value='all'>{t('lotteries:status_all')}</option>
+              <option value='ended'>{t('lotteries:status_ended')}</option>
+              {lotteriesVM.user_tickets.length > 0 && (
+                <option value='user'>
+                  {t('lotteries:status_participated')}
+                </option>
               )}
-            </div>
+              {lotteriesVM.user_owned.length > 0 && (
+                <option value='owned'>{t('lotteries:status_owned')}</option>
+              )}
+            </select>
 
-            {/* Pagination */}
-            <div className='pagination'>
-              {/* Bouton "Précédent" */}
-              {page > 1 && (
+            <select
+              className='dinoButton dropdownButton'
+              value={price}
+              onChange={(e) => {
+                setPrice(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value=''>{t('lotteries:all_price_types')}</option>
+              <option value='xgraou'>XGRAOU</option>
+              <option value='bee'>BEE</option>
+              <option value='egld'>EGLD</option>
+              <option value='kwak'>KWAK</option>
+              <option value='poxp'>POXP</option>
+              <option value='qwt'>QWT</option>
+            </select>
+          </div>
+
+          {/* Affichage des cartes de loterie */}
+          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6 p-3'>
+            {loading || isLoading ? (
+              <div>Chargement...</div>
+            ) : lotteriesDB && lotteriesDB.length > 0 ? (
+              lotteriesDB.map((lottery: DBLottery) => (
+                <LotteryCard2
+                  key={lottery.id}
+                  page_number={page}
+                  status_filter={status}
+                  price_filter={price}
+                  data={{
+                    id: lottery.id,
+                    lottery_name: 'N/A',
+                    prize_identifier: lottery.prize_identifier || 'N/A',
+                    prize_nonce: lottery.prize_nonce || 0,
+                    tickets_sold: lottery.tickets_sold || 0,
+                    max_tickets: lottery.max_tickets || 0,
+                    start_time: lottery.start_time || '0',
+                    end_time: lottery.end_time || '0',
+                    price_type: lottery.price_type || 'N/A',
+                    price_amount: new BigNumber(lottery.price_amount || 0),
+                    price_identifier: lottery.price_identifier || 'N/A',
+                    cancelled: lottery.cancelled || false,
+                    price_data: lottery.price_data,
+                    image_url:
+                      lottery?.prize_data?.media[0]?.thumbnailUrl ||
+                      lottery?.price_data?.media[0]?.url ||
+                      '/default-lottery-image.png',
+                    winner_id: lottery.winner_id
+                  }}
+                />
+              ))
+            ) : (
+              <div>Aucune loterie disponible</div>
+            )}
+          </div>
+
+          {/* Pagination */}
+          <div className='pagination'>
+            {/* Bouton "Précédent" */}
+            {page > 1 && (
+              <span
+                className='pageButton'
+                onClick={() => setPage(page - 1)}
+                style={{
+                  height: '30px',
+                  width: '30px',
+                  backgroundColor: '#f0f0f0',
+                  border: '1px solid #ccc',
+                  lineHeight: '30px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  margin: '0 5px'
+                }}
+              >
+                ‹
+              </span>
+            )}
+
+            {/* Affichage dynamique des numéros de pages */}
+            {page > 1 && (
+              <>
                 <span
                   className='pageButton'
-                  onClick={() => setPage(page - 1)}
+                  onClick={() => setPage(1)}
                   style={{
                     height: '30px',
                     width: '30px',
-                    backgroundColor: '#f0f0f0',
+                    backgroundColor: page === 1 ? '#ddd' : '#f0f0f0',
                     border: '1px solid #ccc',
                     lineHeight: '30px',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    margin: '0 5px'
+                    margin: '0 5px',
+                    fontWeight: page === 1 ? 'bold' : 'normal'
                   }}
                 >
-                  ‹
+                  1
                 </span>
-              )}
+                {page > 2 && <span style={{ margin: '0 5px' }}>...</span>}
+              </>
+            )}
 
-              {/* Affichage dynamique des numéros de pages */}
-              {page > 1 && (
-                <>
+            {/* Bouton page */}
+            {maxButtons > 0 &&
+              [...Array(maxButtons)].map((_, index) => {
+                const pageNum = page + index;
+                return (
                   <span
+                    key={pageNum}
                     className='pageButton'
-                    onClick={() => setPage(1)}
+                    onClick={() => setPage(pageNum)}
                     style={{
                       height: '30px',
                       width: '30px',
-                      backgroundColor: page === 1 ? '#ddd' : '#f0f0f0',
+                      backgroundColor: pageNum === page ? '#ddd' : '#f0f0f0',
                       border: '1px solid #ccc',
                       lineHeight: '30px',
                       textAlign: 'center',
                       cursor: 'pointer',
                       margin: '0 5px',
-                      fontWeight: page === 1 ? 'bold' : 'normal'
+                      fontWeight: pageNum === page + 1 ? 'bold' : 'normal'
                     }}
                   >
-                    1
+                    {pageNum}
                   </span>
-                  {page > 2 && <span style={{ margin: '0 5px' }}>...</span>}
-                </>
-              )}
+                );
+              })}
 
-              {/* Bouton page */}
-              {maxButtons > 0 &&
-                [...Array(maxButtons)].map((_, index) => {
-                  const pageNum = page + index;
-                  return (
-                    <span
-                      key={pageNum}
-                      className='pageButton'
-                      onClick={() => setPage(pageNum)}
-                      style={{
-                        height: '30px',
-                        width: '30px',
-                        backgroundColor: pageNum === page ? '#ddd' : '#f0f0f0',
-                        border: '1px solid #ccc',
-                        lineHeight: '30px',
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        margin: '0 5px',
-                        fontWeight: pageNum === page + 1 ? 'bold' : 'normal'
-                      }}
-                    >
-                      {pageNum}
-                    </span>
-                  );
-                })}
-
-              {/* Bouton mid */}
-              {totalPages >= page + maxButtons && (
-                <>
-                  {page < totalPages - 1 && (
-                    <span style={{ margin: '0 5px' }}>...</span>
-                  )}
-                  <span
-                    className='pageButton'
-                    onClick={() => setPage(totalPages)}
-                    style={{
-                      height: '30px',
-                      width: '30px',
-                      backgroundColor: page === totalPages ? '#ddd' : '#f0f0f0',
-                      border: '1px solid #ccc',
-                      lineHeight: '30px',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      margin: '0 5px',
-                      fontWeight: page === totalPages ? 'bold' : 'normal'
-                    }}
-                  >
-                    {totalPages}
-                  </span>
-                </>
-              )}
-
-              {/* Bouton "Suivant" */}
-              {page < totalPages && totalPages > 1 && (
+            {/* Bouton mid */}
+            {totalPages >= page + maxButtons && (
+              <>
+                {page < totalPages - 1 && (
+                  <span style={{ margin: '0 5px' }}>...</span>
+                )}
                 <span
                   className='pageButton'
-                  onClick={() => setPage(page + 1)}
+                  onClick={() => setPage(totalPages)}
                   style={{
                     height: '30px',
                     width: '30px',
-                    backgroundColor: '#f0f0f0',
+                    backgroundColor: page === totalPages ? '#ddd' : '#f0f0f0',
                     border: '1px solid #ccc',
                     lineHeight: '30px',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    margin: '0 5px'
+                    margin: '0 5px',
+                    fontWeight: page === totalPages ? 'bold' : 'normal'
                   }}
                 >
-                  ›
+                  {totalPages}
                 </span>
-              )}
-            </div>
+              </>
+            )}
 
-            <CreateLotteryModal
-              count={lotteriesVM?.user_owned?.length}
-              cost_graou={userGraouBalance.isGreaterThanOrEqualTo(graou_cost)}
-              cost_egld={new BigNumber(balance).isGreaterThanOrEqualTo(
-                egld_cost
-              )}
-            />
-          </>
-        </div>
-      </PageWrapper>
-    </AuthRedirectWrapper>
+            {/* Bouton "Suivant" */}
+            {page < totalPages && totalPages > 1 && (
+              <span
+                className='pageButton'
+                onClick={() => setPage(page + 1)}
+                style={{
+                  height: '30px',
+                  width: '30px',
+                  backgroundColor: '#f0f0f0',
+                  border: '1px solid #ccc',
+                  lineHeight: '30px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  margin: '0 5px'
+                }}
+              >
+                ›
+              </span>
+            )}
+          </div>
+
+          <CreateLotteryModal
+            count={lotteriesVM?.user_owned?.length}
+            cost_graou={userGraouBalance.isGreaterThanOrEqualTo(graou_cost)}
+            cost_egld={new BigNumber(balance).isGreaterThanOrEqualTo(egld_cost)}
+          />
+        </>
+      </div>
+    </PageWrapper>
   );
 };

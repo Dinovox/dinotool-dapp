@@ -9,7 +9,7 @@ import {
   Collection,
   CollectionRole
 } from 'helpers/api/accounts/getCollections';
-import { useGetAccount } from 'hooks';
+import { useGetAccount } from 'lib';
 import { ActionSetSpecialRole } from 'helpers/actions/ActionSetSpecialRole';
 import { t } from 'i18next';
 import { Tooltip } from 'components/Tooltip';

@@ -10,21 +10,22 @@ import {
   BigUIntType
 } from '@multiversx/sdk-core';
 import { vaultContractAddress } from 'config';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import abi_json from 'contracts/dinovault.abi.json';
-import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
-import { useGetPendingTransactions } from 'hooks';
+import { useGetAccount } from 'lib';
+
 import { LockedNFT } from './../../../../../types/nft';
 
 export const useGetUserLockedNft = () => {
   const [lockedNfts, setLockedNfts] = useState<LockedNFT[]>([]);
   const { network } = useGetNetworkConfig();
-  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const entrypoint = new DevnetEntrypoint({ url: network.apiAddress });
   const contractAddress = Address.newFromBech32(vaultContractAddress);
   const abi = Abi.create(abi_json);
   const controller = entrypoint.createSmartContractController(abi);
   const { address } = useGetAccount();
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   const fetchLockedNfts = async () => {
     if (!address || hasPendingTransactions) return;

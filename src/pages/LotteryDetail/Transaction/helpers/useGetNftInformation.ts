@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 // import { network } from 'config';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig } from 'lib';
 import toHex from 'helpers/toHex';
 
 export const useGetNftInformations = (

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetNetworkConfig, useGetPendingTransactions } from 'hooks';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import BigNumber from 'bignumber.js';
-import { S } from 'framer-motion/dist/types.d-B50aGbjN';
+
 export interface Nfts {
   identifier: string;
   collection: string;
@@ -43,7 +43,8 @@ export const useGetNfts = (identifier: string) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { hasPendingTransactions } = useGetPendingTransactions();
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
 
   useEffect(() => {
     const fetchData = async () => {

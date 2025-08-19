@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks/account/useGetLoginInfo';
+import { useGetLoginInfo } from 'lib';
 import axios from 'axios';
 import { internal_api } from 'config';
 import { useNavigate } from 'react-router-dom';

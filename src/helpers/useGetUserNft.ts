@@ -3,15 +3,15 @@ import {
   useGetAccountInfo,
   useGetNetworkConfig,
   useGetPendingTransactions
-} from '@multiversx/sdk-dapp/hooks';
+} from 'lib';
 import axios from 'axios';
 import { API_URL } from 'config';
 export const useGetUserNFT = (address: string, identifier?: string) => {
   const network = useGetNetworkConfig();
   const [esdtBalance, setNftBalance] = useState(<any>[]);
   // const address = useGetAccountInfo().address;
-  const { hasPendingTransactions } = useGetPendingTransactions();
-
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
   let url = '/accounts/' + address + '/nfts?from=0&size=1000';
   if (identifier) {
     url = url + `&identifiers=${identifier}`;

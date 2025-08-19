@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
 import { mintcontractAddress } from 'config';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig } from 'lib';
 import mintgaz_json from 'contracts/mintgaz.abi.json';
 
 import { BigNumber } from 'bignumber.js';
@@ -20,7 +20,7 @@ export const useGetMintable = () => {
   });
 
   const { network } = useGetNetworkConfig();
-  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const entrypoint = new DevnetEntrypoint({ url: network.apiAddress });
   const contractAddress = Address.newFromBech32(mintcontractAddress);
   const abi = Abi.create(mintgaz_json);
   const controller = entrypoint.createSmartContractController(abi);

@@ -1,39 +1,54 @@
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
 import { t } from 'i18next';
 export const ActionFreeze: React.FC<{
   tokenIdentifier: string;
-  address: string;
+  addressTarget: string;
   nonce: BigNumber;
-}> = ({ tokenIdentifier, address, nonce }) => {
+}> = ({ tokenIdentifier, addressTarget, nonce }) => {
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
+
   const tokenIdentifierHex = Buffer.from(tokenIdentifier).toString('hex');
 
   const handleSend = async () => {
-    const addressHex = new Address(address).hex();
+    const addressHex = new Address(addressTarget).toHex();
 
-    let tx_data = `freeze@${tokenIdentifierHex}@${addressHex}`;
+    let payload = `freeze@${tokenIdentifierHex}@${addressHex}`;
     if (nonce.isGreaterThan(0)) {
-      tx_data = `freezeSingleNFT@${tokenIdentifierHex}@${bigNumToHex(
+      payload = `freezeSingleNFT@${tokenIdentifierHex}@${bigNumToHex(
         nonce
       )}@${addressHex}`;
     }
-    const createTransaction = {
-      value: '0',
-      data: tx_data,
-      receiver:
-        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-      gasLimit: 60000000
-    };
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(
+        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+      ),
+      gasLimit: BigInt('60000000'),
 
-    await refreshAccount();
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
 
-    const { sessionId, error } = await sendTransactions({
-      transactions: createTransaction,
+    await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing SFT creation transaction',
         errorMessage: 'An error occurred during SFT creation',

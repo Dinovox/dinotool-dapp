@@ -6,9 +6,8 @@ import {
   DevnetEntrypoint
 } from '@multiversx/sdk-core';
 import { lotteryContractAddress } from 'config';
-import { useGetNetworkConfig } from 'hooks';
+import { useGetNetworkConfig, useGetAccount } from 'lib';
 import abi_json from 'contracts/dinodraw.abi.json';
-import { useGetAccount } from '@multiversx/sdk-dapp/hooks';
 import { internal_api } from 'config';
 
 export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
@@ -62,7 +61,7 @@ export const useGetLotteriesVM = () => {
   });
 
   const { network } = useGetNetworkConfig();
-  const entrypoint = new DevnetEntrypoint(network.apiAddress);
+  const entrypoint = new DevnetEntrypoint({ url: network.apiAddress });
   const contractAddress = Address.newFromBech32(lotteryContractAddress);
   const abi = Abi.create(abi_json);
   const controller = entrypoint.createSmartContractController(abi);

@@ -1,9 +1,16 @@
 import React from 'react';
-import { Button } from 'antd';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +33,8 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
   decimals = 0,
   disabled = false
 }) => {
-  const { address, account } = useGetAccountInfo();
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
   const { t } = useTranslation();
   const loading = useLoadTranslations('actions');
 
@@ -49,36 +57,39 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
     const typeHex = Buffer.from(type).toString('hex');
     const denominator = bigNumToHex(new BigNumber(decimals));
 
-    let data = '';
+    let payload = '';
 
     if (type === 'META') {
       if (isDynamic) {
-        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        payload = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       } else {
-        data = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        payload = `registerMetaESDT@${nameHex}@${tickerHex}@${denominator}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       }
     } else {
       if (isDynamic) {
-        data = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        payload = `registerDynamic@${nameHex}@${tickerHex}@${typeHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       } else {
         const fn = type === 'NFT' ? 'issueNonFungible' : 'issueSemiFungible';
-        data = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
+        payload = `${fn}@${nameHex}@${tickerHex}@${canFreezeHex}@${falseHex}@${canWipeHex}@${falseHex}@${canPauseHex}@${falseHex}@${canTransferNFTCreateRoleHex}@${trueHex}@${canChangeOwnerHex}@${falseHex}@${canUpgradeHex}@${trueHex}@${canAddSpecialRolesHex}@${trueHex}`;
       }
     }
 
-    const createTransaction = {
-      value: '50000000000000000', // 0.05 EGLD
-      data: data,
-      gasLimit: 60000000,
-      receiver:
-        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-      sender: address
-    };
+    const transaction = new Transaction({
+      value: BigInt('50000000000000000'), // 0.05 EGLD
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(
+        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+      ),
+      gasLimit: BigInt('60000000'),
 
-    await refreshAccount();
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
 
-    const { sessionId, error } = await sendTransactions({
-      transactions: createTransaction,
+    await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing creation',
         errorMessage: 'An error occurred creation',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks/account/useGetLoginInfo';
+import { useGetLoginInfo } from 'lib';
 import { internal_api } from 'config';
 
 export const useGetDinoStakers = () => {

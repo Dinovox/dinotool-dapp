@@ -1,11 +1,20 @@
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
-import { sendTransactions } from '@multiversx/sdk-dapp/services';
-import { Address } from '@multiversx/sdk-core/out';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils';
+import { signAndSendTransactions } from 'helpers';
+import {
+  AbiRegistry,
+  Address,
+  GAS_PRICE,
+  SmartContractTransactionsFactory,
+  Transaction,
+  TransactionsFactoryConfig,
+  useGetAccount,
+  useGetNetworkConfig,
+  useGetAccountInfo
+} from 'lib';
 import { useTranslation } from 'react-i18next';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
+import BigNumber from 'bignumber.js';
 
 interface ActionModifyCreatorProps {
   tokenIdentifier: string;
@@ -18,7 +27,8 @@ export const ActionModifyCreator: React.FC<ActionModifyCreatorProps> = ({
   nonce,
   disabled = false
 }) => {
-  const { address, account } = useGetAccountInfo();
+  const { network } = useGetNetworkConfig();
+  const { address } = useGetAccountInfo();
   const { t } = useTranslation();
   const loading = useLoadTranslations('collections');
 
@@ -30,19 +40,22 @@ export const ActionModifyCreator: React.FC<ActionModifyCreatorProps> = ({
     const nonceHex = bigNumToHex(nonce);
 
     // Construct the data field
-    const data = `ESDTModifyCreator@${tokenIdentifierHex}@${nonceHex}`;
+    const payload = `ESDTModifyCreator@${tokenIdentifierHex}@${nonceHex}`;
 
-    const createTransaction = {
-      value: '0',
-      data: data,
-      gasLimit: 60000000,
-      receiver: address,
-      sender: address
-    };
+    const transaction = new Transaction({
+      value: BigInt('0'),
+      data: new TextEncoder().encode(payload),
+      receiver: new Address(address),
+      gasLimit: BigInt('60000000'),
 
-    await refreshAccount();
-    const { sessionId, error } = await sendTransactions({
-      transactions: createTransaction,
+      gasPrice: BigInt(GAS_PRICE),
+      chainID: network.chainId,
+      sender: new Address(address),
+      version: 1
+    });
+
+    await signAndSendTransactions({
+      transactions: [transaction],
       transactionsDisplayInfo: {
         processingMessage: 'Processing set roles transaction',
         errorMessage: 'An error occurred during set roles',

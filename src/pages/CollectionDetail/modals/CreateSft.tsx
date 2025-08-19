@@ -3,7 +3,7 @@ import { Dialog } from '@headlessui/react';
 import BigNumber from 'bignumber.js';
 import { ActionCreateSFT } from 'helpers/actions/ActionCreateSFT';
 import { RolesCollections } from 'helpers/api/accounts/getRolesCollections';
-import { useGetAccount, useGetLoginInfo } from 'hooks';
+import { useGetAccount, useGetLoginInfo } from 'lib';
 import { m } from 'framer-motion';
 import { Collection } from 'helpers/api/accounts/getCollections';
 import { internal_api_v2 } from 'config';
