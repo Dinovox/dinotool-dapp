@@ -3,7 +3,6 @@ import { Transaction } from './Transaction';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import { ActionBurn } from './Transaction/ActionBurn';
 import { useGetUserHasBuyed } from 'pages/Dashboard/widgets/MintGazAbi/hooks/useGetUserHasBuyed';
-import { formatAmount } from 'lib';
 import toHex from 'helpers/toHex';
 import './MintSFT.css';
 import ShortenedAddress from 'helpers/shortenedAddress';

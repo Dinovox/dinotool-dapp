@@ -1,5 +1,4 @@
 import React from 'react';
-import { formatAmount } from 'lib';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';

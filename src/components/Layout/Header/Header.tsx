@@ -16,14 +16,6 @@ import { FaUserCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 const dinovoxLogo = '/DinoVoxDinoTools.png';
 const DinoToolsAlpha = '/DinoToolsAlpha.png';
 
-const callbackUrl = `${window.location.origin}/`;
-const onRedirect = undefined;
-const shouldAttemptReLogin = false;
-const options = {
-  shouldBroadcastLogoutAcrossTabs: true,
-  hasConsentPopup: false
-};
-
 export const Header = () => {
   const loading = useLoadTranslations('global');
   const { t } = useTranslation();

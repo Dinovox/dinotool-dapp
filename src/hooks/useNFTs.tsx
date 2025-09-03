@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGetAccount } from 'lib';
+import { useGetAccount, useGetNetworkConfig } from 'lib';
 import { NFT } from '../types/nft';
 
 export const useNFTs = () => {
@@ -7,6 +7,7 @@ export const useNFTs = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { address } = useGetAccount();
+  const { network } = useGetNetworkConfig();
 
   const fetchNFTs = async () => {
     if (!address) return;
@@ -17,7 +18,7 @@ export const useNFTs = () => {
     try {
       // Simulation d'appel API MultiversX pour récupérer les NFTs
       const response = await fetch(
-        `https://devnet-api.multiversx.com/accounts/${address}/nfts?size=100`
+        `${network.apiAddress}/accounts/${address}/nfts?size=100`
       );
 
       if (!response.ok) {

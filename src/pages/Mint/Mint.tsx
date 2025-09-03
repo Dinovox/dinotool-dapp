@@ -4,7 +4,7 @@ import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import { ActionBuy } from './Transaction/ActionBuy';
 import { useGetUserHasBuyed } from 'pages/Dashboard/widgets/MintGazAbi/hooks/useGetUserHasBuyed';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
-import { formatAmount, useGetAccount } from 'lib';
+import { useGetAccount } from 'lib';
 import toHex from 'helpers/toHex';
 import './MintSFT.css';
 import { useEffect, useState } from 'react';
@@ -91,23 +91,23 @@ export const Mint = () => {
                     <span className='text-label'>Wallet:</span>{' '}
                     {mintable && mintable.payment_token == 'EGLD' ? (
                       <>
-                        {formatAmount({
-                          input: balance,
-                          decimals: 18,
-                          digits: 2,
-                          showLastNonZeroDecimal: false,
-                          addCommas: true
+                        {Number(
+                          new BigNumber(balance).dividedBy(10 ** 18)
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2
                         })}
+                        {'  '}
                       </>
                     ) : (
                       <>
-                        {formatAmount({
-                          input: esdtAmount.toFixed(),
-                          decimals: 18,
-                          digits: 2,
-                          showLastNonZeroDecimal: false,
-                          addCommas: true
+                        {Number(
+                          new BigNumber(esdtAmount).dividedBy(10 ** 18)
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2
                         })}
+                        {'  '}
                       </>
                     )}{' '}
                     <span className='identifier'>
@@ -118,34 +118,29 @@ export const Mint = () => {
                 )}
                 <div className='info-item'>
                   <span className='text-label'>{t('mint:price')}: </span>
-                  {formatAmount({
-                    input: mintable?.payment_price?.toFixed(),
-                    decimals: 18,
-                    digits: 2,
-                    showLastNonZeroDecimal: false,
-                    addCommas: true
+                  {Number(
+                    new BigNumber(mintable?.payment_price).dividedBy(10 ** 18)
+                  ).toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 8
                   })}{' '}
                   <span className='identifier'> {mintable.payment_token}</span>
                 </div>
                 <div className='info-item'>
                   <span className='text-label'>{t('mint:mint_left')}: </span>{' '}
-                  {formatAmount({
-                    input: mintable.amount.toFixed(),
-                    decimals: 0,
-                    digits: 0,
-                    showLastNonZeroDecimal: false,
-                    addCommas: true
-                  })}
+                  {Number(mintable?.amount).toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  })}{' '}
                 </div>
                 {nft_information.supply && (
                   <div className='info-item'>
                     <span className='text-label'>{t('mint:supply')}: </span>{' '}
-                    {formatAmount({
-                      input: nft_information.supply,
-                      digits: 0,
-                      decimals: 0,
-                      showLastNonZeroDecimal: false,
-                      addCommas: true
+                    {Number(
+                      new BigNumber(nft_information.supply).toFixed()
+                    ).toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
                     })}
                   </div>
                 )}

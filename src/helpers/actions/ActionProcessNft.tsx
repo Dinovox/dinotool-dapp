@@ -1,9 +1,16 @@
+//not imported/used anywhere yet should be used to refresh nft thumbnails if needed
+//requires auth token from login with mvx utils
+//https://utils.multiversx.com/auth
+//https://docs.multiversx.com/developer-tools/mvx-utils/authentication
+
 import React, { useState } from 'react';
-import { useGetAccountInfo, useGetLoginInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo, useGetLoginInfo, useGetNetworkConfig } from 'lib';
 
 export const ActionProcessNft: React.FC<{
   collection: string;
 }> = ({ collection }) => {
+  const { network } = useGetNetworkConfig();
+
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +28,8 @@ export const ActionProcessNft: React.FC<{
       // token genereted by mvx utils does work.
       // https://utils.multiversx.com/auth
       const res = await fetch(
-        'https://devnet-api.multiversx.com/nfts/process',
+        `${network.apiAddress}/nfts/process`,
+
         {
           method: 'POST',
           headers: {

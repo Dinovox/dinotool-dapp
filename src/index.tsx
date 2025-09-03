@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { initApp } from 'lib';
 import './styles/globals.css';
-import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { config } from './initConfig';
 

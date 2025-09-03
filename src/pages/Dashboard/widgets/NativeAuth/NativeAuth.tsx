@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { Label } from 'components/Label';
 import { MissingNativeAuthError } from 'components/MissingNativeAuthError';
 import { OutputContainer } from 'components/OutputContainer';
-import { FormatAmount } from 'components/sdkDappComponents';
-import { useGetLoginInfo, useGetNetworkConfig } from 'hooks';
+import { FormatAmount, useGetLoginInfo, useGetNetworkConfig } from 'lib';
 import { useGetProfile } from './hooks';
 import { Username } from '../Account/components';
 

@@ -1,8 +1,8 @@
 import React from 'react';
-import { formatAmount } from 'lib';
 import notFound from './esdtnotfound.svg';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import BigNumber from 'bignumber.js';
 
 interface EsdtInfo {
   id: string;
@@ -55,12 +55,13 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
               />
               <span className='identifier'>
                 {' '}
-                {formatAmount({
-                  input: amount.toFixed(),
-                  decimals: esdtInfo?.decimals ? esdtInfo?.decimals : 0,
-                  digits: 2,
-                  showLastNonZeroDecimal: true,
-                  addCommas: true
+                {Number(
+                  new BigNumber(amount)
+                    .dividedBy(10 ** esdtInfo?.decimals)
+                    .toFixed(2)
+                ).toLocaleString(undefined, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2
                 })}{' '}
                 EGLD{' '}
                 {is_free && (
@@ -99,12 +100,13 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
 
               <span className='identifier'>
                 {' '}
-                {formatAmount({
-                  input: amount.toFixed(),
-                  decimals: esdtInfo?.decimals ? esdtInfo?.decimals : 0,
-                  digits: 2,
-                  showLastNonZeroDecimal: true,
-                  addCommas: true
+                {Number(
+                  new BigNumber(amount)
+                    .dividedBy(10 ** esdtInfo?.decimals)
+                    .toFixed(2)
+                ).toLocaleString(undefined, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2
                 })}{' '}
                 {esdtInfo?.identifier}{' '}
                 {is_free && (

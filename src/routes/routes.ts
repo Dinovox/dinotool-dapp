@@ -51,7 +51,8 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.quiz,
       title: 'Quiz',
-      component: Quiz
+      component: Quiz,
+      authenticatedRoute: true
     },
     {
       path: RouteNamesEnum.lotteries,
@@ -66,7 +67,8 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.vouchers,
       title: t('vouchers'),
-      component: Vouchers
+      component: Vouchers,
+      authenticatedRoute: true
     },
     {
       path: RouteNamesEnum.collections,
@@ -86,7 +88,8 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.profile,
       title: t('profil'),
-      component: Profile
+      component: Profile,
+      authenticatedRoute: true
     },
     {
       path: RouteNamesEnum.locker,

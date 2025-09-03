@@ -28,6 +28,7 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
 
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
+
   const isLoggedIn = useGetIsLoggedIn();
   const navigate = useNavigate();
   const fees = new BigNumber(140669180000000);

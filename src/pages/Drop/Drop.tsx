@@ -1,42 +1,75 @@
 import { PageWrapper } from 'wrappers';
-import { Transaction } from './Transaction';
-import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
+// Removed unused imports to limit dependencies
 import { ActionBuy } from './Transaction/ActionBuy';
-import toHex from 'helpers/toHex';
 import './MintSFT.css';
-import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAccountInfo, FormatAmount } from 'lib';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { addressIsValid } from '@multiversx/sdk-dapp/out/utils/validation/addressIsValid';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import BigNumber from 'bignumber.js';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetDinoHolders } from './Transaction/helpers/useGetDinoHolders';
 import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
-import { cp } from 'fs';
 import useLoadTranslations from 'hooks/useLoadTranslations';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+
+// --- Helper: normalizeAmountInput ---
+function normalizeAmountInput(input: string | number): string {
+  if (typeof input === 'number') return input.toString();
+  // Replace comma with dot, trim spaces
+  return input.replace(',', '.').trim();
+}
+
+// --- Helper: countFractionDigits ---
+function countFractionDigits(value: string | number): number {
+  const str = typeof value === 'number' ? value.toString() : value;
+  const parts = str.split('.');
+  return parts.length > 1 ? parts[1].length : 0;
+}
+
+// --- Helper: hasDecimalSeparator ---
+function hasDecimalSeparator(value: string | number): boolean {
+  const str = typeof value === 'number' ? value.toString() : value;
+  return str.includes('.') || str.includes(',');
+}
+
+// --- Types ---
+type TokenType = 'SFT' | 'ESDT' | '';
+
+type BaseToken = {
+  identifier: string;
+  name?: string;
+  decimals?: number; // number or string in sources; we'll handle defensively
+  balance?: string | number; // same
+  collection?: string; // SFT/NFT
+  nonce?: number; // SFT/NFT
+  type?: string; // "FungibleESDT" | "SemiFungibleESDT" | etc.
+};
 
 export const Drop = () => {
   const loading = useLoadTranslations('drop');
   const { t } = useTranslation();
 
+  // External datasets (checkbox sources)
   const dinobox_holders = useGetDinoHolders('DINOBOX-54d57b');
   const dinovox_holders = useGetDinoHolders('DINOVOX-cb2297');
   const dinovox_stakers = useGetDinoStakers();
+
   const [boxHolders, setBoxHolders] = useState(false);
   const [voxHolders, setVoxHolders] = useState(false);
   const [voxStakers, setVoxStakers] = useState(false);
 
   // 1. Type selection (SFT/ESDT)
-  const [tokenType, setTokenType] = useState<'SFT' | 'ESDT' | ''>('');
+  const [tokenType, setTokenType] = useState<TokenType>('');
   const { address } = useGetAccountInfo();
 
-  // 2. Token selection
+  // 2. Token data sources
   const userNftBalance = useGetUserNFT(address);
   const userEsdtBalance = useGetUserESDT();
-  const [selectedToken, setSelectedToken] = useState<any>(null);
+
+  // 2b. Stable key + derived selected token
+  const [selectedKey, setSelectedKey] = useState<string>('');
 
   // 3. Quantity
   const [defaultQty, setDefaultQty] = useState<BigNumber>(new BigNumber(1));
@@ -55,12 +88,46 @@ export const Drop = () => {
   const [batches, setBatches] = useState<any[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
-  // --- Handlers ---
+  // --- Helpers: token list & keys ---
+  const tokenOptions: BaseToken[] = useMemo(() => {
+    if (tokenType === 'SFT') {
+      return (userNftBalance ?? []).filter(
+        (item: any) => item.type === 'SemiFungibleESDT'
+      );
+    }
+    if (tokenType === 'ESDT') {
+      return userEsdtBalance ?? [];
+    }
+    return [];
+  }, [tokenType, userNftBalance, userEsdtBalance]);
 
-  // Token type radio
+  const getTokenKey = (t: BaseToken, tt: TokenType) => {
+    if (tt === 'ESDT') return t.identifier;
+    const col = t.collection || t.identifier;
+    const nonce = t.nonce ?? 0;
+    return `${col}|${String(nonce)}`;
+  };
+
+  const tokenByKey = useMemo(() => {
+    const m = new Map<string, BaseToken>();
+    for (const t of tokenOptions) m.set(getTokenKey(t, tokenType), t);
+    return m;
+  }, [tokenOptions, tokenType]);
+
+  const selectedToken: BaseToken | undefined = useMemo(() => {
+    return tokenByKey.get(selectedKey);
+  }, [tokenByKey, selectedKey]);
+
+  const selectedBalance = useMemo(
+    () => new BigNumber(selectedToken?.balance ?? 0),
+    [selectedToken]
+  );
+
+  // --- Handlers ---
   const handleTokenTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTokenType(e.target.value as 'SFT' | 'ESDT');
-    setSelectedToken(null);
+    const tt = e.target.value as TokenType;
+    setTokenType(tt);
+    setSelectedKey('');
     setDecimals(new BigNumber(0));
     setDefaultQty(new BigNumber(1));
     setAddresses('');
@@ -73,34 +140,17 @@ export const Drop = () => {
     setSubmitted(false);
   };
 
-  // Token dropdown
   const handleTokenSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (!value) {
-      setSelectedToken(null);
-      setDecimals(new BigNumber(0));
-      return;
-    }
-    const [identifier, collection, nonce, balance, decimalsValue] =
-      value.split('|');
-    setSelectedToken({
-      identifier,
-      collection,
-      nonce: new BigNumber(nonce),
-      balance: new BigNumber(balance),
-      decimals: new BigNumber(decimalsValue)
-    });
-    setDecimals(new BigNumber(decimalsValue));
+    const key = e.target.value;
+    setSelectedKey(key);
     setSubmitted(false);
   };
 
-  // Quantity
   const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDefaultQty(new BigNumber(e.target.value));
+    setDefaultQty(new BigNumber(e.target.value || 0));
     setSubmitted(false);
   };
 
-  // Addresses textarea
   const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (submitted) return;
     const input = e.target.value;
@@ -112,7 +162,7 @@ export const Drop = () => {
 
     const newValidAddresses: any[] = [];
     const newInvalidAddresses: any[] = [];
-    const seenAddresses = new Set();
+    const seenAddresses = new Set<string>();
 
     let validCountTemp = 0;
     let invalidCountTemp = 0;
@@ -120,49 +170,112 @@ export const Drop = () => {
 
     addressList.forEach((line: any) => {
       if (!line) return;
-      const [address, quantity] = line.split(/\s+/);
+      const [addr, rawQtyMaybe] = line.split(/\s+/);
 
-      if (addressIsValid(address)) {
-        if (address.startsWith('erd1qqqqqqqqqqq')) {
-          invalidCountTemp++;
-          newInvalidAddresses.push(`${line} ${t('drop:invalid_sc')}`);
-        } else if (seenAddresses.has(address)) {
-          invalidCountTemp++;
-          newInvalidAddresses.push(`${line} ${t('drop:invalid_duplicate')}`);
-        } else {
-          validCountTemp++;
-          let qty = quantity
-            ? new BigNumber(quantity.replace(',', '.'))
-            : defaultQty;
-
-          if (useDecimals && decimals.gt(0)) {
-            qty = qty.multipliedBy(10 ** decimals.toNumber());
-          }
-
-          newValidAddresses.push({
-            address,
-            quantity: qty
-          });
-          totalQuantityTemp = totalQuantityTemp.plus(qty);
-          seenAddresses.add(address);
-        }
-      } else {
+      if (!addressIsValid(addr)) {
         invalidCountTemp++;
         newInvalidAddresses.push(`${line} ${t('drop:invalid_format')}`);
+        return;
       }
+      if (addr.startsWith('erd1qqqqqqqqqqq')) {
+        invalidCountTemp++;
+        newInvalidAddresses.push(`${line} ${t('drop:invalid_sc')}`);
+        return;
+      }
+      if (seenAddresses.has(addr)) {
+        invalidCountTemp++;
+        newInvalidAddresses.push(`${line} ${t('drop:invalid_duplicate')}`);
+        return;
+      }
+
+      const rawQty = rawQtyMaybe ?? defaultQty.toString();
+      const nrm = normalizeAmountInput(rawQty);
+
+      if (!nrm || new BigNumber(nrm).isNaN() || new BigNumber(nrm).lte(0)) {
+        invalidCountTemp++;
+        newInvalidAddresses.push(`${line} ${t('drop:invalid_amount')}`);
+        return;
+      }
+
+      if (useDecimals) {
+        const frac = countFractionDigits(nrm);
+        if (decimals.gt(0)) {
+          if (frac > decimals.toNumber()) {
+            invalidCountTemp++;
+            newInvalidAddresses.push(
+              `${line} ${t('drop:invalid_precision', {
+                maxDecimals: decimals.toNumber()
+              })}`
+            );
+            return;
+          }
+        } else {
+          if (frac > 0) {
+            invalidCountTemp++;
+            newInvalidAddresses.push(
+              `${line} ${t('drop:invalid_precision_zero')}`
+            );
+            return;
+          }
+        }
+      } else {
+        if (hasDecimalSeparator(nrm)) {
+          invalidCountTemp++;
+          newInvalidAddresses.push(`${line} ${t('drop:invalid_base_units')}`);
+          return;
+        }
+      }
+
+      let qty = new BigNumber(nrm);
+      if (useDecimals && decimals.gt(0)) {
+        qty = qty.multipliedBy(new BigNumber(10).pow(decimals));
+      }
+      if (!qty.isFinite() || qty.lte(0)) {
+        invalidCountTemp++;
+        newInvalidAddresses.push(`${line} ${t('drop:invalid_amount')}`);
+        return;
+      }
+
+      newValidAddresses.push({ address: addr, quantity: qty });
+      totalQuantityTemp = totalQuantityTemp.plus(qty);
+      seenAddresses.add(addr);
+      validCountTemp++;
+
+      // if (addressIsValid(addr)) {
+      //   if (addr.startsWith('erd1qqqqqqqqqqq')) {
+      //     invalidCountTemp++;
+      //     newInvalidAddresses.push(`${line} ${t('drop:invalid_sc')}`);
+      //   } else if (seenAddresses.has(addr)) {
+      //     invalidCountTemp++;
+      //     newInvalidAddresses.push(`${line} ${t('drop:invalid_duplicate')}`);
+      //   } else {
+      //     validCountTemp++;
+      //     let qty = quantity
+      //       ? new BigNumber(String(quantity).replace(',', '.'))
+      //       : defaultQty;
+
+      //     if (useDecimals && decimals.gt(0)) {
+      //       qty = qty.multipliedBy(new BigNumber(10).pow(decimals));
+      //     }
+
+      //     newValidAddresses.push({ address: addr, quantity: qty });
+      //     totalQuantityTemp = totalQuantityTemp.plus(qty);
+      //     seenAddresses.add(addr);
+      //   }
+      // } else {
+      //   invalidCountTemp++;
+      //   newInvalidAddresses.push(`${line} ${t('drop:invalid_format')}`);
+      // }
     });
 
-    // Découpe des adresses valides en chunks
+    // Découpe en lots de 100
     const chunkSize = 100;
     const chunks: any[] = [];
     for (let i = 0; i < newValidAddresses.length; i += chunkSize) {
       const chunk = newValidAddresses.slice(i, i + chunkSize);
-      let batchQuantity = new BigNumber(
-        chunk.reduce(
-          (sum: BigNumber, entry: any) =>
-            sum.plus(new BigNumber(entry.quantity)),
-          new BigNumber(0)
-        )
+      const batchQuantity = chunk.reduce(
+        (sum: BigNumber, entry: any) => sum.plus(new BigNumber(entry.quantity)),
+        new BigNumber(0)
       );
       chunks.push({
         addresses: chunk,
@@ -171,8 +284,8 @@ export const Drop = () => {
         totalQuantity: batchQuantity
       });
     }
-    setBatches(chunks);
 
+    setBatches(chunks);
     setValidCount(validCountTemp);
     setInvalidCount(invalidCountTemp);
     setTotalQuantity(totalQuantityTemp);
@@ -180,17 +293,7 @@ export const Drop = () => {
     setInvalidAddresses(newInvalidAddresses);
   };
 
-  // --- UI ---
-
-  // Token options
-  const tokenOptions =
-    tokenType === 'SFT'
-      ? userNftBalance?.filter((item: any) => item.type === 'SemiFungibleESDT')
-      : tokenType === 'ESDT'
-      ? userEsdtBalance
-      : [];
-
-  // Reset addresses if tokenType or selectedToken change
+  // Reset addresses/etc when tokenType OR selectedKey changes
   useEffect(() => {
     setAddresses('');
     setValidAddresses([]);
@@ -200,51 +303,51 @@ export const Drop = () => {
     setTotalQuantity(new BigNumber(0));
     setBatches([]);
     setSubmitted(false);
-  }, [tokenType, selectedToken]);
+  }, [tokenType, selectedKey]);
 
+  // Keep decimals aligned with selected token
   useEffect(() => {
-    if (submitted) {
-      return;
-    }
+    const d = new BigNumber((selectedToken?.decimals ?? 0) as any);
+    setDecimals(d.isNaN() ? new BigNumber(0) : d);
+  }, [selectedToken]);
+
+  // Auto-fill addresses from holders/stakers selections
+  useEffect(() => {
+    if (submitted) return;
+
     const uniqueAddressesSet = new Set<string>();
 
-    // Ajouter les adresses de dinobox_holder si boxHolders est coché
     if (boxHolders && dinobox_holders && dinobox_holders.length > 0) {
       dinobox_holders
-        .map((holder: any) => holder.address)
-        .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
-        .forEach((address: any) => uniqueAddressesSet.add(address));
+        .map((h: any) => h.address)
+        .filter((a: string) => !a.startsWith('erd1qqqqqqqqqq'))
+        .forEach((a: string) => uniqueAddressesSet.add(a));
     }
 
     if (voxStakers && dinovox_stakers && dinovox_stakers.length > 0) {
       dinovox_stakers
-        .map((staker: any) => staker.address)
-        .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
-        .forEach((address: any) => uniqueAddressesSet.add(address));
+        .map((s: any) => s.address)
+        .filter((a: string) => !a.startsWith('erd1qqqqqqqqqq'))
+        .forEach((a: string) => uniqueAddressesSet.add(a));
     }
 
-    // Ajouter les adresses de dinovox_holder si voxHolders est coché
     if (voxHolders && dinovox_holders && dinovox_holders.length > 0) {
       dinovox_holders
-        .map((holder: any) => holder.address)
-        .filter((address: string) => !address.startsWith('erd1qqqqqqqqqq')) // Filtrer les SC
-        .forEach((address: any) => uniqueAddressesSet.add(address));
+        .map((h: any) => h.address)
+        .filter((a: string) => !a.startsWith('erd1qqqqqqqqqq'))
+        .forEach((a: string) => uniqueAddressesSet.add(a));
     }
 
-    // Joindre les adresses uniques avec un retour à la ligne
     const addressesString = Array.from(uniqueAddressesSet).join('\n');
-    if (addressesString) {
-      setAddresses(addressesString);
-    }
+    if (addressesString) setAddresses(addressesString);
+
     const handler = setTimeout(() => {
       handleAddressChange({
         target: { value: addresses } as EventTarget & HTMLTextAreaElement
       } as React.ChangeEvent<HTMLTextAreaElement>);
-    }, 300); // Délai de 300ms
+    }, 300);
 
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [
     addresses,
     useDecimals,
@@ -252,9 +355,14 @@ export const Drop = () => {
     defaultQty,
     voxStakers,
     boxHolders,
-    voxHolders
+    voxHolders,
+    submitted,
+    dinobox_holders,
+    dinovox_holders,
+    dinovox_stakers
   ]);
 
+  // --- Render ---
   return (
     <PageWrapper>
       <div className='w-full flex justify-center items-center py-8'>
@@ -264,6 +372,7 @@ export const Drop = () => {
             <div className='mx-auto' style={{ margin: '10px' }}>
               <span>{t('drop:title')}</span>
             </div>
+
             {/* 1. Type selection */}
             <div className='w-full flex flex-col gap-2'>
               <label className='font-semibold text-gray-700 mb-1'>
@@ -292,37 +401,33 @@ export const Drop = () => {
                 </label>
               </div>
             </div>
+
             {/* 2. Token selection */}
             {tokenType && (
               <div className='w-full flex flex-col gap-2'>
                 <select
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
-                  value={
-                    selectedToken
-                      ? `${selectedToken.identifier}|${selectedToken.collection}|${selectedToken.nonce}|${selectedToken.balance}|${selectedToken.decimals}`
-                      : ''
-                  }
+                  value={selectedKey}
                   onChange={handleTokenSelect}
                 >
                   <option value=''>
-                    {t('drop:choose_token_type', { tokenType: tokenType })} --
+                    {t('drop:choose_token_type', { tokenType })} --
                   </option>
-                  {tokenOptions.map((item: any, idx: number) => (
-                    <option
-                      key={`${item.identifier}|${item.nonce || 0}`}
-                      value={`${item.identifier}|${
-                        item.collection || item.identifier
-                      }|${item.nonce || 0}|${item.balance}|${
-                        item.decimals || 0
-                      }`}
-                    >
-                      {item.identifier}
-                      {item.nonce && ` (nonce: ${item.nonce})`}
-                    </option>
-                  ))}
+                  {tokenOptions.map((item: BaseToken) => {
+                    const key = getTokenKey(item, tokenType);
+                    return (
+                      <option key={key} value={key}>
+                        {item.identifier}
+                        {tokenType === 'SFT' &&
+                          item.nonce != null &&
+                          ` (nonce: ${item.nonce})`}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             )}
+
             {/* 3. Quantity */}
             {selectedToken && (
               <div className='w-full flex flex-col gap-2'>
@@ -352,12 +457,16 @@ export const Drop = () => {
                 )}
                 <div className='flex flex-col gap-1 text-xs text-gray-400'>
                   <span>
-                    Solde disponible :{' '}
+                    Solde disponible:{' '}
                     <span className='font-mono text-yellow-600 font-bold'>
-                      <FormatAmount
-                        value={selectedToken.balance.toFixed()}
-                        showLabel={false}
-                      />
+                      {Number(
+                        selectedBalance
+                          .dividedBy(new BigNumber(10).pow(decimals))
+                          .toFixed()
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: decimals.gt(0) ? 6 : 0
+                      })}
                     </span>
                   </span>
                   {decimals.gt(0) && (
@@ -366,81 +475,82 @@ export const Drop = () => {
                 </div>
               </div>
             )}
+
             {/* 4. Addresses */}
             {selectedToken && (
               <div className='w-full flex flex-col gap-2'>
                 <label className='font-semibold text-gray-700 mb-1'>
                   {t('drop:list_of_addresses')}
-                </label>{' '}
-                <>
-                  <div className='form-group'>
-                    <div className='checkbox-wrapper'>
-                      <input
-                        type='checkbox'
-                        id='voxStakers'
-                        checked={voxStakers}
-                        onChange={() => {
-                          setAddresses('');
-                          setVoxStakers(!voxStakers);
-                        }}
-                      />{' '}
-                      <label htmlFor='voxStakers' className='checkbox-label'>
-                        Dino Stakers{' '}
-                        <span className='tooltip-inline'>
-                          (ℹ)
-                          <span className='tooltiptext-inline'>
-                            {t('drop:dino_stakers_tooltip')}
-                          </span>
+                </label>
+
+                <div className='form-group'>
+                  <div className='checkbox-wrapper'>
+                    <input
+                      type='checkbox'
+                      id='voxStakers'
+                      checked={voxStakers}
+                      onChange={() => {
+                        setAddresses('');
+                        setVoxStakers(!voxStakers);
+                      }}
+                    />
+                    <label htmlFor='voxStakers' className='checkbox-label'>
+                      Dino Stakers{' '}
+                      <span className='tooltip-inline'>
+                        (ℹ)
+                        <span className='tooltiptext-inline'>
+                          {t('drop:dino_stakers_tooltip')}
                         </span>
-                      </label>
-                      <input
-                        type='checkbox'
-                        id='boxHolders'
-                        checked={boxHolders}
-                        onChange={() => {
-                          setAddresses('');
-                          setBoxHolders(!boxHolders);
-                        }}
-                      />{' '}
-                      <label htmlFor='boxHolders' className='checkbox-label'>
-                        Box Holders{' '}
-                        <span className='tooltip-inline'>
-                          (ℹ)
-                          <span className='tooltiptext-inline'>
-                            {t('drop:box_holders_tooltip')}
-                          </span>
+                      </span>
+                    </label>
+
+                    <input
+                      type='checkbox'
+                      id='boxHolders'
+                      checked={boxHolders}
+                      onChange={() => {
+                        setAddresses('');
+                        setBoxHolders(!boxHolders);
+                      }}
+                    />
+                    <label htmlFor='boxHolders' className='checkbox-label'>
+                      Box Holders{' '}
+                      <span className='tooltip-inline'>
+                        (ℹ)
+                        <span className='tooltiptext-inline'>
+                          {t('drop:box_holders_tooltip')}
                         </span>
-                      </label>
-                      <input
-                        type='checkbox'
-                        id='voxHolders'
-                        checked={voxHolders}
-                        onChange={() => {
-                          setAddresses('');
-                          setVoxHolders(!voxHolders);
-                        }}
-                      />{' '}
-                      <label htmlFor='voxHolders' className='checkbox-label'>
-                        Vox Holders{' '}
-                        <span className='tooltip-inline'>
-                          (ℹ)
-                          <span className='tooltiptext-inline'>
-                            {t('drop:vox_holders_tooltip')}
-                          </span>
+                      </span>
+                    </label>
+
+                    <input
+                      type='checkbox'
+                      id='voxHolders'
+                      checked={voxHolders}
+                      onChange={() => {
+                        setAddresses('');
+                        setVoxHolders(!voxHolders);
+                      }}
+                    />
+                    <label htmlFor='voxHolders' className='checkbox-label'>
+                      Vox Holders{' '}
+                      <span className='tooltip-inline'>
+                        (ℹ)
+                        <span className='tooltiptext-inline'>
+                          {t('drop:vox_holders_tooltip')}
                         </span>
-                      </label>
-                    </div>
+                      </span>
+                    </label>
                   </div>
-                </>
+                </div>
+
                 <textarea
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
                   value={addresses}
                   placeholder={t('drop:addresses_placeholder')}
                   onChange={handleAddressChange}
                   required
-                  style={{
-                    minHeight: '120px'
-                  }}
+                  style={{ minHeight: '120px' }}
                   disabled={submitted}
                 />
                 <div className='text-xs text-gray-400'>
@@ -452,6 +562,7 @@ export const Drop = () => {
                 </div>
               </div>
             )}
+
             {/* 5. Résumé & Action */}
             {(validCount > 0 || invalidCount > 0) && (
               <div className='w-full flex flex-col gap-2 mt-2'>
@@ -479,47 +590,63 @@ export const Drop = () => {
                 <div
                   className='rounded-lg px-4 py-2 mt-2'
                   style={{
-                    backgroundColor: selectedToken?.balance?.lt(totalQuantity)
+                    backgroundColor: selectedBalance.lt(totalQuantity)
                       ? '#ffcccc'
                       : '#e6ffe6'
                   }}
                 >
                   <span>
-                    Total à envoyer :{' '}
+                    Total à envoyer:{' '}
                     <span className='font-mono text-yellow-600 font-bold'>
-                      <FormatAmount
+                      {Number(
+                        new BigNumber(totalQuantity)
+                          .dividedBy(new BigNumber(10).pow(decimals))
+                          .toFixed()
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: decimals.toNumber()
+                      })}
+                      {/* <FormatAmount
                         value={totalQuantity.toFixed()}
                         showLabel={false}
-                      />
+                      /> */}
                     </span>
                   </span>
                   <br />
                   <span>
-                    Solde disponible :{' '}
+                    Solde disponible:{' '}
                     <span className='font-mono text-yellow-600 font-bold'>
-                      <FormatAmount
-                        value={selectedToken?.balance?.toFixed()}
+                      {Number(
+                        selectedBalance
+                          .dividedBy(new BigNumber(10).pow(decimals))
+                          .toFixed()
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: decimals.gt(0) ? 6 : 0
+                      })}
+                      {/* <FormatAmount
+                        value={selectedBalance.toFixed()}
                         showLabel={false}
-                      />
+                      /> */}
                     </span>
                   </span>
                 </div>
                 {selectedToken &&
-                  selectedToken.balance &&
                   validCount > 0 &&
                   invalidCount === 0 &&
-                  selectedToken.balance.isGreaterThanOrEqualTo(
-                    totalQuantity
-                  ) && (
+                  selectedBalance.isGreaterThanOrEqualTo(totalQuantity) && (
                     <div className='w-full flex justify-center mt-2'>
                       <ActionBuy
-                        identifier={selectedToken?.collection}
-                        nonce={selectedToken?.nonce}
+                        identifier={
+                          (selectedToken.collection ||
+                            selectedToken.identifier) as string
+                        }
+                        nonce={selectedToken.nonce as any}
                         batches={batches}
                         submitted={submitted}
                         onSubmit={() => setSubmitted(true)}
                         disabled={
-                          selectedToken.balance.isLessThan(totalQuantity) ||
+                          selectedBalance.isLessThan(totalQuantity) ||
                           !selectedToken.identifier
                         }
                       />
@@ -529,7 +656,9 @@ export const Drop = () => {
             )}
           </div>
         </div>
-      </div>{' '}
+      </div>
     </PageWrapper>
   );
 };
+
+export default Drop;

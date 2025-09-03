@@ -276,11 +276,16 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({
                 : ''
             }`}
           >
-            {data.price_amount
-              .dividedBy(
-                data.price_data.decimals ? 10 ** data.price_data.decimals : 1
-              )
-              .toFixed()}{' '}
+            {Number(
+              data.price_amount
+                .dividedBy(
+                  data.price_data.decimals ? 10 ** data.price_data.decimals : 1
+                )
+                .toFixed()
+            ).toLocaleString(undefined, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 8
+            })}{' '}
             {formatPriceIdentifier(data.price_identifier)}
           </span>
         </div>
