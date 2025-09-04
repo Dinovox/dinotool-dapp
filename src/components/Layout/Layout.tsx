@@ -12,7 +12,7 @@ export const Layout = ({ children }: PropsWithChildren) => {
       <main className='flex flex-grow items-stretch justify-center pt-6 m-auto'>
         <AuthRedirectWrapper>{children}</AuthRedirectWrapper>
       </main>
-      <Outlet />
+
       <Footer />
     </div>
   );

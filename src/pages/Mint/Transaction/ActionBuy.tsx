@@ -21,6 +21,7 @@ import bigToHex from 'helpers/bigToHex';
 import BigNumber from 'bignumber.js';
 import { useNavigate } from 'react-router-dom';
 import { t } from 'i18next';
+import { ConnectButton } from 'components/Button/ConnectButton';
 
 export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
   const { network } = useGetNetworkConfig();
@@ -91,9 +92,7 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
       {!isLoggedIn ? (
         <>
           {' '}
-          <button className='dinoButton' onClick={() => navigate('/unlock')}>
-            Connect
-          </button>
+          <ConnectButton />
         </>
       ) : (
         <>

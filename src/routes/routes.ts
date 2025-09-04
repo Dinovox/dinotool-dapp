@@ -29,14 +29,7 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.home,
       title: t('home'),
-      component: Home,
-      children: [
-        {
-          path: RouteNamesEnum.unlock,
-          title: 'Unlock',
-          component: Unlock
-        }
-      ]
+      component: Home
     },
     {
       path: RouteNamesEnum.mint,

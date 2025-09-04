@@ -5,12 +5,12 @@ import { EnvironmentsEnum, ICustomProvider, InitAppType } from './lib';
 import { InMemoryProvider } from './provider/inMemoryProvider';
 
 const providers: ICustomProvider[] = [
-  {
-    name: 'In Memory Provider',
-    type: 'inMemoryProvider',
-    iconUrl: `${window.location.origin}/multiversx-white.svg`,
-    constructor: async (options) => new InMemoryProvider(options)
-  }
+  // {
+  //   name: 'In Memory Provider',
+  //   type: 'inMemoryProvider',
+  //   iconUrl: `${window.location.origin}/multiversx-white.svg`,
+  //   constructor: async (options) => new InMemoryProvider(options)
+  // }
 ];
 
 (window as any).multiversx = {};

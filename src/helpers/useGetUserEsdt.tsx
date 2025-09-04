@@ -8,7 +8,7 @@ import axios from 'axios';
 export const useGetUserESDT = (identifier?: string) => {
   const { network } = useGetNetworkConfig();
   const [esdtBalance, setEsdtBalance] = useState<any>([]);
-  const address = useGetAccountInfo().address;
+  const { address } = useGetAccountInfo();
 
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
@@ -18,10 +18,9 @@ export const useGetUserESDT = (identifier?: string) => {
     url += `&identifier=${identifier}`;
   }
   const getUserESDT = async () => {
-    if (hasPendingTransactions == true) {
+    if (hasPendingTransactions == true || !address) {
       return;
     }
-
     if (address != '') {
       try {
         const { data } = await axios.get<[]>(url, {
@@ -38,7 +37,7 @@ export const useGetUserESDT = (identifier?: string) => {
 
   useEffect(() => {
     getUserESDT();
-  }, [hasPendingTransactions, identifier]);
+  }, [address, hasPendingTransactions, identifier]);
 
   return esdtBalance;
 };

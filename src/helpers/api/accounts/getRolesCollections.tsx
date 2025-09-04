@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
-import { useGetNetworkConfig } from 'lib';
+import { useGetIsLoggedIn, useGetNetworkConfig } from 'lib';
 import { API_URL } from 'config';
 
 export interface Role {
@@ -57,8 +57,9 @@ export const useAccountsRolesCollections = (
   options: UseAccountsRolesOptions = {}
 ) => {
   const { network } = useGetNetworkConfig();
+  const isLoggedIn = useGetIsLoggedIn();
   const [data, setData] = useState<RolesCollections[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export const useAccountsRolesCollections = (
     if (address) {
       fetchData();
     }
-  }, [address, JSON.stringify(options), network.apiAddress]);
+  }, [isLoggedIn, address, JSON.stringify(options), network.apiAddress]);
 
   return { data, loading, error };
 };

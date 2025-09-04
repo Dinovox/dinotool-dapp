@@ -24,6 +24,7 @@ import BigNumber from 'bignumber.js';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { ConnectButton } from 'components/Button/ConnectButton';
 
 // import './../../Mint/MintSFT.css';
 
@@ -165,9 +166,7 @@ export const ActionBuy = ({
       {!isLoggedIn ? (
         <>
           {' '}
-          <button className='dinoButton' onClick={() => navigate('/unlock')}>
-            {t('global:connect')}
-          </button>
+          <ConnectButton />
         </>
       ) : (
         <>
@@ -227,10 +226,19 @@ export const ActionBuy = ({
                     ) && (
                       <>
                         {' '}
-                        {balance.multipliedBy(10 ** 18).toFixed()} /{' '}
-                        {price_amount
-                          .multipliedBy(10 ** price_decimals)
-                          .toFixed()}{' '}
+                        {Number(
+                          balance.dividedBy(10 ** 18).toFixed()
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 8
+                        })}{' '}
+                        /{' '}
+                        {Number(
+                          price_amount.dividedBy(10 ** 18).toFixed()
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 8
+                        })}{' '}
                       </>
                     ))}
 
@@ -240,13 +248,19 @@ export const ActionBuy = ({
                   esdt_balance.isLessThan(new BigNumber(price_amount)) && (
                     <>
                       {' '}
-                      {esdt_balance
-                        .multipliedBy(10 ** price_decimals)
-                        .toFixed()}{' '}
+                      {Number(
+                        esdt_balance.dividedBy(10 ** price_decimals).toFixed()
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 8
+                      })}{' '}
                       /{' '}
-                      {price_amount
-                        .multipliedBy(10 ** price_decimals)
-                        .toFixed()}{' '}
+                      {Number(
+                        price_amount.dividedBy(10 ** price_decimals).toFixed()
+                      ).toLocaleString(undefined, {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 8
+                      })}{' '}
                     </>
                   )}
 

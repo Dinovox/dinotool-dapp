@@ -1,38 +1,50 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useLocation
+} from 'react-router-dom';
 import './routes/i18n';
 import { AxiosInterceptors, BatchTransactionsContextProvider } from 'wrappers';
 import { Layout } from './components';
 import { useRoutesWithTranslation } from 'routes';
-import { PageNotFound } from 'pages';
+import { PageNotFound, Unlock } from 'pages';
 
 export const App = () => {
   const routes = useRoutesWithTranslation();
+
+  const location = useLocation();
+  const state = location.state as { background?: Location };
+  const background = state?.background;
   return (
-    <Router>
-      <AxiosInterceptors>
-        <BatchTransactionsContextProvider>
-          <Layout>
+    <AxiosInterceptors>
+      <BatchTransactionsContextProvider>
+        <Layout>
+          <Routes location={background || location}>
+            {routes.map((route) => (
+              <Route
+                key={`route-key-${route.path}`}
+                path={route.path}
+                element={<route.component />}
+              >
+                {route.children?.map((child) => (
+                  <Route
+                    key={`route-key-${route.path}-${child.path}`}
+                    path={child.path}
+                    element={<child.component />}
+                  />
+                ))}{' '}
+              </Route>
+            ))}
+            <Route path='*' element={<PageNotFound />} />
+          </Routes>{' '}
+          {background && (
             <Routes>
-              {routes.map((route) => (
-                <Route
-                  key={`route-key-${route.path}`}
-                  path={route.path}
-                  element={<route.component />}
-                >
-                  {route.children?.map((child) => (
-                    <Route
-                      key={`route-key-${route.path}-${child.path}`}
-                      path={child.path}
-                      element={<child.component />}
-                    />
-                  ))}
-                </Route>
-              ))}
-              <Route path='*' element={<PageNotFound />} />
+              <Route path='/unlock' element={<Unlock />} />
             </Routes>
-          </Layout>
-        </BatchTransactionsContextProvider>
-      </AxiosInterceptors>
-    </Router>
+          )}
+        </Layout>
+      </BatchTransactionsContextProvider>
+    </AxiosInterceptors>
   );
 };

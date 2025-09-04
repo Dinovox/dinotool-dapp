@@ -8,11 +8,12 @@ import {
   useGetNetworkConfig
 } from 'lib';
 import { RouteNamesEnum } from 'localConstants';
-import { useMatch, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { environment } from 'config';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import { FaUserCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { ConnectButton } from 'components/Button/ConnectButton';
 const dinovoxLogo = '/DinoVoxDinoTools.png';
 const DinoToolsAlpha = '/DinoToolsAlpha.png';
 
@@ -63,9 +64,30 @@ export const Header = () => {
     navigate(RouteNamesEnum.profile);
   };
 
-  const ConnectButton = isUnlockRoute ? null : (
-    <MxLink to={RouteNamesEnum.unlock}>{t('global:connect')}</MxLink>
-  );
+  // function ConnectButton({
+  //   t,
+  //   isUnlockRoute
+  // }: {
+  //   t: any;
+  //   isUnlockRoute: boolean;
+  // }) {
+  //   const location = useLocation();
+  //   if (isUnlockRoute) return null;
+
+  //   const from = encodeURIComponent(
+  //     location.pathname + location.search + location.hash
+  //   );
+
+  //   console.log({ from });
+  //   return (
+  //     <Link
+  //       to={`${RouteNamesEnum.unlock}?from=${from}`}
+  //       state={{ background: location }} // garde l’effet “modale au-dessus”
+  //     >
+  //       {t('global:connect')}
+  //     </Link>
+  //   );
+  // }
 
   return (
     <div>
@@ -136,7 +158,7 @@ export const Header = () => {
                 )}
               </div>
             ) : (
-              ConnectButton
+              <ConnectButton />
             )}
           </div>
         </nav>
