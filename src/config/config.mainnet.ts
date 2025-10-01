@@ -36,3 +36,7 @@ export const lottery_cost = {
   graou: '100000000000000000000',
   egld: '100000000000000000'
 };
+
+export const pox_api = 'https://api.poxp.xyz';
+
+export const dinoclaim_api = 'http://localhost:3000';

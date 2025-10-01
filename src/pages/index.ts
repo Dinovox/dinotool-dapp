@@ -14,3 +14,5 @@ export * from './CollectionDetail';
 export * from './CollectionIdentifier';
 export * from './Profile';
 export * from './Locker';
+export * from './Claim';
+export * from './ClaimAdmin';

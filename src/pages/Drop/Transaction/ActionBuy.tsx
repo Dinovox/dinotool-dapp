@@ -72,7 +72,7 @@ export const ActionBuy = ({
         new Transaction({
           value: BigInt('0'),
           data: new TextEncoder().encode(payload),
-          receiver: new Address(dropContract),
+          receiver: new Address(address),
           gasLimit: BigInt(3000000 + batch.addresses.length * 580000),
 
           gasPrice: BigInt(GAS_PRICE),

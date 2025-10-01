@@ -12,7 +12,8 @@ import {
   CollectionIdentifier,
   Profile,
   Locker,
-  Unlock
+  Claim,
+  ClaimAdmin
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
@@ -88,6 +89,21 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       path: RouteNamesEnum.locker,
       title: t('locker'),
       component: Locker
+    },
+    {
+      path: RouteNamesEnum.claim,
+      title: t('claim'),
+      component: Claim
+    },
+    {
+      path: RouteNamesEnum.claimid,
+      title: 'claim/:id',
+      component: Claim
+    },
+    {
+      path: RouteNamesEnum.claimadmin,
+      title: t('claimAdmin'),
+      component: ClaimAdmin
     }
   ];
 };

@@ -11,5 +11,8 @@ export enum RouteNamesEnum {
   collections = '/collections',
   nfts = '/nfts',
   profile = '/profile',
-  locker = '/locker'
+  locker = '/locker',
+  claim = '/claim',
+  claimid = '/claim/:id',
+  claimadmin = '/claimadmin'
 }
