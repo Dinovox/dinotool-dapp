@@ -34,7 +34,7 @@ export const LotteryDetail = () => {
   const { t } = useTranslation();
 
   const location = useLocation();
-  const page = location.state?.page_number;
+  const page = location.state?.page_number ? location.state?.page_number : 1;
   const status_filter = location.state?.status;
   const price_filter = location.state?.price;
   let return_url = `/lotteries?page=${page}`;
@@ -474,6 +474,7 @@ export const LotteryDetail = () => {
                       disabled={lottery.tickets_sold.isGreaterThan(50)}
                     />
                   )}
+
                   <TwitterShareButton lottery_id={lotteryID} />
                 </div>
               )}

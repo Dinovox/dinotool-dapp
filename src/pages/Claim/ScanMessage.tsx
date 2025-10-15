@@ -12,6 +12,8 @@ import { OutputContainer } from 'components/OutputContainer';
 import { useNavigate, useParams } from 'react-router-dom';
 import Scan from './components/scan';
 import { ScanSuccess } from './components/ScanSuccess';
+import { useGetIsLoggedIn } from 'lib';
+import { dino_claim_url } from 'config';
 
 export const ScanMessage = () => {
   //set url from code and reverse using navigate
@@ -20,6 +22,7 @@ export const ScanMessage = () => {
   let { id } = useParams();
   const [code, setCode] = useState(id ? id : '');
 
+  const isLoggedIn = useGetIsLoggedIn();
   const [isSubmit, setIsSumbit] = useState(false);
   const [scan, setScan] = useState<any>('No result');
   const [showScan, setShowScan] = useState<any>(false);
@@ -38,7 +41,7 @@ export const ScanMessage = () => {
 
   //read code from qrcode scan url
   // const url = 'https://app.dinovox.com/claim/';
-  const url = 'https://poxp.xyz/claim/';
+  const url = dino_claim_url + '/';
   const handleDataFromScan = (data: any) => {
     if (handledRef.current) return; // ignore les lectures suivantes
     if (typeof data !== 'string') return;
@@ -50,8 +53,12 @@ export const ScanMessage = () => {
       const remove_style = message.split('?')[0];
       setCode(remove_style);
       setShowScan(false);
-      setIsSumbit(true);
       setShowSuccess(true);
+
+      if (isLoggedIn) {
+        setIsSumbit(true);
+      }
+
       setTimeout(() => {
         setShowSuccess(false);
       }, 2000);
@@ -86,7 +93,7 @@ export const ScanMessage = () => {
             className='dinoButton '
           >
             <FontAwesomeIcon icon={faQrcode} className='mr-1' />
-            Scan
+            Scan QR
           </Button>
         )}
       </div>{' '}
@@ -121,7 +128,7 @@ export const ScanMessage = () => {
           <Button
             data-testid='signMsgBtn'
             onClick={handleSubmit}
-            disabled={!code}
+            disabled={!code || !isLoggedIn}
           >
             <FontAwesomeIcon icon={faFileSignature} className='mr-1' />
             Claim code

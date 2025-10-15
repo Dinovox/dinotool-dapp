@@ -88,7 +88,7 @@ export const useGetNftInformations = (
     const url = '/nfts/' + identifier + '-' + toHex(nonce);
 
     try {
-      const { data } = await axios.get<[]>(url, {
+      const { data } = await axios.get(url, {
         baseURL: network.apiAddress,
         params: {}
       });
@@ -96,11 +96,11 @@ export const useGetNftInformations = (
       //storage of 1000 minutes
       const expire = time.getTime() + 1000 * 60 * 1000;
       localStorage.setItem(
-        'esdt_' + identifier + '-' + toHex(nonce),
+        'esdt_' + data.identifier + '-' + toHex(nonce),
         JSON.stringify(data)
       );
       localStorage.setItem(
-        'esdt_' + identifier + '-' + toHex(nonce) + '_expire',
+        'esdt_' + data.identifier + '-' + toHex(nonce) + '_expire',
         expire.toString()
       );
     } catch (err) {

@@ -1,5 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { dino_claim_url } from 'config';
 
 const THEME = {
   aquaLight: '#CFF4F6',
@@ -25,7 +26,7 @@ type Props = {
 
 export const PrettyQRCardsPrintFold: React.FC<Props> = ({
   items,
-  claimBaseUrl = 'https://poxp.xyz/claim/',
+  claimBaseUrl = dino_claim_url,
   pageSize = 'A4',
   orientation = 'portrait',
   marginMm = 7,
@@ -33,6 +34,12 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
   foldGapMm = 2 // petit espace pour le pli
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [withBack, setWithBack] = React.useState(true);
+  const [filterStatus, setFilterStatus] = React.useState(true);
+
+  const filtered_items = filterStatus
+    ? items.filter((c: any) => c.status === 'open')
+    : items;
 
   // --- layout page & grille (carte FIXE 50×65 mm) ---
   const layout = useMemo(() => {
@@ -51,11 +58,21 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
     const pairH = cardH * 2 + foldGapMm;
 
     const cols = Math.max(1, Math.floor((innerW + gapMm) / (cardW + gapMm)));
-    const rows = Math.max(1, Math.floor((innerH + gapMm) / (pairH + gapMm)));
+    const rows = withBack
+      ? Math.max(1, Math.floor((innerH + gapMm) / (pairH + gapMm)))
+      : Math.max(1, Math.floor((innerH + gapMm) / (cardH + gapMm)));
     const perPage = cols * rows;
 
     return { w, h, innerW, innerH, cols, rows, perPage, cardW, cardH, pairH };
-  }, [pageSize, orientation, marginMm, gapMm, foldGapMm]);
+  }, [
+    pageSize,
+    orientation,
+    marginMm,
+    gapMm,
+    foldGapMm,
+    withBack,
+    filterStatus
+  ]);
 
   // util mm → px (≈ 96dpi)
   const mm2px = (mm: number) => Math.round(mm * 3.78);
@@ -70,20 +87,26 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
       font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
     }
 
-    .sheet { width:${layout.innerW}mm; margin:0 auto; page-break-after: always; }
+    .sheet { width:${
+      layout.innerW
+    }mm; margin:0 auto; page-break-after: always; }
 
     /* Grille de PAIRES (chaque cellule contient recto+pli+verso) */
     .grid {
       display:grid;
       grid-template-columns: repeat(${layout.cols}, ${layout.cardW}mm);
-      grid-template-rows: repeat(${layout.rows}, ${layout.pairH}mm);
+      grid-template-rows: repeat(${layout.rows}, ${
+        withBack ? layout.pairH : layout.cardH
+      }mm);
       gap:${gapMm}mm;
       justify-content:start; align-content:start;
     }
 
     /* La paire verticalement : recto puis verso */
     .pair {
-      width:${layout.cardW}mm; height:${layout.pairH}mm;
+      width:${layout.cardW}mm; height:${
+        withBack ? layout.pairH : layout.cardH
+      }mm;
       display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
       page-break-inside:avoid; break-inside:avoid; box-sizing:border-box;
     }
@@ -104,12 +127,16 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
 
     /* --- RECTO --- */
     .card {
-      background: linear-gradient(180deg, ${THEME.aquaLight} 0%, ${THEME.aqua} 100%);
+      background: linear-gradient(180deg, ${THEME.aquaLight} 0%, ${
+        THEME.aqua
+      } 100%);
       box-shadow: 0 1mm 3mm rgba(0,0,0,.10);
     }
     .card::after {
       content:''; position:absolute; inset:1.2mm;
-      border:0.5mm solid ${THEME.innerStroke}; border-radius:3mm; pointer-events:none;
+      border:0.5mm solid ${
+        THEME.innerStroke
+      }; border-radius:3mm; pointer-events:none;
     }
 
     .tape {
@@ -143,9 +170,15 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
       background:#fff; border:0.4mm solid ${THEME.borderBack};
       transform: rotate(180deg); /* clé: verso retourné */
     }
-    .back-title { font-weight:800; color:${THEME.textDark}; font-size:10pt; margin:0 0 2mm; text-align:center; }
-    .back-qr-wrap { background:#fff; border:0.6mm dashed ${THEME.aqua}; border-radius:2mm; padding:0mm; }
-    .back-steps { font-size:8.2pt; color:${THEME.textDark}; text-align:center; line-height:1.25; margin-top:0mm; white-space:pre-line; }
+    .back-title { font-weight:800; color:${
+      THEME.textDark
+    }; font-size:10pt; margin:0 0 2mm; text-align:center; }
+    .back-qr-wrap { background:#fff; border:0.6mm dashed ${
+      THEME.aqua
+    }; border-radius:2mm; padding:0mm; }
+    .back-steps { font-size:8.2pt; color:${
+      THEME.textDark
+    }; text-align:center; line-height:1.25; margin-top:0mm; white-space:pre-line; }
 
     @media print { .no-print { display:none !important; } .card { box-shadow:none; } }
   `,
@@ -154,8 +187,8 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
 
   // pagination par PAIRES
   const pages: QRItem[][] = [];
-  for (let i = 0; i < items.length; i += layout.perPage) {
-    pages.push(items.slice(i, i + layout.perPage));
+  for (let i = 0; i < filtered_items.length; i += layout.perPage) {
+    pages.push(filtered_items.slice(i, i + layout.perPage));
   }
 
   const handlePrint = () => {
@@ -174,18 +207,70 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
           marginBottom: 12
         }}
       >
-        <button
-          onClick={handlePrint}
+        <div
           style={{
-            padding: '8px 14px',
-            borderRadius: 8,
-            border: '1px solid #cbd5e1',
-            cursor: 'pointer',
-            background: '#fff'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginBottom: '12px',
+            background: '#f8fafc',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0'
           }}
         >
-          🖨️ Imprimer
-        </button>
+          <button
+            onClick={handlePrint}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 6,
+              border: '1px solid #cbd5e1',
+              cursor: 'pointer',
+              background: '#fff',
+              fontWeight: 500
+            }}
+          >
+            🖨️ Imprimer
+          </button>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <input
+              id='print-instructions'
+              type='checkbox'
+              checked={withBack}
+              onChange={() => setWithBack(!withBack)}
+            />
+            <label htmlFor='print-instructions' style={{ cursor: 'pointer' }}>
+              Avec instructions au verso
+            </label>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <input
+              id='filter-status'
+              type='checkbox'
+              checked={filterStatus}
+              onChange={() => setFilterStatus(!filterStatus)}
+            />
+            <label htmlFor='filter-status' style={{ cursor: 'pointer' }}>
+              Filtrer les codes fermés
+            </label>
+          </div>
+        </div>
       </div>
 
       <div ref={ref} className='hidden'>
@@ -193,7 +278,7 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
           <div className='sheet' key={`page-${p}`}>
             <div className='grid'>
               {slice.map((it, idx) => {
-                const url = `${claimBaseUrl}${it.code}`;
+                const url = `${claimBaseUrl}/${it.code}`;
                 const urlWithStyle = it.styleParam
                   ? `${url}?${it.styleParam}`
                   : url;
@@ -224,24 +309,26 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
                     </div>
 
                     {/* ESPACE DE PLI */}
-                    <div className='fold-gap' />
+                    {withBack && <div className='fold-gap' />}
 
                     {/* VERSO (retourné) */}
-                    <div className='back-card'>
-                      <div className='back-title'>Instructions</div>
-                      <div className='back-qr-wrap'>
-                        <QRCodeSVG
-                          value={xPortalUrl}
-                          size={qrSizePx}
-                          level='M'
-                        />
-                      </div>
-                      <div className='back-steps'>{`
+                    {withBack && (
+                      <div className='back-card'>
+                        <div className='back-title'>Instructions</div>
+                        <div className='back-qr-wrap'>
+                          <QRCodeSVG
+                            value={xPortalUrl}
+                            size={qrSizePx}
+                            level='M'
+                          />
+                        </div>
+                        <div className='back-steps'>{`
                     1) Installez xPortal
                       2) Visitez app.dinovox.com
                       3) Connectez-vous via xPortal
                       4) Scannez le code`}</div>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

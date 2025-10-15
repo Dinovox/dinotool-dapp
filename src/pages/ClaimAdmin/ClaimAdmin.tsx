@@ -29,9 +29,7 @@ export const ClaimAdmin = () => {
 
   return (
     <AuthRedirectWrapper>
-      <div
-        className={classNames('flex flex-col gap-6 max-w-3xl w-full spec-0')}
-      >
+      <div>
         <Card
           key='title'
           title='Distribution campaigns'

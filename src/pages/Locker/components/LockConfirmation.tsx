@@ -19,7 +19,8 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
   onCancel
 }) => {
   const [isLocking, setIsLocking] = useState(false);
-
+  const [days, setDays] = useState(duration ? duration / 60 / 60 / 24 : 0);
+  //duration is exprimed in seconds
   const getUnlockDate = () => {
     if (customDate) return customDate;
     if (duration) {
@@ -48,7 +49,7 @@ const LockConfirmation: React.FC<LockConfirmationProps> = ({
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return `${diffDays} jour${diffDays > 1 ? 's' : ''}`;
     }
-    return `${duration} jour${duration && duration > 1 ? 's' : ''}`;
+    return `${days} jour${days > 1 ? 's' : ''}`;
   };
 
   const handleConfirm = async () => {

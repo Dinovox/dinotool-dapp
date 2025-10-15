@@ -2,14 +2,17 @@ import { PageWrapper } from 'wrappers';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 import { useLocation } from 'react-router-dom';
-import { useGetLoginInfo, useGetAccountInfo } from 'lib';
+import { useGetLoginInfo, useGetAccountInfo, useGetIsLoggedIn } from 'lib';
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
-import { internal_api_v2, graou_identifier } from 'config';
+import { internal_api_v2, graou_identifier, dinoclaim_api } from 'config';
 import { FaDiscord, FaTwitter, FaCopy, FaUserCircle } from 'react-icons/fa';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import BigNumber from 'bignumber.js';
+import { ConnectButton } from 'components/Button/ConnectButton';
+import { motion } from 'framer-motion';
+import { User, MessageCircle, Gift, ShieldCheck } from 'lucide-react';
 
 export type DiscordInfo = {
   discordId: string;
@@ -31,6 +34,7 @@ export type AuthProfile = {
 
 export const Profile = () => {
   const [profile, setProfile] = useState<AuthProfile | null>(null);
+  const isLoggedIn = useGetIsLoggedIn();
 
   const loading = useLoadTranslations('profile');
   const { t } = useTranslation();
@@ -59,7 +63,8 @@ export const Profile = () => {
         return;
       }
       try {
-        const res = await fetch(`${internal_api_v2}/auth`, {
+        // const res = await fetch(`${internal_api_v2}/auth`, {
+        const res = await fetch(`${dinoclaim_api}/auth`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -84,7 +89,8 @@ export const Profile = () => {
 
   const handleConnectDiscord = async () => {
     if (!tokenLogin) return;
-    const res = await fetch(`${internal_api_v2}/auth/discord`, {
+    // const res = await fetch(`${internal_api_v2}/auth/discord`, {
+    const res = await fetch(`${dinoclaim_api}/auth/discord`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -97,7 +103,8 @@ export const Profile = () => {
   };
   const handleDisconnectDiscord = async () => {
     if (!tokenLogin) return;
-    const res = await fetch(`${internal_api_v2}/auth/discord`, {
+    // const res = await fetch(`${internal_api_v2}/auth/discord`, {
+    const res = await fetch(`${dinoclaim_api}/auth/discord`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -111,7 +118,8 @@ export const Profile = () => {
 
   const handleConnectTwitter = async () => {
     if (!tokenLogin) return;
-    const res = await fetch(`${internal_api_v2}/auth/twitter`, {
+    // const res = await fetch(`${internal_api_v2}/auth/twitter`, {
+    const res = await fetch(`${dinoclaim_api}/auth/twitter`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -124,7 +132,8 @@ export const Profile = () => {
   };
   const handleDisconnectTwitter = async () => {
     if (!tokenLogin) return;
-    const res = await fetch(`${internal_api_v2}/auth/twitter`, {
+    // const res = await fetch(`${internal_api_v2}/auth/twitter`, {
+    const res = await fetch(`${dinoclaim_api}/auth/twitter`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
@@ -136,13 +145,79 @@ export const Profile = () => {
     }
   };
 
+  const tr = (t: any, key: string, def: string) =>
+    t && typeof t === 'function' && t(key) !== key ? t(key) : def;
+
   if (loading || !profile) {
     return (
       <PageWrapper>
-        <div className='flex flex-col items-center justify-center min-h-[300px]'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4'></div>
-          <span className='text-gray-500'>{t('profile:loading_profile')}</span>
-        </div>
+        {isLoggedIn ? (
+          <div className='flex flex-col items-center justify-center min-h-[300px]'>
+            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4'></div>
+            <span className='text-gray-500'>
+              {t('profile:loading_profile')}
+            </span>
+          </div>
+        ) : (
+          <div className='flex items-center justify-center min-h-[70vh] px-4'>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className='w-full max-w-md rounded-2xl bg-white/60 backdrop-blur p-6 shadow-sm ring-1 ring-black/5'
+            >
+              <div className='mb-4 text-center'>
+                <h1 className='text-lg font-semibold text-gray-900'>
+                  {tr(
+                    t,
+                    'profile:connect_title',
+                    'Connect to manage your profile'
+                  )}
+                </h1>
+                <p className='mt-1 text-sm text-gray-600'>
+                  {tr(
+                    t,
+                    'profile:connect_sub',
+                    'Sign in with your wallet to update your info, link Discord, and access your Dinovox tools.'
+                  )}
+                </p>
+              </div>
+
+              {/* concise benefits */}
+              <ul className='mb-5 grid grid-cols-1 gap-2 text-sm text-gray-700'>
+                <li className='flex items-center gap-2 rounded-lg bg-white/70 p-2 ring-1 ring-black/5'>
+                  <User className='h-4 w-4' />
+                  {tr(t, 'profile:benefit_profile', 'Edit your profile')}
+                </li>
+                <li className='flex items-center gap-2 rounded-lg bg-white/70 p-2 ring-1 ring-black/5'>
+                  <MessageCircle className='h-4 w-4' />
+                  {tr(
+                    t,
+                    'profile:benefit_discord',
+                    'Link Discord for roles & perks'
+                  )}
+                </li>
+                <li className='flex items-center gap-2 rounded-lg bg-white/70 p-2 ring-1 ring-black/5'>
+                  <Gift className='h-4 w-4' />
+                  {tr(t, 'profile:benefit_rewards', 'Claim rewards & drops')}
+                </li>
+              </ul>
+
+              <div className='flex justify-center'>
+                <ConnectButton />
+              </div>
+
+              <p className='mt-5 text-center text-xs text-gray-400'>
+                <ShieldCheck className='mr-1 inline-block h-3.5 w-3.5 align-[-2px]' />
+                {tr(
+                  t,
+                  'profile:connect_hint',
+                  'You stay in control: we only request a wallet signature—no passwords, no custody.'
+                )}
+              </p>
+            </motion.div>
+          </div>
+        )}
       </PageWrapper>
     );
   }

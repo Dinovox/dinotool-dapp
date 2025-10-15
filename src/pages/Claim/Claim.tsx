@@ -2,23 +2,50 @@ import { Card } from 'components/Card';
 import { AuthRedirectWrapper } from 'wrappers';
 import { ScanMessage } from './ScanMessage';
 import classNames from 'classnames';
-import { PostCampaignButton } from 'helpers/api/dinoclaim/postCampain';
-import { GetCampaigns } from 'helpers/api/dinoclaim/getCampaigns';
-import { PutCampaignIDButton } from 'helpers/api/dinoclaim/putCampaignID';
+import { useGetIsLoggedIn } from 'lib';
+import { ConnectButton } from 'components/Button/ConnectButton';
 
 export const Claim = () => {
+  const isLoggedIn = useGetIsLoggedIn();
   return (
     <AuthRedirectWrapper>
-      <div
-        className={classNames('flex flex-col gap-6 max-w-3xl w-full spec-0')}
-      >
+      <div className='flex flex-col items-center justify-center min-h-[80vh] px-4'>
         <Card
           key={'title'}
-          title={'Claim NFT'}
-          description={'Claim your sft/nft with a code'}
-          reference={''}
+          title={
+            <div className='flex items-center gap-2'>
+              <span className='text-xl font-semibold'>🎁 Claim NFT</span>
+            </div>
+          }
+          description={
+            <p className='text-sm text-gray-500'>
+              Claim your <span className='font-medium'>SFT / NFT</span> with a
+              code
+            </p>
+          }
+          reference=''
         >
-          <ScanMessage />
+          <div className='flex flex-col items-center gap-4 p-4'>
+            <ScanMessage />
+
+            <p className='text-xs text-gray-400 text-center'>
+              Use your QR Code or claim code below
+            </p>
+          </div>
+          {!isLoggedIn ? (
+            <>
+              <ConnectButton />
+            </>
+          ) : (
+            <div className='flex justify-center'>
+              <a
+                href='/claimadmin'
+                className='text-blue-600 hover:underline text-sm'
+              >
+                Manage your distribution campaigns
+              </a>
+            </div>
+          )}{' '}
         </Card>
       </div>
     </AuthRedirectWrapper>

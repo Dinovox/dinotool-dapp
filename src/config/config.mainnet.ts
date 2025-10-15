@@ -39,4 +39,5 @@ export const lottery_cost = {
 
 export const pox_api = 'https://api.poxp.xyz';
 
-export const dinoclaim_api = 'http://localhost:3000';
+export const dinoclaim_api = 'https://claim.dinovox.com';
+export const dino_claim_url = 'https://app.dinovox.com/claim';

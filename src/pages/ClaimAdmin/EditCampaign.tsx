@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { dinoclaim_api } from 'config';
-import { useGetLoginInfo } from 'lib';
+import { useGetLoginInfo, useGetPendingTransactions } from 'lib';
 import CodesList from './CodesList';
 import { useGetNftInformations } from 'pages/LotteryList/Transaction/helpers/useGetNftInformation';
 import FileDisplay from 'pages/LotteryList/FileDisplay';
@@ -9,6 +9,7 @@ import notFound from 'pages/LotteryList/esdtnotfound.svg';
 import { ActionTransfert } from './ActionTransfert';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { t } from 'i18next';
+import { CampaignRewardsManager } from './CampaignRewardsManager';
 
 type CampaignPreview = {
   id: string;
@@ -17,7 +18,7 @@ type CampaignPreview = {
   start_at?: string;
   end_at?: string;
   collection?: string;
-  nonce?: number; // je garde ton type actuel (string). On convertit à l'envoi.
+  nonce?: number;
   created_at?: string;
   updated_at?: string;
   max_total_sends?: number;
@@ -29,7 +30,7 @@ type CampaignPreview = {
 type EditCampaignProps = {
   campaign: CampaignPreview;
   onBack: () => void;
-  onSaved?: (updated: CampaignPreview) => void; // <-- optionnel
+  onSaved?: (updated: CampaignPreview) => void;
 };
 
 const EditCampaign: React.FC<EditCampaignProps> = ({
@@ -38,7 +39,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   onSaved
 }) => {
   const { tokenLogin } = useGetLoginInfo();
-
+  const transactions = useGetPendingTransactions();
+  const hasPendingTransactions = transactions.length > 0;
   // état éditable (on part de la prop fournie)
   const [editedCampaign, setEditedCampaign] =
     useState<CampaignPreview>(campaign);
@@ -46,7 +48,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   // champs contrôlés
   const [title, setTitle] = useState(campaign.title ?? '');
   const [collection, setCollection] = useState(campaign.collection ?? '');
-  const [nonce, setNonce] = useState<number>(campaign.nonce ?? 0); // input string, converti côté save
+  const [nonce, setNonce] = useState<number>(campaign.nonce ?? 0);
   const [maxTotalSends, setMaxTotalSends] = useState<string>(
     typeof campaign.max_total_sends === 'number'
       ? String(campaign.max_total_sends)
@@ -56,7 +58,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<boolean>(false);
-
+  const [rewardsSaved, setRewardsSaved] = useState<boolean>(false);
   const [baseline, setBaseline] = useState({
     title: campaign.title ?? '',
     collection: campaign.collection ?? '',
@@ -212,32 +214,35 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
     }
   };
 
-  const nft_information = useGetNftInformations(
-    collection ? collection : '',
-    nonce.toFixed() ? nonce.toFixed() : ''
-  );
-
   // Fetch campaign details by ID (GET /campaigns/:id)
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [balanceTested, setBalanceTested] = useState<any>(null);
 
   useEffect(() => {
     const fetchCampaignDetails = async () => {
-      if (!tokenLogin?.nativeAuthToken || !campaign.id) return;
+      if (
+        !tokenLogin?.nativeAuthToken ||
+        !campaign.id ||
+        hasPendingTransactions
+      )
+        return;
+      //pas de test sur collection/nonce, sinon on rate le fetch initial avec le wallet id
       setLoading(true);
       setError(null);
+      setRewardsSaved(false);
       try {
         const config = {
           headers: {
             Authorization: `Bearer ${tokenLogin.nativeAuthToken}`
           }
         };
+        //test balance retourne aussi les infos de wallet
         const { data } = await axios.get(
           `${dinoclaim_api}/campaigns/${campaign.id}/testbalance`,
           config
         );
         console.log('Fetched campaign details:', data);
-        setResult(data);
+        setBalanceTested(data);
       } catch (err: any) {
         setError(
           err?.response?.data?.message ||
@@ -252,7 +257,13 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
 
     fetchCampaignDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaign.id, tokenLogin?.nativeAuthToken]);
+  }, [
+    campaign.id,
+    tokenLogin?.nativeAuthToken,
+    saved,
+    rewardsSaved,
+    hasPendingTransactions
+  ]);
   return (
     <div>
       {/* Bloc 1 == return to list  */}
@@ -281,7 +292,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         </div>
         <div>
           <span className='font-semibold'>Campaign wallet: </span>
-          <ShortenedAddress address={result?.wallet?.address} />
+          <ShortenedAddress address={balanceTested?.wallet?.address} />
         </div>
 
         <div>
@@ -317,7 +328,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           />
         </label>
 
-        <label className='flex flex-col gap-1'>
+        {/* <label className='flex flex-col gap-1'>
           <span className='text-sm font-semibold'>Collection (identifier)</span>
           <input
             className='spec-input-code'
@@ -326,9 +337,9 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
             onChange={(e) => setCollection(e.target.value)}
             placeholder='COLLECT-abcdef'
           />
-        </label>
+        </label> */}
 
-        <label className='flex flex-col gap-1'>
+        {/* <label className='flex flex-col gap-1'>
           <span className='text-sm font-semibold'>Nonce</span>
           <input
             className='spec-input-code'
@@ -340,9 +351,9 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
             placeholder='0'
             onWheel={(e) => e.currentTarget.blur()}
           />
-        </label>
+        </label> */}
 
-        <label className='flex flex-col gap-1'>
+        {/* <label className='flex flex-col gap-1'>
           <span className='text-sm font-semibold'>Max total sends</span>
           <input
             className='spec-input-code'
@@ -355,7 +366,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
             placeholder='100'
             onWheel={(e) => e.currentTarget.blur()}
           />
-        </label>
+        </label> */}
         {/* Actions */}
         <div className='flex items-center gap-3 pt-4'>
           {saving && <span>Saving...</span>}
@@ -377,51 +388,36 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           )}
           {error && <span className='text-sm text-red-600'>{error}</span>}
         </div>
-        {collection && nonce ? (
-          <>
-            {' '}
-            <FileDisplay
-              source={
-                nft_information?.media?.length
-                  ? nft_information?.media[0]?.url
-                  : notFound
-              }
-              fileType={
-                nft_information?.media?.length
-                  ? nft_information?.media[0]?.fileType
-                  : ''
-              }
-              width='168px'
-              height='168px'
-            />
-          </>
-        ) : (
-          <></>
-          // <FileDisplay
-          //   source={
-          //     prize_esdt_information?.assets?.svgUrl
-          //       ? prize_esdt_information?.assets?.svgUrl
-          //       : prize_esdt_information?.media?.length
-          //       ? prize_esdt_information?.media[0]?.svgUrl
-          //       : notFound
-          //   }
-          //   fileType={
-          //     prize_esdt_information?.media?.length
-          //       ? prize_esdt_information?.media[0]?.fileType
-          //       : ''
-          //   }
-          //   width='168px'
-          //   height='168px'
-          // />
-        )}
 
-        <ActionTransfert
-          egld_amout={result?.missingEgld ? result.missingEgld : 0}
-          token_amount={editedCampaign.max_total_sends}
-          token_identifier={editedCampaign.collection}
-          token_nonce={editedCampaign.nonce}
-          receiver_address={result?.wallet?.address}
-        />
+        <div className='col-span-2'>
+          <CampaignRewardsManager
+            campaignId={editedCampaign.id}
+            onEvent={(e) => {
+              if (
+                e.type === 'updated' ||
+                e.type === 'created' ||
+                e.type === 'deleted'
+              ) {
+                // ex: rafraîchir un résumé, activer un bouton, toaster, etc.
+                setRewardsSaved(true);
+              }
+              //   if (e.type === 'dirty-change') {
+              //     setHasUnsavedRewards(e.dirtyIds.length > 0);
+              //   }
+            }}
+          />
+        </div>
+        {balanceTested && !isDirty && (
+          <ActionTransfert
+            egld_amount={
+              balanceTested?.wallet?.egld?.missingWei
+                ? balanceTested.wallet?.egld?.missingWei
+                : 0
+            }
+            rewards={balanceTested?.wallet?.rewards || []}
+            receiver_address={balanceTested?.wallet?.address}
+          />
+        )}
       </div>
       <CodesList campaignId={editedCampaign.id} />
     </div>
@@ -429,9 +425,3 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
 };
 
 export default EditCampaign;
-
-{
-  /* <button className='px-4 py-2 rounded border' disabled={saving} onClick={onBack}>
-  Close
-</button>; */
-}

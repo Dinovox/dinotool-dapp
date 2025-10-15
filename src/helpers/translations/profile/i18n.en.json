@@ -4,5 +4,11 @@
   "balance_token": "Balance {{token}}",
   "connect_network": "Connect to {{network}}",
   "disconnect_network": "Disconnect from {{network}}",
-  "loading_profile": "Loading profile..."
+  "loading_profile": "Loading profile...",
+  "connect_title": "Connect to manage your profile",
+  "connect_sub": "Sign in with your wallet to update your information, link Discord, and access your Dinovox tools.",
+  "benefit_profile": "Edit your profile",
+  "benefit_discord": "Link Discord for roles & perks",
+  "benefit_rewards": "Claim rewards & drops",
+  "connect_hint": "You stay in control"
 }

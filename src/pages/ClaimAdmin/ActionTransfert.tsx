@@ -1,121 +1,197 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import BigNumber from 'bignumber.js';
+import { useState } from 'react';
 import { useGetPendingTransactions } from 'lib';
 import { signAndSendTransactions } from 'helpers';
 import {
-  AbiRegistry,
   Address,
   GAS_PRICE,
-  SmartContractTransactionsFactory,
   Transaction,
-  TransactionsFactoryConfig,
-  useGetAccount,
   useGetNetworkConfig,
   useGetAccountInfo
 } from 'lib';
-import {
-  lottery_cost,
-  lotteryContractAddress,
-  xgraou_identifier
-} from 'config';
-import BigNumber from 'bignumber.js';
 import { bigNumToHex } from 'helpers/bigNumToHex';
-import useLoadTranslations from 'hooks/useLoadTranslations';
-import { useTranslation } from 'react-i18next';
 
-export const ActionTransfert = ({
-  egld_amout,
-  token_amount,
-  token_identifier,
-  token_nonce,
+type RewardToSend = {
+  collection: string; // ex: "DYNASFT-d4f18f"
+  nonce: string | number | bigint; // ex: 2
+  required: string | number; // quantité totale à posséder
+  available?: string | number; // quantité déjà en wallet (optionnel)
+  token?: {
+    available?: string | number;
+    required?: string | number;
+    missing?: string | number;
+  };
+};
+
+type Props = {
+  egld_amount: string | number | BigNumber; // en WEI (unités brutes)
+  rewards: RewardToSend[];
+  receiver_address: string; // bech32
+};
+
+const textToHex = (s: string) => Buffer.from(s, 'utf8').toString('hex');
+
+/** construit le payload MultiESDTNFTTransfer + assetCount */
+function buildMultiEsdtPayload(
+  receiverBech32: string,
+  egldAmountWei: string | number | BigNumber,
+  rewards: RewardToSend[]
+): { payload: string; assetCount: number } {
+  const receiverHex = new Address(receiverBech32).toHex();
+
+  // entries = [ (idHex, nonceHex, amountHex) ... ]
+  const entries: Array<{ idHex: string; nonceHex: string; amountHex: string }> =
+    [];
+
+  // 1) EGLD si > 0
+  const egld = new BigNumber(egldAmountWei || 0);
+  if (egld.gt(0)) {
+    entries.push({
+      idHex: textToHex('EGLD-000000'),
+      nonceHex: bigNumToHex(new BigNumber(0)),
+      amountHex: bigNumToHex(egld)
+    });
+  }
+
+  // 2) SFT/NFT manquants
+  for (const rw of rewards || []) {
+    // const required = new BigNumber(rw.token?.required || 0);
+    // const available = new BigNumber(rw.token?.available || 0);
+    const toSend = new BigNumber(rw.token?.missing || 0);
+    if (toSend.gt(0)) {
+      entries.push({
+        idHex: textToHex(rw.collection),
+        nonceHex: bigNumToHex(new BigNumber(String(rw.nonce ?? 0))),
+        amountHex: bigNumToHex(toSend)
+      });
+    }
+  }
+
+  if (entries.length === 0) {
+    throw new Error('Nothing to transfer (no EGLD and no token shortfall).');
+  }
+
+  const parts: string[] = [
+    'MultiESDTNFTTransfer',
+    receiverHex,
+    bigNumToHex(new BigNumber(entries.length)) // compteur d’assets
+  ];
+
+  for (const e of entries) {
+    parts.push(e.idHex, e.nonceHex, e.amountHex);
+  }
+
+  return { payload: parts.join('@'), assetCount: entries.length };
+}
+
+/** estimation conservatrice du gas */
+function estimateGasForMultiEsdt(payload: string, assetCount: number) {
+  const base = 50_000;
+  const perAsset = 200_000;
+  const perByte = 1_500;
+  const sizeBytes = payload.length; // payload ASCII
+  const gas = base + assetCount * perAsset + sizeBytes * perByte;
+  return Math.round(gas * 1.1); // marge 10%
+}
+
+export const ActionTransfert: React.FC<Props> = ({
+  egld_amount,
+  rewards,
   receiver_address
-}: any) => {
-  const { t } = useTranslation();
+}) => {
   const { address } = useGetAccountInfo();
   const { network } = useGetNetworkConfig();
+  const pending = useGetPendingTransactions();
+  const hasPendingTransactions = pending.length > 0;
+  const [, setTransactionSessionId] = useState<string | null>(null);
 
-  const transactions = useGetPendingTransactions();
-  const hasPendingTransactions = transactions.length > 0;
+  // totaux pour l’affichage
+  const egldDisplay = new BigNumber(egld_amount || 0)
+    .dividedBy(1e18)
+    .toNumber();
 
-  const fees = new BigNumber(140669180000000);
+  const assetsPlanned = React.useMemo(() => {
+    let count = 0;
+    for (const rw of rewards || []) {
+      const toSend = BigNumber.max(
+        new BigNumber(rw.token?.required || 0).minus(rw.token?.available || 0),
+        0
+      );
+      if (toSend.gt(0)) count += 1;
+    }
+    return count;
+  }, [egld_amount, rewards]);
 
-  const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
-      string | null
-    >(null);
+  const canSend =
+    (assetsPlanned > 0 || egldDisplay > 0) && !hasPendingTransactions;
 
-  // 0-50 ? 14000000
-  // 100 : 14,736,515
   const sendFundTransaction = async () => {
-    const payload =
-      'MultiESDTNFTTransfer@' +
-      new Address(receiver_address).toHex() +
-      '@02@' +
-      Buffer.from('EGLD-000000', 'utf8').toString('hex') +
-      '@' +
-      bigNumToHex(new BigNumber(0)) +
-      '@' +
-      bigNumToHex(
-        new BigNumber(egld_amout).isGreaterThan(0)
-          ? egld_amout
-          : new BigNumber(1)
-      ) +
-      '@' +
-      Buffer.from(token_identifier, 'utf8').toString('hex') +
-      '@' +
-      bigNumToHex(
-        new BigNumber(token_nonce).isGreaterThan(0)
-          ? new BigNumber(token_nonce)
-          : new BigNumber(0)
-      ) +
-      '@' +
-      bigNumToHex(new BigNumber(token_amount));
+    try {
+      const { payload, assetCount } = buildMultiEsdtPayload(
+        receiver_address,
+        egld_amount,
+        rewards
+      );
+      const gasLimit = BigInt(estimateGasForMultiEsdt(payload, assetCount));
+      const tx = new Transaction({
+        value: BigInt(0), // valeur envoyée “au champ value” (reste 0 en MultiESDT)
+        data: new TextEncoder().encode(payload), // payload
+        receiver: new Address(address), // same as sender
+        gasLimit,
+        gasPrice: BigInt(GAS_PRICE),
+        chainID: network.chainId,
+        sender: new Address(address),
+        version: 1
+      });
 
-    const transaction = new Transaction({
-      value: BigInt('0'),
-      data: new TextEncoder().encode(payload),
-      receiver: new Address(address),
-      gasLimit: BigInt(500000),
-
-      gasPrice: BigInt(GAS_PRICE),
-      chainID: network.chainId,
-      sender: new Address(address),
-      version: 1
-    });
-
-    const sessionId = await signAndSendTransactions({
-      transactions: [transaction],
-      transactionsDisplayInfo: {
-        processingMessage: 'Processing draw transaction',
-        errorMessage: 'An error has occured draw',
-        successMessage: 'Draw transaction successful'
-      }
-    });
-    if (sessionId != null) {
-      setTransactionSessionId(sessionId);
+      const sessionId = await signAndSendTransactions({
+        transactions: [tx],
+        transactionsDisplayInfo: {
+          processingMessage: 'Processing transfer…',
+          errorMessage: 'Transfer failed',
+          successMessage: 'Transfer submitted'
+        }
+      });
+      if (sessionId) setTransactionSessionId(sessionId);
+    } catch (e: any) {
+      console.error('Unable to build/send transfer:', e?.message || e);
     }
   };
+
   return (
     <>
-      {!hasPendingTransactions ? (
+      {canSend && (
         <>
-          <button className='dinoButton' onClick={sendFundTransaction}>
-            Transfert {token_amount} SFT &&{' '}
-            {Number(
-              new BigNumber(egld_amout).dividedBy(10 ** 18).toFixed()
-            ).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 5
-            })}{' '}
-            EGLD to hosted wallet
+          {' '}
+          <button
+            className='dinoButton'
+            onClick={sendFundTransaction}
+            disabled={!canSend}
+          >
+            Transfer missing assets to hosted wallet
+            <br />
+            {assetsPlanned} asset{assetsPlanned > 1 ? 's' : ''}{' '}
+            {egldDisplay > 0 && (
+              <>
+                +{' '}
+                {egldDisplay.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 6
+                })}{' '}
+                EGLD
+              </>
+            )}
           </button>
         </>
-      ) : (
-        <>
-          <button className='dinoButton' disabled>
-            {t('lotteries:processing')}
-          </button>
-        </>
+      )}
+
+      {!canSend && (
+        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.8 }}>
+          {hasPendingTransactions
+            ? 'A transaction is already pending…'
+            : 'Nothing to transfer.'}
+        </div>
       )}
     </>
   );

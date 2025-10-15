@@ -74,8 +74,11 @@ export const LotteryList = () => {
   const pageParam = searchParams.get('page');
   const priceParam = searchParams.get('price');
   const statusParam = searchParams.get('status');
+  const parsed = parseInt(pageParam ?? '', 10);
 
-  const [page, setPage] = useState<number>(pageParam ? parseInt(pageParam) : 1);
+  const [page, setPage] = useState<number>(
+    !isNaN(parsed) && parsed > 0 ? parsed : 1
+  );
   const [status, setStatus] = useState<string>(
     statusParam ? statusParam : 'ongoing'
   );
@@ -84,7 +87,7 @@ export const LotteryList = () => {
   useEffect(() => {
     const pageParam = searchParams.get('page');
     if (pageParam) {
-      setPage(parseInt(pageParam));
+      setPage(pageParam ? parseInt(pageParam) : 1);
     }
   }, [searchParams]);
 

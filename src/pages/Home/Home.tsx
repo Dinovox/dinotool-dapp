@@ -65,6 +65,12 @@ export const Home = () => {
       external: true
     },
     {
+      title: 'QR code reader',
+      link: '/claim',
+      image: cardWip,
+      blured: environment == 'devnet' ? false : true
+    },
+    {
       title: 'NFT Locker',
       link: '/locker',
       image: cardWip,

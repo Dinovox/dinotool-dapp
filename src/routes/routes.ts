@@ -82,8 +82,7 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
     {
       path: RouteNamesEnum.profile,
       title: t('profil'),
-      component: Profile,
-      authenticatedRoute: true
+      component: Profile
     },
     {
       path: RouteNamesEnum.locker,

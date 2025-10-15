@@ -100,7 +100,7 @@ const VestingDurationSelector: React.FC<VestingDurationSelectorProps> = ({
               className={`
                 p-4 rounded-lg border-2 transition-all duration-200 text-left
                 ${
-                  selectedDuration === duration.days * 24 * 60 * 60
+                  selectedDuration === duration.days * 24 * 60 * 60 * 1000
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 }

@@ -16,7 +16,7 @@ import { FaUserCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { ConnectButton } from 'components/Button/ConnectButton';
 const dinovoxLogo = '/DinoVoxDinoTools.png';
 const DinoToolsAlpha = '/DinoToolsAlpha.png';
-
+import LanguageSelector from 'components/LanguageSelector';
 export const Header = () => {
   const loading = useLoadTranslations('global');
   const { t } = useTranslation();
@@ -91,6 +91,7 @@ export const Header = () => {
 
   return (
     <div>
+      <LanguageSelector />
       <header className='flex flex-row align-center justify-between pl-6 pr-6 pt-6'>
         <MxLink
           className='flex items-center justify-between'

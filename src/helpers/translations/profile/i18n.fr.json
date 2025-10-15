@@ -4,5 +4,11 @@
   "balance_token": "Solde {{token}}",
   "connect_network": "Se connecter à {{network}}",
   "disconnect_network": "Se déconnecter de {{network}}",
-  "loading_profile": "Chargement du profil..."
+  "loading_profile": "Chargement du profil...",
+  "connect_title": "Connectez-vous pour gérer votre profil",
+  "connect_sub": "Connectez votre wallet pour mettre à jour vos informations, lier votre compte Discord et accéder à vos outils Dinovox.",
+  "benefit_profile": "Modifiez votre profil",
+  "benefit_discord": "Liez votre Discord pour obtenir vos rôles et avantages",
+  "benefit_rewards": "Réclamez vos récompenses et vos drops",
+  "connect_hint": "Vous gardez le contrôle"
 }

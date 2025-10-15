@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { dinoclaim_api } from 'config';
+import { dino_claim_url, dinoclaim_api } from 'config';
 import { useGetLoginInfo, useGetNetworkConfig } from 'lib';
 import { ReserveCodeButton } from 'helpers/api/dinoclaim/postCampaignCodes';
 import { QRCode } from 'antd';
@@ -103,8 +103,8 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
       ) : (
         <ul>
           <PrettyQRCardsPrintFold
-            items={codes_items.filter((c) => c.status === 'open')}
-            claimBaseUrl='https://app.dinovox.com/claim/'
+            items={codes_items}
+            claimBaseUrl={dino_claim_url}
             pageSize='A4'
             orientation='portrait'
             marginMm={7}
