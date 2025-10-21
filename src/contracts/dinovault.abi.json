@@ -37,6 +37,11 @@
         {
           "name": "duration",
           "type": "u64"
+        },
+        {
+          "name": "new_owner",
+          "type": "optional<Address>",
+          "multi_arg": true
         }
       ],
       "outputs": []
@@ -79,6 +84,11 @@
           "indexed": true
         },
         {
+          "name": "final_owner",
+          "type": "Address",
+          "indexed": true
+        },
+        {
           "name": "token_id",
           "type": "TokenIdentifier",
           "indexed": true
@@ -105,6 +115,10 @@
         "Informations liées à un NFT verrouillé"
       ],
       "fields": [
+        {
+          "name": "creator",
+          "type": "Address"
+        },
         {
           "name": "owner",
           "type": "Address"

@@ -44,6 +44,8 @@ export const useGetUserLockedNft = () => {
 
         return {
           lockId,
+          creator: info.creator.toString(),
+          owner: info.owner.toString(),
           identifier: info.token_identifier.toString(),
           nonce: info.nonce.valueOf().toString(),
           amount: info.amount.valueOf().toString(),

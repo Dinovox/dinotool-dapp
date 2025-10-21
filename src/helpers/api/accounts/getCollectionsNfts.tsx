@@ -54,7 +54,7 @@ export const useGetCollectionsNfts = (collection: string) => {
       setLoading(true);
       setError(null);
 
-      const url = `/collections/${collection}/nfts?withSupply=true`;
+      const url = `/collections/${collection}/nfts?withSupply=true&size=100`;
       const config: AxiosRequestConfig = {
         baseURL: API_URL
       };

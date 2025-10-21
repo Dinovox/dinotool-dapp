@@ -19,7 +19,7 @@ import {
   useGetNetworkConfig,
   useGetAccountInfo
 } from 'lib';
-
+import { vaultContractAddress } from 'config';
 import BigNumber from 'bignumber.js';
 import { useGetLoginInfo, useGetPendingTransactions } from 'lib';
 import {
@@ -57,6 +57,7 @@ export const Locker = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
   const [transactionHash, setTransactionHash] = useState<string>('');
+  const [newOwner, setNewOwner] = useState<string>('');
 
   const [transactionSessionId, setTransactionSessionId] = useState<
     string | null
@@ -102,9 +103,6 @@ export const Locker = () => {
   const handleLockConfirm = async () => {
     if (!selectedNFT || (!selectedDuration && !customDate)) return;
 
-    const scAddress =
-      'erd1qqqqqqqqqqqqqpgqmfharjsrrng96rhdxt6jtyjf2klqgpmrch9s6w67j8';
-
     const unlockTimestamp =
       customDate ||
       (() => {
@@ -135,10 +133,11 @@ export const Locker = () => {
       Buffer.from(selectedNFT.collection, 'utf8').toString('hex'),
       bigNumToHex(new BigNumber(selectedNFT.nonce)),
       bigNumToHex(new BigNumber(1)),
-      new Address(scAddress).toHex(),
+      new Address(vaultContractAddress).toHex(),
       Buffer.from('lockNft', 'utf8').toString('hex'),
-      bigNumToHex(new BigNumber(selectedDuration || 0))
-    ];
+      bigNumToHex(new BigNumber(selectedDuration || 0)),
+      newOwner ? new Address(newOwner).toHex() : undefined // ajouté uniquement si défini
+    ].filter((v) => v !== undefined && v !== null);
 
     const payload = dataParts.join('@');
 
@@ -318,6 +317,29 @@ export const Locker = () => {
 
             {/* Contenu principal */}
             <div className='bg-white rounded-2xl shadow-lg p-6'>
+              {/* NFTs verrouillés */}
+              {currentStep == 'selection' && lockedNFTs.length > 0 && (
+                <div className='mt-12 pt-8 border-t border-gray-200 mb-8'>
+                  <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2'>
+                    <Lock className='w-5 h-5 text-red-500' />
+                    <span> {t('locker:locked_nfts')}</span>
+                  </h3>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+                    {lockedNFTs.map((nft) => (
+                      <>
+                        <NFTCard
+                          key={nft.identifier}
+                          nft={nft}
+                          lockedNft={nft}
+                          isLocked={true}
+                          unlockTimestamp={nft.unlockTimestamp}
+                          selectable={false}
+                        />
+                      </>
+                    ))}
+                  </div>
+                </div>
+              )}
               {currentStep === 'selection' && (
                 <div>
                   <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0'>
@@ -421,28 +443,6 @@ export const Locker = () => {
                       ))}
                     </div>
                   )}
-
-                  {/* NFTs verrouillés */}
-                  {lockedNFTs.length > 0 && (
-                    <div className='mt-12 pt-8 border-t border-gray-200'>
-                      <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2'>
-                        <Lock className='w-5 h-5 text-red-500' />
-                        <span> {t('locker:locked_nfts')}</span>
-                      </h3>
-                      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-                        {lockedNFTs.map((nft) => (
-                          <NFTCard
-                            key={nft.identifier}
-                            nft={nft}
-                            lockedNft={nft}
-                            isLocked={true}
-                            unlockTimestamp={nft.unlockTimestamp}
-                            selectable={false}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -488,6 +488,36 @@ export const Locker = () => {
                     </div>
                   </div>
 
+                  <div className='mb-6'>
+                    <label className='block text-sm font-medium text-gray-700 mb-2'>
+                      {t('locker:new_owner_optional') || 'New owner (optional)'}
+                    </label>
+                    <input
+                      type='text'
+                      value={newOwner}
+                      onChange={(e) => setNewOwner(e.target.value.trim())}
+                      placeholder='erd1...'
+                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                    />
+                    {newOwner ? (
+                      /^erd1[0-9a-z]{58}$/i.test(newOwner) ? (
+                        <p className='mt-2 text-sm text-green-600'>
+                          {t('locker:new_owner_valid') ||
+                            'Valid Elrond address'}
+                        </p>
+                      ) : (
+                        <p className='mt-2 text-sm text-red-600'>
+                          {t('locker:new_owner_invalid') ||
+                            'Invalid address format. Expected an Elrond address (erd1...)'}
+                        </p>
+                      )
+                    ) : (
+                      <p className='mt-2 text-sm text-gray-500'>
+                        {t('locker:new_owner_help') ||
+                          'If left empty, the NFT will be locked to your address.'}
+                      </p>
+                    )}
+                  </div>
                   <VestingDurationSelector
                     selectedDuration={selectedDuration}
                     customDate={customDate}

@@ -32,5 +32,9 @@
   "lock_nft": "Lock NFT",
   "lock_another_nft": "Lock another NFT",
   "unlock_nft": "Unlock NFT",
-  "duration_long_term": "Long-term lock"
+  "duration_long_term": "Long-term lock",
+  "new_owner_optional": "New Owner (optional)",
+  "new_owner_validation": "Please enter a valid MultiversX address",
+  "new_owner_invalid": "Invalid address format",
+  "new_owner_help": "If specified, the NFT will be transferred to this address upon unlocking"
 }

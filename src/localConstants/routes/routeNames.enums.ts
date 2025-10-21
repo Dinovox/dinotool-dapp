@@ -14,5 +14,6 @@ export enum RouteNamesEnum {
   locker = '/locker',
   claim = '/claim',
   claimid = '/claim/:id',
-  claimadmin = '/claimadmin'
+  claimadmin = '/claimadmin',
+  marketplace = '/marketplace'
 }

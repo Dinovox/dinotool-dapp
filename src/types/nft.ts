@@ -1,5 +1,3 @@
-import { n } from 'framer-motion/dist/types.d-B_QPEvFK';
-
 export interface NFT {
   identifier: string;
   name: string;
@@ -36,6 +34,7 @@ export interface LockedNFT extends NFT {
   vestingDuration: number; // en jours
   isLocked: boolean;
   lockTransactionHash?: string;
+  owner?: string;
 }
 
 export interface Partner {

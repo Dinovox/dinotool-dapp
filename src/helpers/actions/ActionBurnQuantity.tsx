@@ -25,12 +25,13 @@ export const ActionBurnQuantity: React.FC<{
       'hex'
     )}@${bigNumToHex(nonce)}@${bigNumToHex(quantity)}`;
 
+    // 10M was to high
+    // 50000 seems ok for burn
     const transaction = new Transaction({
       value: BigInt('0'),
       data: new TextEncoder().encode(payload),
       receiver: new Address(address),
-      gasLimit: BigInt('10000000'),
-
+      gasLimit: BigInt('1000000'),
       gasPrice: BigInt(GAS_PRICE),
       chainID: network.chainId,
       sender: new Address(address),

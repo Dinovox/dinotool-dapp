@@ -32,5 +32,9 @@
   "lock_nft": "Verrouiller le NFT",
   "lock_another_nft": "Verrouiller un autre NFT",
   "unlock_nft": "Déverrouiller le NFT",
-  "duration_long_term": "Verrouillage à long terme"
+  "duration_long_term": "Verrouillage à long terme",
+  "new_owner_optional": "Nouveau propriétaire (optionnel)",
+  "new_owner_validation": "Veuillez entrer une adresse MultiversX valide",
+  "new_owner_invalid": "Format d'adresse invalide",
+  "new_owner_help": "Si spécifié, le NFT sera transféré à cette adresse lors du déverrouillage"
 }

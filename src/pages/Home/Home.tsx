@@ -71,7 +71,7 @@ export const Home = () => {
       blured: environment == 'devnet' ? false : true
     },
     {
-      title: 'NFT Locker',
+      title: 'Locker',
       link: '/locker',
       image: cardWip,
       blured: environment == 'devnet' ? false : true

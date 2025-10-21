@@ -16,3 +16,4 @@ export * from './Profile';
 export * from './Locker';
 export * from './Claim';
 export * from './ClaimAdmin';
+export * from './Marketplace';

@@ -7,6 +7,8 @@ import BigNumber from 'bignumber.js';
 import { useGetNftInformations } from 'pages/LotteryList/Transaction/helpers/useGetNftInformation';
 import NftDisplay from 'pages/LotteryDetail/NftDisplay';
 import { t } from 'i18next';
+import { useGetAccount } from 'lib';
+import ShortenedAddress from 'helpers/shortenedAddress';
 
 interface NFTCardProps {
   nft: NFT;
@@ -27,6 +29,7 @@ const NFTCard: React.FC<NFTCardProps> = ({
   onSelect,
   selectable = true
 }) => {
+  const { address } = useGetAccount();
   const getImageUrl = () => {
     if (nft.media && nft.media.length > 0) {
       return nft.media[0].thumbnailUrl || nft.media[0].url;
@@ -69,10 +72,10 @@ const NFTCard: React.FC<NFTCardProps> = ({
 
   const nftInfo = useGetNftInformations(
     nft.identifier,
-    bigNumToHex(new BigNumber(nft.nonce)),
+    new BigNumber(nft.nonce).toFixed(),
     isLocked ? 'get' : 'ignore'
   );
-
+  console.log('?', lockedNft?.owner);
   return (
     <div
       className={`
@@ -95,6 +98,14 @@ const NFTCard: React.FC<NFTCardProps> = ({
             <div className='absolute top-2 left-2 z-10 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1'>
               <Lock className='w-3 h-3' />
               <span>Verrouillé</span>
+            </div>
+          )}
+          {lockedNft?.owner !== address && (
+            <div className='absolute bottom-32 left-2 z-10 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1'>
+              <span>
+                {' '}
+                Transfered to <ShortenedAddress address={lockedNft?.owner} />
+              </span>
             </div>
           )}
         </>
@@ -166,7 +177,9 @@ const NFTCard: React.FC<NFTCardProps> = ({
         {/* Date de déverrouillage si verrouillé */}
         {unlockTimestamp && (
           <div>
-            {unlockTimestamp && new Date() > unlockTimestamp ? (
+            {unlockTimestamp &&
+            new Date() > unlockTimestamp &&
+            lockedNft?.owner === address ? (
               <ActionUnlockNft lockId={lockedNft?.lockId} />
             ) : (
               <div className='flex items-center space-x-1 text-sm text-red-600 bg-red-50 px-2 py-1 rounded'>
