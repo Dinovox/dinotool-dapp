@@ -17,3 +17,8 @@ export * from './Locker';
 export * from './Claim';
 export * from './ClaimAdmin';
 export * from './Marketplace';
+export * from './MarketplaceCollection';
+export * from './MarketplaceCollectionDetail';
+export * from './MarketplaceListings';
+export * from './MarketplaceListingDetail';
+export * from './MarketplaceSell';

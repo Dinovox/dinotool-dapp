@@ -13,7 +13,13 @@ import {
   Profile,
   Locker,
   Claim,
-  ClaimAdmin
+  ClaimAdmin,
+  Marketplace,
+  MarketplaceCollections,
+  MarketplaceCollectionDetail,
+  MarketplaceListings,
+  MarketplaceListingDetail,
+  MarketplaceSell
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
@@ -103,6 +109,36 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       path: RouteNamesEnum.claimadmin,
       title: t('claimAdmin'),
       component: ClaimAdmin
+    },
+    {
+      path: RouteNamesEnum.marketplace,
+      title: t('marketplace'),
+      component: Marketplace
+    },
+    {
+      path: `${RouteNamesEnum.marketplaceCollections}`,
+      title: t('collections'),
+      component: MarketplaceCollections
+    },
+    {
+      path: `${RouteNamesEnum.marketplaceCollections}/:slug`,
+      title: t('collection detail'),
+      component: MarketplaceCollectionDetail
+    },
+    {
+      path: `${RouteNamesEnum.marketplace}/listings`,
+      title: t('Listings'),
+      component: MarketplaceListings
+    },
+    {
+      path: `${RouteNamesEnum.marketplace}/listings/:id`,
+      title: t('listing detail'),
+      component: MarketplaceListingDetail
+    },
+    {
+      path: `${RouteNamesEnum.marketplace}/sell`,
+      title: t('Sell'),
+      component: MarketplaceSell
     }
   ];
 };

@@ -15,5 +15,7 @@ export enum RouteNamesEnum {
   claim = '/claim',
   claimid = '/claim/:id',
   claimadmin = '/claimadmin',
-  marketplace = '/marketplace'
+  marketplace = '/marketplace',
+  marketplaceCollections = '/marketplace/collections',
+  marketplaceCollectionDetail = '/marketplace/collections/:id'
 }
