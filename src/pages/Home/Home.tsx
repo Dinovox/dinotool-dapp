@@ -18,6 +18,7 @@ import { environment } from 'config';
 import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 
 import { useGetAccount } from 'lib';
+import { title } from 'process';
 
 export const Home = () => {
   const loading = useLoadTranslations('home');
@@ -73,6 +74,12 @@ export const Home = () => {
     {
       title: 'Locker',
       link: '/locker',
+      image: cardWip,
+      blured: environment == 'devnet' ? false : true
+    },
+    {
+      title: 'Vouchers',
+      link: '/vouchers',
       image: cardWip,
       blured: environment == 'devnet' ? false : true
     }

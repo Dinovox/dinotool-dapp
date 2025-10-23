@@ -3,6 +3,7 @@ import axios from 'axios';
 import { dinoclaim_api } from 'config';
 import { useGetLoginInfo } from 'lib';
 import { Tooltip } from 'components/Tooltip';
+import { axios_claim, extractProblem } from 'helpers/api/accounts/axios';
 type Reward = {
   id: string;
   campaign_id: string;
@@ -11,7 +12,7 @@ type Reward = {
   amount_per_claim: string; // string entier
   supply_total: string; // string entier
   supply_reserved?: string;
-  supply_claimed?: string;
+  supply_claimed?: number;
   active: boolean;
 };
 
@@ -190,7 +191,11 @@ export const CampaignRewardsManager: React.FC<{
     if (!row.amount_per_claim || !/^\d+$/.test(String(row.amount_per_claim))) {
       return 'Amount must be an integer string (e.g. "1")';
     }
-    if (!row.supply_total || !/^\d+$/.test(String(row.supply_total))) {
+    if (
+      row.supply_total === null ||
+      row.supply_total === undefined ||
+      !/^\d+$/.test(String(row.supply_total))
+    ) {
       return 'Supply must be an integer string (e.g. "100")';
     }
     if (isDuplicatePair(row.collection, row.nonce, ignoreId)) {
@@ -263,13 +268,25 @@ export const CampaignRewardsManager: React.FC<{
         active: Boolean(row.active)
       };
 
-      const { data } = await axios.put(
+      // const { data } = await axios.put(
+      //   `${dinoclaim_api}/campaigns/${campaignId}/campaign_rewards/${row.id}`,
+      //   payload,
+      //   { headers: authHeader }
+      // );
+
+      //no try-catch: on error setError and return
+      const res = await axios_claim.put(
         `${dinoclaim_api}/campaigns/${campaignId}/campaign_rewards/${row.id}`,
         payload,
         { headers: authHeader }
       );
+      if (res.status >= 400) {
+        setError(extractProblem(res.data));
+        setDeletingRow(null);
+        return;
+      }
 
-      const updated: Reward = data?.reward ?? data;
+      const updated: Reward = res.data?.reward ?? res.data;
 
       // update list, baseline and dirty set if ok inform parent
       if (updated?.id) {
@@ -293,23 +310,6 @@ export const CampaignRewardsManager: React.FC<{
       } else {
         await fetchList();
       }
-      //   if (updated?.id) {
-      //     // update list
-      //     setList((prev) =>
-      //       prev.map((r) => (r.id === row.id ? { ...r, ...updated } : r))
-      //     );
-      //     // set new baseline
-      //     originalMapRef.current.set(updated.id, pickEditable(updated));
-      //     // clear dirty
-      //     setDirty((prev) => {
-      //       const next = new Set(prev);
-      //       next.delete(updated.id);
-      //       return next;
-      //     });
-      //   } else {
-      //     // fallback: reload (and reseed baseline)
-      //     await fetchList();
-      //   }
     } catch (e: any) {
       setError(e?.response?.data?.message || e?.message || 'Update failed');
     } finally {
@@ -323,31 +323,36 @@ export const CampaignRewardsManager: React.FC<{
 
     setDeletingRow(row.id);
     setError(null);
-    try {
-      await axios.delete(
-        `${dinoclaim_api}/campaigns/${campaignId}/campaign_rewards/${row.id}`,
-        { headers: authHeader }
-      );
-      setList((prev) => {
-        const newList = prev.filter((r) => r.id !== row.id);
-        onEvent?.({ type: 'deleted', id: row.id, list: newList });
-        onDeleted?.(row.id, newList);
-        return newList;
-      });
-      originalMapRef.current.delete(row.id);
-      setDirty((prev) => {
-        const next = new Set(prev);
-        next.delete(row.id);
-        const ids = Array.from(next);
-        onEvent?.({ type: 'dirty-change', dirtyIds: ids });
-        onDirtyChange?.(ids);
-        return next;
-      });
-    } catch (e: any) {
-      setError(e?.response?.data?.message || e?.message || 'Delete failed');
-    } finally {
+
+    //no try-catch: on error setError and return
+    const res = await axios_claim.delete(
+      `/campaigns/${campaignId}/campaign_rewards/${row.id}`,
+      { headers: authHeader }
+    );
+    if (res.status >= 400) {
+      setError(extractProblem(res.data));
       setDeletingRow(null);
+      return;
     }
+
+    // Succès (2xx)
+    setList((prev) => {
+      const newList = prev.filter((r) => r.id !== row.id);
+      onEvent?.({ type: 'deleted', id: row.id, list: newList });
+      onDeleted?.(row.id, newList);
+      return newList;
+    });
+    originalMapRef.current.delete(row.id);
+    setDirty((prev) => {
+      const next = new Set(prev);
+      next.delete(row.id);
+      const ids = Array.from(next);
+      onEvent?.({ type: 'dirty-change', dirtyIds: ids });
+      onDirtyChange?.(ids);
+      return next;
+    });
+
+    setDeletingRow(null);
   };
 
   if (!authHeader) return <div>Authentication required.</div>;
@@ -533,6 +538,7 @@ export const CampaignRewardsManager: React.FC<{
                           onChange={(e) =>
                             onFieldChange(r.id, 'collection', e.target.value)
                           }
+                          disabled={(r.supply_claimed ?? 0) > 0}
                         />
                       </td>
                       <td className='px-3 py-2'>
@@ -548,6 +554,7 @@ export const CampaignRewardsManager: React.FC<{
                           onChange={(e) =>
                             onFieldChange(r.id, 'nonce', Number(e.target.value))
                           }
+                          disabled={(r.supply_claimed ?? 0) > 0}
                         />
                       </td>
                       <td className='px-3 py-2'>
@@ -562,6 +569,7 @@ export const CampaignRewardsManager: React.FC<{
                               e.target.value
                             )
                           }
+                          disabled={(r.supply_claimed ?? 0) > 0}
                         />
                       </td>
                       <td className='px-3 py-2'>

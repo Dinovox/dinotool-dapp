@@ -74,7 +74,7 @@ export const ActionBurn = ({ identifier, nonce, quantity }: any) => {
     <>
       {!hasPendingTransactions ? (
         <>
-          <button className='dinoButton dinoDanger' onClick={sendTransaction}>
+          <button className='' onClick={sendTransaction}>
             {t('vouchers:burn')}
           </button>
         </>

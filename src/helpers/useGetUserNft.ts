@@ -6,7 +6,11 @@ import {
 } from 'lib';
 import axios from 'axios';
 import { API_URL } from 'config';
-export const useGetUserNFT = (address: string, identifier?: string) => {
+export const useGetUserNFT = (
+  address: string,
+  identifier?: string,
+  collection?: string
+) => {
   const network = useGetNetworkConfig();
   const [esdtBalance, setNftBalance] = useState(<any>[]);
   // const address = useGetAccountInfo().address;
@@ -16,7 +20,9 @@ export const useGetUserNFT = (address: string, identifier?: string) => {
   if (identifier) {
     url = url + `&identifiers=${identifier}`;
   }
-
+  if (collection) {
+    url = url + `&collections=${collection}`;
+  }
   const getUserNFT = async () => {
     if (hasPendingTransactions == true || address == '') {
       return;

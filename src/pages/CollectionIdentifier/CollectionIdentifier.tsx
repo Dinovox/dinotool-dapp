@@ -16,6 +16,7 @@ import { Card } from 'antd';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { Badge } from 'pages/CollectionDetail/Badge';
 import { ActionModifyCreator } from 'helpers/actions/ActionModifyCreator';
+import BigNumber from 'bignumber.js';
 
 export type NModalType =
   | 'addQuantity'
@@ -40,9 +41,46 @@ export const CollectionIdentifier = () => {
   const [tokenIdentifier, setTokenIdentifier] = useState<string>('');
 
   const { data: nfts } = useGetNfts(tokenIdentifier);
-  console.log('nfts', nfts);
+
+  const [nftBalance, setNftBalance] = useState<BigNumber>(new BigNumber(0));
+
+  useEffect(() => {
+    if (!address || !tokenIdentifier) {
+      setNftBalance(new BigNumber(0));
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchBalance = async () => {
+      try {
+        const res = await fetch(
+          `https://api.multiversx.com/accounts/${address}/nfts?identifiers=${tokenIdentifier}`
+        );
+        if (!res.ok) throw new Error(`Failed to fetch NFTs: ${res.status}`);
+        const data: any[] = await res.json();
+
+        // try to match by identifier (and fallback to identifier@nonce if tokenIdentifier uses nonce)
+        const found =
+          data.find((it) => it.identifier === tokenIdentifier) ||
+          data.find((it) => `${it.identifier}@${it.nonce}` === tokenIdentifier);
+
+        const balance = found?.balance ?? found?.amount ?? '0';
+        if (!cancelled) setNftBalance(new BigNumber(balance));
+      } catch (err) {
+        console.error('Error fetching NFT balance', err);
+        if (!cancelled) setNftBalance(new BigNumber(0));
+      }
+    };
+
+    fetchBalance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [address, tokenIdentifier]);
+
   const { data: collection } = useGetCollections(nfts?.collection);
-  console.log('collection ??', collection);
   const navigate = useNavigate();
 
   const { id } = useParams<{ id: string }>();
@@ -103,7 +141,6 @@ export const CollectionIdentifier = () => {
       : [])
   ];
 
-  console.log('definedRoles', definedRoles);
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -226,18 +263,19 @@ export const CollectionIdentifier = () => {
                     Add Quantity
                   </button>
                 )}
-              {collection.roles?.find?.(
+              {/* {collection.roles?.find?.(
                 (r) =>
                   r.address === address &&
                   (r.canBurn || collection.owner === address)
-              ) && (
-                <button
-                  className='dinoButton'
-                  onClick={() => openModal('burnQuantity', nfts)}
-                >
-                  Burn Quantity
-                </button>
-              )}
+              ) && ( */}
+              {/* everyone can burn what's left in wallet */}
+              <button
+                className='dinoButton'
+                onClick={() => openModal('burnQuantity', nfts)}
+              >
+                Burn Quantity
+              </button>
+              {/* )} */}
               {collection.roles &&
                 collection.roles.find(
                   (r) =>
@@ -277,6 +315,7 @@ export const CollectionIdentifier = () => {
         isOpen={modal.type === 'burnQuantity'}
         closeModal={closeModal}
         nfts={nfts}
+        balance={nftBalance}
       />
 
       <ModifyCreator

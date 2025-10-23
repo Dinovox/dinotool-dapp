@@ -177,10 +177,22 @@ const NFTCard: React.FC<NFTCardProps> = ({
         {/* Date de déverrouillage si verrouillé */}
         {unlockTimestamp && (
           <div>
-            {unlockTimestamp &&
-            new Date() > unlockTimestamp &&
-            lockedNft?.owner === address ? (
-              <ActionUnlockNft lockId={lockedNft?.lockId} />
+            {unlockTimestamp && new Date() > unlockTimestamp ? (
+              <>
+                {lockedNft?.owner === address ? (
+                  <>
+                    <ActionUnlockNft lockId={lockedNft?.lockId} />
+                  </>
+                ) : (
+                  <div className='flex items-center space-x-1 text-sm text-green-600 bg-red-50 px-2 py-1 rounded'>
+                    {' '}
+                    <span>
+                      {' '}
+                      {t('locker:liberable par son nouveau propriétaire')}{' '}
+                    </span>
+                  </div>
+                )}
+              </>
             ) : (
               <div className='flex items-center space-x-1 text-sm text-red-600 bg-red-50 px-2 py-1 rounded'>
                 {' '}

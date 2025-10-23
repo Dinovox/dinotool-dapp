@@ -13,7 +13,8 @@ export const BurnQuantity: React.FC<{
   isOpen: boolean;
   closeModal: () => void;
   nfts: Nfts;
-}> = ({ isOpen, closeModal, nfts }) => {
+  balance: BigNumber;
+}> = ({ isOpen, closeModal, nfts, balance }) => {
   const [quantity, setQuantity] = useState<BigNumber>(new BigNumber(1));
 
   return (
@@ -60,7 +61,8 @@ export const BurnQuantity: React.FC<{
             collection={nfts.collection}
             nonce={nfts.nonce}
             quantity={quantity}
-          />
+          />{' '}
+          {balance.toFixed()} tokens available.
         </div>
       </div>
     </Dialog>

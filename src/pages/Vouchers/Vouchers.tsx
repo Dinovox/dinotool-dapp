@@ -1,30 +1,23 @@
 import { PageWrapper } from 'wrappers';
-import { Transaction } from './Transaction';
-import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 import { ActionBurn } from './Transaction/ActionBurn';
-import { useGetUserHasBuyed } from 'pages/Dashboard/widgets/MintGazAbi/hooks/useGetUserHasBuyed';
-import toHex from 'helpers/toHex';
 import './MintSFT.css';
-import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAccount } from 'lib';
-import { useEffect, useState } from 'react';
-import BigNumber from 'bignumber.js';
 import { useGetVouchers } from './Transaction/helpers/useGetVouchers';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
 import TextCopy from 'helpers/textCopy';
 import NftDisplay from 'pages/LotteryDetail/NftDisplay';
+import { Trans, useTranslation } from 'react-i18next';
 import { t } from 'i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
-import { Trans, Translation, useTranslation } from 'react-i18next';
-
 export const Vouchers = () => {
   const loading = useLoadTranslations('vouchers');
   const { t } = useTranslation();
 
   const vouchers = useGetVouchers();
   console.log('vouchers', vouchers);
-  const { balance, address } = useGetAccount();
-  const userNftBalance = useGetUserNFT(address);
+  const { address } = useGetAccount();
+  const userNftBalance = useGetUserNFT(address, '', 'VOUCHERS-e6045e');
+
   const filteredNftBalance = userNftBalance.filter((nft: any) =>
     [
       'SFT-221ca7-06',
@@ -47,25 +40,50 @@ export const Vouchers = () => {
   };
 
   console.log('userNftBalance', userNftBalance);
+  // helpers au-dessus du composant
+  // helpers
+  const toInt = (v: unknown) => {
+    if (typeof v === 'bigint') return Number(v);
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
+  };
+
+  const aggregateByNft = (list: any[] = []) => {
+    const map = new Map<string, any>();
+    for (const it of list) {
+      const key = `${it.collection}-${it.nonce ?? ''}`;
+      const bal = toInt(it?.balance);
+      if (!map.has(key)) map.set(key, { ...it, balance: bal });
+      else map.get(key).balance += bal;
+    }
+    return Array.from(map.values());
+  };
 
   return (
     <PageWrapper>
-      <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
-        <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-          Vouchers
-        </div>{' '}
-        <div className='container'>
-          {/* Section des NFTs */}
-          <div className='section'>
-            <h2 className='section-title'>{t('vouchers:your_vouchers')}</h2>
-            <div className='dinocard'>
-              <div>{t('vouchers:burn_them_to')}</div>
-              {filteredNftBalance &&
-                filteredNftBalance.map((nft: any) =>
-                  Array.from({ length: nft.balance }).map((_, i) => (
+      <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+        <div className='mintGazTitle dinoTitle w-[340px]'>Vouchers</div>
+
+        <div className='container w-full'>
+          {/* 2 colonnes équilibrées */}
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-10'>
+            {/* COLONNE VOUCHERS */}
+            <section className='section'>
+              <h2 className='section-title'>{t('vouchers:your_vouchers')}</h2>
+              <p className='text-sm opacity-70 mb-5'>
+                {t('vouchers:burn_them_to')}
+              </p>
+
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7'>
+                {aggregateByNft(filteredNftBalance).map((nft: any) => (
+                  <div
+                    key={`${nft.collection}-${nft.nonce}`}
+                    className='rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-4 flex flex-col'
+                  >
+                    {/* wrapper image avec ratio & badge */}
                     <div
-                      key={`${nft.identifier}-${i}`}
-                      className='sub-dinocard'
+                      className='relative rounded-xl overflow-hidden bg-gray-50'
+                      style={{ aspectRatio: '3 / 4' }}
                     >
                       <NftDisplay
                         nftInfo={nft}
@@ -73,29 +91,45 @@ export const Vouchers = () => {
                         showLink={false}
                         showAmount={false}
                       />
+                      {toInt(nft.balance) > 1 && (
+                        <span className='absolute top-2 right-2 text-xs px-2 py-1 bg-black/75 text-white rounded-full'>
+                          ×{toInt(nft.balance)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* action */}
+                    <div className='mt-3'>
                       <ActionBurn
                         identifier={nft?.collection}
                         nonce={nft?.nonce}
                         quantity={1}
+                        className='dinoButton--block'
                       />
                     </div>
-                  ))
-                )}
-            </div>
-          </div>
+                  </div>
+                ))}
 
-          {/* Section des Vouchers */}
-          <div className='section'>
-            <h2 className='section-title'>{t('vouchers:your_codes')}</h2>
-            <div className='dinocard'>
-              <div>
+                {(!filteredNftBalance ||
+                  aggregateByNft(filteredNftBalance).length === 0) && (
+                  <div className='col-span-full text-sm text-center opacity-70 border rounded-xl py-10'>
+                    {t('vouchers:no_voucher_yet')}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* COLONNE CODES */}
+            <section className='section'>
+              <h2 className='section-title'>{t('vouchers:your_codes')}</h2>
+              <div className='text-sm opacity-70 mb-4'>
                 <Trans
                   i18nKey='vouchers:use_them_at'
                   components={{
                     bold: <b />,
                     link1: (
                       <a
-                        style={{ color: 'blue' }}
+                        className='underline'
                         href='https://shop.dinovox.com'
                         target='_blank'
                         rel='noopener noreferrer'
@@ -106,49 +140,61 @@ export const Vouchers = () => {
               </div>
 
               {vouchers.length > 0 ? (
-                // [...Array(5)].map((_, i) =>
-                vouchers.map((voucher: any) => (
-                  <div key={voucher.tx_hash} className='voucher-card'>
-                    <div className='voucher-title'>
-                      <TextCopy text={voucher.code} />
+                <ul className='space-y-4'>
+                  {vouchers.slice(0, 5).map((voucher: any) => {
+                    const created = voucher?.claimed_at
+                      ? new Date(voucher.claimed_at).toLocaleDateString()
+                      : '—';
+                    const expires = '2025-11-30';
+                    return (
+                      <li
+                        key={voucher.tx_hash}
+                        className='rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition'
+                      >
+                        <div className='flex items-center justify-between gap-3'>
+                          <div className='flex-1'>
+                            <div className='font-medium'>
+                              <TextCopy text={voucher.code} />
+                            </div>
+                            <div className='text-xs mt-1 opacity-70'>
+                              {t('vouchers:created')} {created} ·{' '}
+                              {t('vouchers:expire')} {expires}
+                            </div>
+                          </div>
+                          <span className='shrink-0 text-sm px-2 py-1 rounded-full border'>
+                            {t('vouchers:value')} {voucher.value}€
+                          </span>
+                        </div>
+                        <a
+                          href='https://shop.dinovox.com'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center text-sm underline mt-3'
+                        >
+                          {t('vouchers:use_on_shop')}
+                        </a>
+                      </li>
+                    );
+                  })}
+                  {vouchers.length > 5 && (
+                    <div className='text-xs opacity-70 text-center'>
+                      + {vouchers.length - 5} {t('common:more')}
                     </div>
-                    <div className='voucher-value'>
-                      {t('vouchers:value')} {voucher.value}€
-                    </div>
-                    <div className='voucher-value'>
-                      {t('vouchers:created')}{' '}
-                      {
-                        new Date(voucher?.claimed_at)
-                          .toISOString()
-                          .split('T')[0]
-                      }
-                    </div>
-                    <div className='voucher-value'>
-                      {' '}
-                      {t('vouchers:expire')} 2025-11-30
-                    </div>
-                  </div>
-                ))
+                  )}
+                </ul>
               ) : (
-                // )
-                <p className='no-voucher'>{t('vouchers:no_voucher_yet')}</p>
+                <p className='no-voucher text-sm opacity-70 border rounded-xl py-10 text-center'>
+                  {t('vouchers:no_voucher_yet')}
+                </p>
               )}
-            </div>
+            </section>
           </div>
         </div>
-        <div
-          style={{ width: '100%', justifyContent: 'center', display: 'grid' }}
-        >
-          <div className='text-label' style={{ margin: 'auto' }}>
-            <div></div>
-          </div>
-          {/* <MxLink
-              className='dinoButton  rounded-lg px-3 py-2 text-center hover:no-underline my-0 bg-blue-600 '
-              to={RouteNamesEnum.unlock}
-            >
-              Connect
-            </MxLink> */}
-        </div>{' '}
+
+        {/* footer/help */}
+        <div className='w-full grid place-items-center'>
+          <div className='text-label mx-auto text-xs opacity-60' />
+        </div>
       </div>
     </PageWrapper>
   );
