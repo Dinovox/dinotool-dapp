@@ -68,6 +68,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         ? String(campaign.max_total_sends)
         : ''
   });
+  const [hasUnsavedRewards, setHasUnsavedRewards] = useState<boolean>(false);
 
   // 🔁 resync quand la prop campaign change (réouverture)
 
@@ -95,6 +96,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   }, [campaign]);
 
   // dirty check pour éviter les saves inutiles
+  // header version
   const isDirty = useMemo(() => {
     const norm = (v: any) => (v === undefined || v === null ? '' : String(v));
     return (
@@ -392,6 +394,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         <div className='col-span-2'>
           <CampaignRewardsManager
             campaignId={editedCampaign.id}
+            testedBalance={balanceTested}
             onEvent={(e) => {
               if (
                 e.type === 'updated' ||
@@ -401,13 +404,14 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                 // ex: rafraîchir un résumé, activer un bouton, toaster, etc.
                 setRewardsSaved(true);
               }
-              //   if (e.type === 'dirty-change') {
-              //     setHasUnsavedRewards(e.dirtyIds.length > 0);
-              //   }
+              if (e.type === 'dirty-change') {
+                setHasUnsavedRewards(e.dirtyIds.length > 0);
+              }
             }}
           />
         </div>
-        {balanceTested && !isDirty && (
+
+        {balanceTested && !hasUnsavedRewards && (
           <ActionTransfert
             egld_amount={
               balanceTested?.wallet?.egld?.missingWei

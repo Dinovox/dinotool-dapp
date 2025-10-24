@@ -1,17 +1,18 @@
 import React from 'react';
 import axios from 'axios';
 import { dinoclaim_api } from 'config';
-import { useGetLoginInfo } from 'lib';
+import { useGetLoginInfo, useGetNetworkConfig } from 'lib';
 import { Tooltip } from 'components/Tooltip';
 import { axios_claim, extractProblem } from 'helpers/api/accounts/axios';
+import shortenString from 'helpers/ShortenString';
 type Reward = {
   id: string;
   campaign_id: string;
   collection: string;
   nonce: number;
-  amount_per_claim: string; // string entier
-  supply_total: string; // string entier
-  supply_reserved?: string;
+  amount_per_claim: number; // string entier
+  supply_total: number; // string entier
+  supply_reserved?: number;
   supply_claimed?: number;
   active: boolean;
 };
@@ -22,7 +23,8 @@ type RewardsEvent =
   | { type: 'updated'; reward: Reward; list: Reward[] }
   | { type: 'deleted'; id: string; list: Reward[] }
   | { type: 'dirty-change'; dirtyIds: string[] }
-  | { type: 'error'; message: string };
+  | { type: 'error'; message: string }
+  | { type: 'cancel'; reward: Reward; list: Reward[] };
 
 const EDIT_FIELDS: Array<keyof Reward> = [
   'collection',
@@ -46,23 +48,27 @@ const sameEditState = (a: any, b: any) =>
 
 export const CampaignRewardsManager: React.FC<{
   campaignId: string;
+  testedBalance: any;
   onEvent?: (e: RewardsEvent) => void;
-
-  // alias optionnels (sucre syntaxique)
   onLoaded?: (list: Reward[]) => void;
   onCreated?: (r: Reward, list: Reward[]) => void;
   onUpdated?: (r: Reward, list: Reward[]) => void;
   onDeleted?: (id: string, list: Reward[]) => void;
   onDirtyChange?: (dirtyIds: string[]) => void;
+  onCanceled?: (reward: Reward, list: Reward[]) => void;
 }> = ({
   campaignId,
+  testedBalance,
   onEvent,
   onLoaded,
   onCreated,
   onUpdated,
   onDeleted,
-  onDirtyChange
+  onDirtyChange,
+  onCanceled
 }) => {
+  const { network } = useGetNetworkConfig();
+
   const { tokenLogin } = useGetLoginInfo();
 
   const [loading, setLoading] = React.useState(true);
@@ -92,8 +98,8 @@ export const CampaignRewardsManager: React.FC<{
   const [newRow, setNewRow] = React.useState<Partial<Reward>>({
     collection: '',
     nonce: 0,
-    amount_per_claim: '1',
-    supply_total: '1',
+    amount_per_claim: 1,
+    supply_total: 1,
     active: true
   });
 
@@ -101,7 +107,6 @@ export const CampaignRewardsManager: React.FC<{
   const originalMapRef = React.useRef<Map<string, any>>(new Map());
   // Set des lignes dirty
   const [dirty, setDirty] = React.useState<Set<string>>(new Set());
-
   const authHeader = React.useMemo(
     () =>
       tokenLogin?.nativeAuthToken
@@ -110,20 +115,70 @@ export const CampaignRewardsManager: React.FC<{
     [tokenLogin]
   );
 
+  const testedBalanceRaw = testedBalance; // ou: const testedBalanceRaw = testedbalance;
+  type BalanceEntry = {
+    id: string;
+    token: { available: string };
+  };
+  type TestedBalance = {
+    wallet?: {
+      rewards?: Array<{
+        id?: string;
+        token?: {
+          available?: string | number;
+          required?: string | number;
+          missing?: string | number;
+        };
+        // ... autres champs inutiles ici
+      }>;
+    };
+  };
+
+  type BalanceInfo = {
+    available: number;
+    required: number;
+    missing: number;
+    tx_hash: string;
+  };
+  const balanceMap = React.useMemo(() => {
+    const m = new Map<string, BalanceInfo>();
+    const rewards = (testedBalanceRaw as TestedBalance)?.wallet?.rewards ?? [];
+
+    for (const r of rewards) {
+      const id = String(r?.id ?? '').trim();
+      const av = Number(r?.token?.available ?? 0);
+      const rq = Number(r?.token?.required ?? 0);
+      const ms = Number(r?.token?.missing ?? 0);
+
+      if (!id) continue;
+
+      m.set(id, {
+        available: Number.isFinite(av) ? av : 0,
+        required: Number.isFinite(rq) ? rq : 0,
+        missing: Number.isFinite(ms) ? ms : 0,
+        tx_hash: ''
+      });
+    }
+
+    return m;
+  }, [testedBalanceRaw]);
+
+  // Seed original map
+  // détiens la veritié initiale des lignes pour le dirty checking
   const seedOriginalMap = React.useCallback((rows: Reward[]) => {
     const m = new Map<string, any>();
     rows.forEach((r) => m.set(r.id, pickEditable(r)));
     originalMapRef.current = m;
     setDirty(new Set()); // reset dirty flags
-    //and
-    // setDirty((prev) => {
-    //   const next = new Set(prev);
-    //   // ... ta logique existante ...
-    //   const ids = Array.from(next);
-    //   onEvent?.({ type: 'dirty-change', dirtyIds: ids });
-    //   onDirtyChange?.(ids);
-    //   return next;
-    // });
+
+    // informer parent
+    setDirty((prev) => {
+      const next = new Set(prev);
+      const ids = Array.from(next);
+      onEvent?.({ type: 'dirty-change', dirtyIds: ids });
+      onDirtyChange?.(ids);
+      return next;
+    });
   }, []);
 
   const fetchList = React.useCallback(async () => {
@@ -158,6 +213,7 @@ export const CampaignRewardsManager: React.FC<{
       prev.map((r) => (r.id === id ? ({ ...r, [field]: value } as Reward) : r))
     );
     // 2) recompute "dirty" for this row
+
     setDirty((prev) => {
       const next = new Set(prev);
       const current = list.find((r) => r.id === id);
@@ -188,7 +244,11 @@ export const CampaignRewardsManager: React.FC<{
     ) {
       return 'Nonce must be a number ≥ 0';
     }
-    if (!row.amount_per_claim || !/^\d+$/.test(String(row.amount_per_claim))) {
+    if (
+      !row.amount_per_claim ||
+      !/^\d+$/.test(String(row.amount_per_claim)) ||
+      row.amount_per_claim <= 0
+    ) {
       return 'Amount must be an integer string (e.g. "1")';
     }
     if (
@@ -241,14 +301,93 @@ export const CampaignRewardsManager: React.FC<{
       setNewRow({
         collection: '',
         nonce: 0,
-        amount_per_claim: '1',
-        supply_total: '0',
+        amount_per_claim: 1,
+        supply_total: 0,
         active: true
       });
       setShowNew(false);
     } catch (e: any) {
       setError(e?.response?.data?.message || e?.message || 'Create failed');
     }
+  };
+
+  const handleWithdraw = async (id: string, excedent: number) => {
+    if (!authHeader) return;
+    if (!(excedent > 0)) return;
+    if (!confirm(`Récupérer ${excedent} token(s) pour cette récompense ?`))
+      return;
+
+    setSavingRow(id);
+    setError(null);
+
+    try {
+      const payload = { rewardId: id, amount: String(excedent) };
+
+      const res = await axios_claim.post(
+        `${dinoclaim_api}/campaigns/${campaignId}/withdraw`,
+        payload,
+        { headers: authHeader }
+      );
+
+      if (res.status >= 400) {
+        setError(extractProblem(res.data));
+        return;
+      }
+
+      // best-effort: subtract the withdrawn amount from the provided testedBalance
+      // so the UI reflects the change immediately (parent may still update on next fetch)
+      try {
+        const info = balanceMap.get(id);
+        if (info) {
+          const avail = Number.isFinite(info.available) ? info.available : 0;
+          balanceMap.set(id, {
+            ...info,
+            available: Math.max(0, avail - excedent),
+            tx_hash: res.data.data?.tx_hash ?? ''
+          });
+          console.log(
+            'Updated balance after withdraw:',
+            balanceMap.get(id),
+            res.data,
+            res.data.data.tx_hash
+          );
+          // force a re-render so the badge updates
+          setList((prev) => [...prev]);
+        }
+      } catch (err) {
+        // ignore mutation errors — we'll refresh from server below
+      }
+
+      // refresh list / balances after successful withdraw
+      await fetchList();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || 'Withdraw failed');
+    } finally {
+      setSavingRow(null);
+    }
+  };
+
+  const handleCancel = (row: Reward) => {
+    const original = originalMapRef.current.get(row.id);
+    if (original) {
+      setList((prev) => {
+        const newList = prev.map((r) =>
+          r.id === row.id ? { ...r, ...original } : r
+        );
+        onEvent?.({ type: 'cancel', reward: original, list: newList });
+        onCanceled?.(original, newList);
+        return newList;
+      });
+      originalMapRef.current.set(row.id, pickEditable(original));
+    }
+    setDirty((prev) => {
+      const next = new Set(prev);
+      next.delete(row.id);
+      const ids = Array.from(next);
+      onEvent?.({ type: 'dirty-change', dirtyIds: ids });
+      onDirtyChange?.(ids);
+      return next;
+    });
   };
 
   const handleSave = async (row: Reward) => {
@@ -355,6 +494,19 @@ export const CampaignRewardsManager: React.FC<{
     setDeletingRow(null);
   };
 
+  const emitDirty = React.useCallback(
+    (set: Set<string>) => {
+      const ids = Array.from(set);
+      onEvent?.({ type: 'dirty-change', dirtyIds: ids });
+      onDirtyChange?.(ids);
+    },
+    [onEvent, onDirtyChange]
+  );
+
+  React.useEffect(() => {
+    emitDirty(dirty);
+  }, [dirty, emitDirty]);
+
   if (!authHeader) return <div>Authentication required.</div>;
 
   return (
@@ -380,10 +532,8 @@ export const CampaignRewardsManager: React.FC<{
 
       <div className='rounded-md border overflow-hidden'>
         <div className='overflow-x-auto'>
-          {' '}
           {/* <-- NEW */}
           <table className='w-full text-sm min-w-[920px]'>
-            {' '}
             {/* <-- NEW min-w */}
             <colgroup>
               <col style={{ width: '28%' }} />
@@ -400,7 +550,6 @@ export const CampaignRewardsManager: React.FC<{
                 <th className='px-3 py-2'>Collection</th>
                 <th className='px-3 py-2'>Nonce</th>
                 <th className='px-3 py-2'>
-                  {' '}
                   Amount / claim
                   <Tooltip content='Number of SFTs/tokens given to the user when they claim with a code'>
                     <span className='ml-2 cursor-pointer'>ℹ️</span>
@@ -408,10 +557,11 @@ export const CampaignRewardsManager: React.FC<{
                 </th>
                 <th className='px-3 py-2'>
                   Supply
-                  <Tooltip content='Number of codes that can be claimed with this reward'>
+                  <Tooltip content='Number of codes that can be claimed with this reward. This includes already claimed and reserved codes.'>
                     <span className='ml-2 cursor-pointer'>ℹ️</span>
                   </Tooltip>
                 </th>
+                <th className='px-2'>System balance</th> {/* 🆕 */}
                 <th className='px-3 py-2'>Reserved</th>
                 <th className='px-3 py-2'>Claimed</th>
                 <th className='px-3 py-2'>Active</th>
@@ -453,6 +603,7 @@ export const CampaignRewardsManager: React.FC<{
                       className='spec-input-code w-full'
                       type='text'
                       placeholder='e.g. "1"'
+                      min={1}
                       value={newRow.amount_per_claim ?? '1'}
                       onChange={(e) =>
                         onAddFieldChange('amount_per_claim', e.target.value)
@@ -470,6 +621,7 @@ export const CampaignRewardsManager: React.FC<{
                       }
                     />
                   </td>
+                  <td className='px-3 py-2 text-gray-500'>—</td>
                   <td className='px-3 py-2 text-gray-500'>—</td>
                   <td className='px-3 py-2 text-gray-500'>—</td>
                   <td className='px-3 py-2'>
@@ -496,8 +648,8 @@ export const CampaignRewardsManager: React.FC<{
                           setNewRow({
                             collection: '',
                             nonce: 0,
-                            amount_per_claim: '1',
-                            supply_total: '1',
+                            amount_per_claim: 1,
+                            supply_total: 1,
                             active: true
                           });
                         }}
@@ -531,6 +683,7 @@ export const CampaignRewardsManager: React.FC<{
                   return (
                     <tr key={r.id} className='border-t'>
                       <td className='px-3 py-2'>
+                        {/* Collection input*/}
                         <input
                           className='spec-input-code w-full'
                           type='text'
@@ -542,6 +695,7 @@ export const CampaignRewardsManager: React.FC<{
                         />
                       </td>
                       <td className='px-3 py-2'>
+                        {/* Nonce input */}
                         <input
                           className='spec-input-code w-full'
                           type='number'
@@ -558,9 +712,14 @@ export const CampaignRewardsManager: React.FC<{
                         />
                       </td>
                       <td className='px-3 py-2'>
+                        {/* amount_per_claim input */}
                         <input
                           className='spec-input-code w-full'
-                          type='text'
+                          type='number'
+                          inputMode='numeric'
+                          onWheel={(e) =>
+                            (e.currentTarget as HTMLInputElement).blur()
+                          }
                           value={r.amount_per_claim}
                           onChange={(e) =>
                             onFieldChange(
@@ -569,18 +728,142 @@ export const CampaignRewardsManager: React.FC<{
                               e.target.value
                             )
                           }
-                          disabled={(r.supply_claimed ?? 0) > 0}
                         />
                       </td>
                       <td className='px-3 py-2'>
+                        {/* supply_total input */}
                         <input
                           className='spec-input-code w-full'
-                          type='text'
-                          value={r.supply_total}
-                          onChange={(e) =>
-                            onFieldChange(r.id, 'supply_total', e.target.value)
+                          type='number'
+                          inputMode='numeric'
+                          onWheel={(e) =>
+                            (e.currentTarget as HTMLInputElement).blur()
                           }
+                          value={r.supply_total}
+                          onChange={(e) => {
+                            const raw = (e.target as HTMLInputElement).value;
+                            const num = Number(raw === '' ? 0 : raw);
+                            const minAllowed =
+                              (r.supply_claimed ?? 0) +
+                              (r.supply_reserved ?? 0);
+                            onFieldChange(
+                              r.id,
+                              'supply_total',
+                              Number.isFinite(num)
+                                ? num < minAllowed
+                                  ? minAllowed
+                                  : num
+                                : minAllowed
+                            );
+                          }}
                         />
+                      </td>
+                      {/* 🆕 Wallet balance (lecture seule) */}
+                      <td className='px-2 py-2'>
+                        {(() => {
+                          const bal = balanceMap.get(r.id); // balance disponible actuelle (may be undefined)
+                          const available =
+                            balanceMap.get(r.id)?.available ?? 0;
+                          const required = balanceMap.get(r.id)?.required ?? 0;
+                          const missing = balanceMap.get(r.id)?.missing ?? 0;
+
+                          // "needed" = quantité réellement nécessaire
+                          const needed =
+                            required > 0
+                              ? required
+                              : Math.max(
+                                  0,
+                                  (r.supply_total ?? 0) -
+                                    (r.supply_claimed ?? 0)
+                                );
+
+                          const hasBalance = Number.isFinite(available);
+                          const isMissing = missing > 0;
+                          const isEnough = hasBalance && required >= needed;
+                          const excedent = isEnough
+                            ? Math.max(0, available - needed)
+                            : 0;
+
+                          type Status =
+                            | 'insuffisant'
+                            | 'suffisant'
+                            | 'excédent';
+                          let status: Status = 'insuffisant';
+                          if (excedent > 0) status = 'excédent';
+                          else if (isEnough && !isMissing) status = 'suffisant';
+
+                          const baseBadge =
+                            'inline-flex items-center rounded-full px-2 py-0.5 text-xs border font-medium';
+                          const statusStyle = isDirty
+                            ? 'border-gray-200 bg-gray-100 text-gray-700'
+                            : status === 'excédent'
+                            ? 'border-blue-200 bg-blue-50 text-blue-700'
+                            : status === 'suffisant'
+                            ? 'border-green-200 bg-green-50 text-green-700'
+                            : 'border-red-200 bg-red-50 text-red-700';
+
+                          return (
+                            <div className='flex items-center gap-2'>
+                              <span className={`${baseBadge} ${statusStyle}`}>
+                                {isDirty ? (
+                                  <>
+                                    {hasBalance ? `${available}` : '—'} (Save to
+                                    refresh)
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className='inline-flex items-center gap-1'>
+                                      <span>
+                                        {hasBalance ? available : '—'}
+                                      </span>
+                                      <span>/</span>
+                                      <span>{required}</span>
+                                    </span>
+                                    <span className='ml-1 opacity-80'>
+                                      {status === 'excédent'
+                                        ? '(excédent)'
+                                        : status === 'suffisant'
+                                        ? '(suffisant)'
+                                        : '(insuffisant)'}
+                                    </span>
+                                  </>
+                                )}
+                                {!isDirty &&
+                                  status === 'excédent' &&
+                                  excedent > 0 && (
+                                    <button
+                                      type='button'
+                                      className='h-7 rounded-md px-2 text-xs font-medium border border-blue-200 bg-blue-100 hover:bg-blue-200 active:bg-blue-300 transition'
+                                      title='Récupérer le surplus'
+                                      about='{excedent} tokens to recover'
+                                      onClick={async () => {
+                                        handleWithdraw(r.id, excedent);
+                                      }}
+                                    >
+                                      Récupérer
+                                    </button>
+                                  )}
+
+                                {!isDirty && bal?.tx_hash && (
+                                  <span className='ml-2'>
+                                    <a
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      className='flex items-center text-sm hover:underline'
+                                      href={
+                                        network.explorerAddress +
+                                        '/transactions/' +
+                                        bal?.tx_hash
+                                      }
+                                    >
+                                      {shortenString(bal?.tx_hash, 4)}
+                                    </a>{' '}
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className='px-3 py-2 text-gray-700'>
                         {r.supply_reserved ?? '-'}
@@ -605,14 +888,20 @@ export const CampaignRewardsManager: React.FC<{
                             </div>
                           ) : (
                             <>
-                              {' '}
                               {isDirty && (
                                 <>
-                                  {' '}
-                                  <span className='text-xs text-amber-600 flex items-center gap-1'>
+                                  <button
+                                    className='px-3 py-1 rounded border disabled:opacity-50'
+                                    disabled={savingRow === r.id || !canSave}
+                                    onClick={() => handleCancel(r)}
+                                    title={rowError || undefined}
+                                  >
+                                    {savingRow === r.id ? '' : 'Cancel'}
+                                  </button>
+                                  {/* <span className='text-xs text-amber-600 flex items-center gap-1'>
                                     <span style={{ fontSize: 10 }}>●</span>{' '}
                                     Unsaved
-                                  </span>
+                                  </span> */}
                                   <button
                                     className='px-3 py-1 rounded border disabled:opacity-50'
                                     disabled={savingRow === r.id || !canSave}
@@ -627,8 +916,12 @@ export const CampaignRewardsManager: React.FC<{
                           )}
 
                           <button
-                            className='px-3 py-1 rounded border border-red-500 text-red-600'
-                            disabled={deletingRow === r.id}
+                            className='px-3 py-1 rounded border border-red-500 text-red-600 disabled:opacity-50'
+                            disabled={
+                              deletingRow === r.id ||
+                              r.supply_claimed! > 0 ||
+                              (balanceMap.get(r.id)?.available ?? 0) > 0
+                            }
                             onClick={() => handleDelete(r)}
                           >
                             {deletingRow === r.id ? 'Delete…' : 'Delete'}
@@ -641,7 +934,7 @@ export const CampaignRewardsManager: React.FC<{
               )}
             </tbody>
           </table>
-        </div>{' '}
+        </div>
         {/* <-- NEW */}
       </div>
     </div>
