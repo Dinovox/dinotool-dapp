@@ -5,6 +5,7 @@ import { useGetLoginInfo, useGetNetworkConfig } from 'lib';
 import { ReserveCodeButton } from 'helpers/api/dinoclaim/postCampaignCodes';
 import { QRCode } from 'antd';
 import { PrettyQRCardsPrintFold } from './ToQrCode';
+import shortenString from 'helpers/ShortenString';
 
 interface Code {
   id: string;
@@ -24,22 +25,55 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
   const { network } = useGetNetworkConfig();
   const [codes, setCodes] = useState<Code[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // state du filtre
+  const [statusFilter, setStatusFilter] = React.useState<'all' | string>('all');
+
+  // valeurs uniques de statut (ex: ["open", "pending"])
+  const statusValues = React.useMemo(() => {
+    const set = new Set<string>();
+    for (const c of codes) if (c.status) set.add(c.status);
+    return Array.from(set).sort(); // tri alpha
+  }, [codes]);
+
+  // petits compteurs par statut (pour afficher "open (12)" etc.)
+  const statusCounts = React.useMemo(() => {
+    return codes.reduce(
+      (acc, c) => {
+        const k = c.status ?? 'unknown';
+        acc[k] = (acc[k] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  }, [codes]);
+
+  // jeux filtrés pour le tableau
+  const filteredCodes = React.useMemo(() => {
+    if (statusFilter === 'all') return codes;
+    return codes.filter((c) => c.status === statusFilter);
+  }, [codes, statusFilter]);
+
   const codes_items = useMemo(() => {
-    return codes.map((code) => ({
+    return filteredCodes.map((code) => ({
       code: code.code,
       amount: 1,
       styleParam: '',
       status: code.status
     }));
-  }, [codes]);
+  }, [filteredCodes]);
+
   useEffect(() => {
     // Pas d’ID ou pas d’auth -> pas de fetch, et on sort proprement du loading
+
+    //On ne veut pas fetch à l'ouverture. mais on veut un message clair
+
     if (!campaignId || !authToken || !loading) {
       setLoading(false);
       return;
     }
-
     const controller = new AbortController();
     setLoading(true);
     setError(null);
@@ -56,6 +90,8 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
           ? res.data
           : res.data?.codes ?? res.data?.items ?? [];
         setCodes(arr as Code[]);
+        setLoaded(true);
+
         setError(null);
       })
       .catch((err) => {
@@ -79,88 +115,310 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
   if (loading) return <div>Loading codes...</div>;
   if (error) return <div>{error}</div>;
 
+  function fallbackCopy(text: string) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }
+
+  async function copyToClipboard(text: string) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        fallbackCopy(text);
+      }
+      // optionnel: petit feedback
+      // toast.success('Copied!');
+    } catch {
+      fallbackCopy(text);
+    }
+  }
+
+  function buildTableText(
+    items: typeof codes,
+    opts?: { delimiter?: 'tab' | 'semicolon' | 'comma'; withHeader?: boolean }
+  ) {
+    const delimiter =
+      opts?.delimiter === 'semicolon'
+        ? ';'
+        : opts?.delimiter === 'comma'
+        ? ','
+        : '\t'; // défaut: tab
+    const header = ['code', 'status', 'link', 'tx'];
+
+    const rows = items.map((c) => [
+      c.code ?? '',
+      c.status ?? '',
+      `${dino_claim_url}/${c.code}`,
+      c.tx_hash ?? ''
+    ]);
+
+    const lines = [
+      ...(opts?.withHeader === false ? [] : [header.join(delimiter)]),
+      ...rows.map((r) => r.join(delimiter))
+    ];
+
+    return lines.join('\n');
+  }
+
+  function handleCopyAll() {
+    const text = buildTableText(filteredCodes, {
+      delimiter: 'tab',
+      withHeader: true
+    });
+    copyToClipboard(text);
+  }
+
   return (
     <div>
       <h2 className='text-xl font-bold mb-2'>Codes </h2>
+      <div className='rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-900 mb-4'>
+        <h3 className='font-semibold text-yellow-800 mb-1 flex items-center gap-2'>
+          🎟️ Code generation
+        </h3>
+        <p className='leading-relaxed'>
+          Each code allows a user to claim <strong>one random reward</strong>{' '}
+          from this campaign.
+          <br />
+          You can generate:
+        </p>
+        <ul className='list-disc list-inside mt-2 space-y-1'>
+          <li>
+            <strong>Single-use codes</strong> — each code can be used once to
+            redeem a reward.
+          </li>
+          <li>
+            <strong>Multi-use codes</strong> — allow multiple users to claim
+            using the same code.
+          </li>
+        </ul>
+        <p className='mt-3 italic text-yellow-800/90'>
+          Use <strong>“Generate codes”</strong> below to create new claim codes.
+          They can be scanned via QR or copied directly for distribution.
+        </p>
+      </div>
       <div className='mb-4'>
         <ReserveCodeButton campaignId={campaignId} />
         {/* Bouton manuel pour recharger si besoin */}
-        <button
-          className='ml-2 px-3 py-1 rounded border'
-          onClick={() => {
-            // force un refetch en modifiant une dep, ou relance l’effet en togglant un state si besoin
-            // Ici on relance simplement en réassignant authToken via un setLoading cycle
-            setLoading(true);
-            // petite astuce: re-exécuter le même effet : change rien ici, mais tu peux aussi
-            // extraire la fonction fetch dans un hook et l’appeler ici.
-          }}
-        >
-          ↻ {codes.length > 0 ? 'Refresh' : 'Load'}
-        </button>
       </div>
       {!hasCodes ? (
-        <div>No codes available</div>
+        <div>
+          {!loaded ? 'Display codes' : 'No codes available'}{' '}
+          <button
+            className='ml-2 px-3 py-1 rounded border'
+            onClick={() => {
+              setLoading(true);
+            }}
+          >
+            ↻ {codes.length > 0 ? 'Refresh' : 'Load'}
+          </button>
+        </div>
       ) : (
-        <ul>
-          <PrettyQRCardsPrintFold
-            items={codes_items}
-            claimBaseUrl={dino_claim_url}
-            pageSize='A4'
-            orientation='portrait'
-            marginMm={7}
-            gapMm={3}
-          />
-          {codes.map((code) => (
-            <li key={code.id} className='py-1'>
-              <div>
-                <strong>{code.code}</strong> — <b>{code.status}</b>
+        <>
+          <div className='mb-4 flex items-center gap-2'>
+            <div className='text-sm text-gray-600'>
+              Total: <strong>{codes.length}</strong>
+              {statusCounts && (
+                <span className='ml-3'>
+                  • open: {statusCounts['open'] ?? 0}
+                </span>
+              )}
+            </div>
+          </div>{' '}
+          {/* Toolbar */}
+          <div className='mb-3 flex flex-wrap items-center gap-2'>
+            <div className='mb-3 flex items-center gap-2'>
+              <label className='text-sm text-gray-600'>
+                Filtrer par statut
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className='h-9 rounded-md border px-3 text-sm bg-white'
+              >
+                <option value='all'>Tous ({codes.length})</option>
+                {statusValues.map((s) => (
+                  <option key={s} value={s}>
+                    {s} ({statusCounts[s] ?? 0})
+                  </option>
+                ))}
+              </select>
+
+              {statusFilter !== 'all' && (
                 <button
-                  className='ml-2 px-2 py-1 border rounded text-xs'
-                  onClick={() =>
-                    setCodes((prev) =>
-                      prev.map((c) =>
-                        c.id === code.id ? { ...c, showQr: !c.showQr } : c
-                      )
-                    )
-                  }
+                  type='button'
+                  onClick={() => setStatusFilter('all')}
+                  className='rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50'
+                  title='Réinitialiser le filtre'
                 >
-                  {code.showQr ? 'Hide QR' : 'Show QR'}
+                  Réinitialiser
                 </button>
-                {code.showQr && (
-                  <QRCode
-                    value={`https://app.dinovox.com/claim/${code.code}`}
-                    size={256}
-                    style={{ marginLeft: 8, verticalAlign: 'middle' }}
-                  />
-                )}
-                {code.tx_hash && (
-                  <>
-                    {' | '}
-                    <strong>Tx:</strong>{' '}
-                    <a
-                      href={`${network.explorerAddress}/transactions/${code.tx_hash}`}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='text-blue-600 underline'
-                    >
-                      {code.tx_hash}
-                    </a>
-                  </>
-                )}
-                {/* {' | '} */}
-                {/* <strong>Updated:</strong>{' '}
-                {new Date(code.updated_at).toLocaleString()}
-                {code.claimed_at && (
-                  <>
-                    {' | '}
-                    <strong>Claimed:</strong>{' '}
-                    {new Date(code.claimed_at).toLocaleString()}
-                  </>
-                )} */}
-              </div>
-            </li>
-          ))}
-        </ul>
+              )}
+              <button
+                type='button'
+                onClick={() => handleCopyAll()}
+                className='rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-gray-50'
+              >
+                Copy all to clipboard
+              </button>
+              <button
+                type='button'
+                onClick={() => {
+                  const csv = buildTableText(filteredCodes, {
+                    delimiter: 'comma',
+                    withHeader: true
+                  });
+                  const blob = new Blob([csv], {
+                    type: 'text/csv;charset=utf-8;'
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `codes_${campaignId || 'export'}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  URL.revokeObjectURL(url);
+                }}
+                className='rounded border px-3 py-1.5 text-sm hover:bg-gray-50'
+              >
+                Export CSV
+              </button>
+              <button
+                type='button'
+                onClick={() => {
+                  setLoading(true);
+                }}
+                className='rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-gray-50'
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div className='overflow-x-auto rounded-xl border'>
+            <table className='min-w-full divide-y'>
+              <thead className='bg-gray-50'>
+                <tr className='text-left text-sm font-semibold text-gray-700'>
+                  <th className='px-3 py-2'>Code</th>
+                  <th className='px-3 py-2'>Statut</th>
+                  <th className='px-3 py-2'>QR</th>
+                  <th className='px-3 py-2'>Tx</th>
+                  <th className='px-3 py-2 w-0'>Actions</th>
+                </tr>
+              </thead>
+              <tbody className='divide-y'>
+                {filteredCodes.map((code) => (
+                  <tr key={code.id} className='text-sm'>
+                    {/* Code */}
+                    <td className='px-3 py-2 font-mono'>{code.code}</td>
+
+                    {/* Statut */}
+                    <td className='px-3 py-2'>
+                      <span
+                        className={[
+                          'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
+                          code.status === 'open'
+                            ? 'border-green-200 bg-green-50 text-green-700'
+                            : code.status === 'pending'
+                            ? 'border-amber-200 bg-amber-50 text-amber-700'
+                            : 'border-gray-200 bg-gray-50 text-gray-700'
+                        ].join(' ')}
+                      >
+                        {code.status}
+                      </span>
+                    </td>
+
+                    {/* QR */}
+                    <td className='px-3 py-2'>
+                      <div className='flex items-center gap-2'>
+                        <button
+                          className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
+                          onClick={() =>
+                            setCodes((prev) =>
+                              prev.map((c) =>
+                                c.id === code.id
+                                  ? { ...c, showQr: !c.showQr }
+                                  : c
+                              )
+                            )
+                          }
+                        >
+                          {code.showQr ? 'Hide QR' : 'Show QR'}
+                        </button>
+                      </div>
+
+                      {code.showQr && (
+                        <div className='mt-2'>
+                          <QRCode
+                            value={`${dino_claim_url}/${code.code}`}
+                            size={128}
+                            style={{ marginLeft: 8, verticalAlign: 'middle' }}
+                          />
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Tx */}
+                    <td className='px-3 py-2'>
+                      {code.tx_hash ? (
+                        <a
+                          href={`${network.explorerAddress}/transactions/${code.tx_hash}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-blue-600 underline break-all'
+                          title={code.tx_hash}
+                        >
+                          {shortenString(code.tx_hash, 4)}
+                        </a>
+                      ) : (
+                        <span className='text-gray-400'>—</span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className='px-3 py-2'>
+                      <div className='flex items-center gap-2'>
+                        <button
+                          className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
+                          onClick={() => copyToClipboard(code.code)}
+                          title='Copy code'
+                        >
+                          Copy
+                        </button>
+                        <button
+                          className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
+                          onClick={() =>
+                            copyToClipboard(`${dino_claim_url}/${code.code}`)
+                          }
+                          title='Copy link'
+                        >
+                          Copy link
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <PrettyQRCardsPrintFold
+              items={codes_items}
+              claimBaseUrl={dino_claim_url}
+              pageSize='A4'
+              orientation='portrait'
+              marginMm={7}
+              gapMm={3}
+            />
+          </div>
+        </>
       )}
     </div>
   );

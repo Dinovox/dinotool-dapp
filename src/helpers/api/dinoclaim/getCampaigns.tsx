@@ -52,120 +52,95 @@ export const GetCampaigns: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenLogin]);
   return (
-    <div>
-      {result && Array.isArray(result) && (
-        <ul>
-          {result.map((campaign: any) => (
-            <li key={campaign.id || campaign._id}>
-              {campaign.name || JSON.stringify(campaign)}
-            </li>
-          ))}
-        </ul>
-      )}
-      {result && !Array.isArray(result) && (
-        <div>
-          {result.campaigns && Array.isArray(result.campaigns) && (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {result.campaigns.map((campaign: any) => (
-                <li
-                  key={campaign.id || campaign._id}
-                  style={{
-                    margin: '16px 0',
-                    padding: '16px',
-                    borderRadius: '12px',
-                    background: '#f9f9fc',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: '1.1em',
-                        marginBottom: 4
-                      }}
-                    >
-                      {campaign.title ||
-                        campaign.name ||
-                        `Campaign ${campaign.id || campaign._id}`}
-                    </div>
-                    <div style={{ fontSize: '0.95em', color: '#555' }}>
-                      <div>
-                        Status: <b>{campaign.status}</b>
-                      </div>
-                      <div>
-                        Created:
-                        {campaign.created_at
-                          ? new Date(campaign.created_at).toLocaleString(
-                              undefined,
-                              {
-                                year: 'numeric',
-                                month: 'short',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              }
-                            )
-                          : ''}
-                      </div>
-                      <div>Collection: {campaign.collection}</div>
-                      <div>Max Total Sends: {campaign.max_total_sends}</div>
-                      <div>
-                        Max Sends Per Wallet: {campaign.max_sends_per_wallet}
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 8,
-                      marginLeft: 16
-                    }}
+    <div className='mt-4 rounded-lg border border-gray-200 bg-white'>
+      <table className='w-full text-sm'>
+        <thead className='bg-gray-50 text-gray-600 text-xs uppercase'>
+          <tr>
+            <th className='px-4 py-2 text-left font-semibold'>Title</th>
+            <th className='px-4 py-2 text-left font-semibold'>Status</th>
+            <th className='px-4 py-2 text-left font-semibold'>Created</th>
+            <th className='px-4 py-2 text-left font-semibold'>Max Sends</th>
+            <th className='px-4 py-2 text-left font-semibold'>Per Wallet</th>
+            <th className='px-4 py-2 text-right font-semibold'>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {result?.campaigns?.length ? (
+            result.campaigns.map((c: any) => (
+              <tr
+                key={c.id}
+                className='border-t border-gray-100 hover:bg-gray-50 transition'
+              >
+                <td className='px-4 py-3 font-medium text-gray-900'>
+                  {c.title || c.name || 'Untitled'}
+                </td>
+                <td className='px-4 py-3'>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      c.status === 'draft'
+                        ? 'bg-gray-100 text-gray-700'
+                        : c.status === 'active'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}
                   >
-                    <button
-                      style={{
-                        background: '#fff',
-                        border: '1px solid #a3a3e6',
-                        borderRadius: '8px',
-                        padding: '6px 14px',
-                        color: '#4b4bb7',
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                        marginTop: 8
-                      }}
-                      onClick={() =>
-                        onEditCampaign &&
-                        onEditCampaign({
-                          id: campaign.id || campaign._id,
-                          title: campaign.title || campaign.name || '',
-                          status: campaign.status,
-                          start_at: campaign.start_at,
-                          end_at: campaign.end_at,
-                          collection: campaign.collection,
-                          nonce: campaign.nonce,
-                          created_at: campaign.created_at,
-                          updated_at: campaign.updated_at,
-                          max_total_sends: campaign.max_total_sends,
-                          max_sends_per_wallet: campaign.max_sends_per_wallet,
-                          daily_send_cap: campaign.daily_send_cap,
-                          total_sends: campaign.total_sends
-                        })
-                      }
-                    >
-                      🛠️ Manage
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    {c.status}
+                  </span>
+                </td>
+                <td className='px-4 py-3 text-gray-700'>
+                  {c.created_at
+                    ? new Date(c.created_at).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : '—'}
+                </td>
+
+                <td className='px-4 py-3 text-gray-700'>{c.max_total_sends}</td>
+                <td className='px-4 py-3 text-gray-700'>
+                  {c.max_sends_per_wallet}
+                </td>
+                <td className='px-4 py-3 text-right'>
+                  <button
+                    onClick={() =>
+                      onEditCampaign?.({
+                        id: c.id,
+                        title: c.title || c.name || '',
+                        status: c.status,
+                        start_at: c.start_at,
+                        end_at: c.end_at,
+                        collection: c.collection,
+                        nonce: c.nonce,
+                        created_at: c.created_at,
+                        updated_at: c.updated_at,
+                        max_total_sends: c.max_total_sends,
+                        max_sends_per_wallet: c.max_sends_per_wallet,
+                        daily_send_cap: c.daily_send_cap,
+                        total_sends: c.total_sends
+                      })
+                    }
+                    className='inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100'
+                  >
+                    🛠 Manage
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan={7}
+                className='px-4 py-6 text-center text-gray-500 text-sm'
+              >
+                No campaigns found.
+              </td>
+            </tr>
           )}
-        </div>
-      )}
-      {error && <div>Error: {error.message || 'Unknown error'}</div>}
+        </tbody>
+      </table>
     </div>
   );
 };

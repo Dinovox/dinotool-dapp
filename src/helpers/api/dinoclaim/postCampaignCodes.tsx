@@ -125,7 +125,9 @@ export const ReserveCodeButton: React.FC<Props> = ({ campaignId }) => {
         </div>
       )}
       {loading && 'Generating...'}
-      {result && <div>Success: {JSON.stringify(result)}</div>}
+      {result?.codes?.totalCatalogCreated && (
+        <div>Created: {result.codes.totalCatalogCreated}</div>
+      )}
       {error && <div>Error: {error.message || 'Unknown error'}</div>}
     </div>
   );

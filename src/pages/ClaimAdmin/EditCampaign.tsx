@@ -10,6 +10,7 @@ import { ActionTransfert } from './ActionTransfert';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { t } from 'i18next';
 import { CampaignRewardsManager } from './CampaignRewardsManager';
+import { Tooltip } from 'components/Tooltip';
 
 type CampaignPreview = {
   id: string;
@@ -313,8 +314,13 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
             : '-'}
         </div>
         <div>
-          <span className='font-semibold'>Total sends:</span>{' '}
-          {editedCampaign.total_sends ?? '-'}
+          <span className='font-semibold'>
+            Maximum claims{' '}
+            <Tooltip content='Maximum number of claim codes allowed for this campaign.'>
+              <span className='ml-2 cursor-pointer'>ℹ️</span>
+            </Tooltip>
+          </span>{' '}
+          {editedCampaign.max_total_sends ?? '-'}
         </div>
       </div>
       {/* Formulaire éditable */}
@@ -385,9 +391,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           </button>
 
           {saved && <span className='text-sm text-green-700'>Saved ✔</span>}
-          {validationError && (
-            <span className='text-sm text-red-600'>{validationError}</span>
-          )}
+
           {error && <span className='text-sm text-red-600'>{error}</span>}
         </div>
 

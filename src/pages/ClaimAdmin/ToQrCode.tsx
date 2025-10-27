@@ -35,11 +35,11 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [withBack, setWithBack] = React.useState(true);
-  const [filterStatus, setFilterStatus] = React.useState(true);
+  // const [filterStatus, setFilterStatus] = React.useState(true);
 
-  const filtered_items = filterStatus
-    ? items.filter((c: any) => c.status === 'open')
-    : items;
+  // const filtered_items = filterStatus
+  //   ? items.filter((c: any) => c.status === 'open')
+  //   : items;
 
   // --- layout page & grille (carte FIXE 50×65 mm) ---
   const layout = useMemo(() => {
@@ -70,8 +70,8 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
     marginMm,
     gapMm,
     foldGapMm,
-    withBack,
-    filterStatus
+    withBack
+    // filterStatus
   ]);
 
   // util mm → px (≈ 96dpi)
@@ -187,8 +187,8 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
 
   // pagination par PAIRES
   const pages: QRItem[][] = [];
-  for (let i = 0; i < filtered_items.length; i += layout.perPage) {
-    pages.push(filtered_items.slice(i, i + layout.perPage));
+  for (let i = 0; i < items.length; i += layout.perPage) {
+    pages.push(items.slice(i, i + layout.perPage));
   }
 
   const handlePrint = () => {
@@ -253,7 +253,7 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
             </label>
           </div>
 
-          <div
+          {/* <div
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -267,9 +267,9 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
               onChange={() => setFilterStatus(!filterStatus)}
             />
             <label htmlFor='filter-status' style={{ cursor: 'pointer' }}>
-              Filtrer les codes fermés
+              Filtrer les codes consommés
             </label>
-          </div>
+          </div> */}
         </div>
       </div>
 

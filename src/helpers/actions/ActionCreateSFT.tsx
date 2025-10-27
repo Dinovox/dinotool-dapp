@@ -48,7 +48,8 @@ export const ActionCreateSFT: React.FC<{
       .map((uri) => `@${Buffer.from(uri).toString('hex')}`)
       .join('')}`;
     const baseGas = 3000000;
-    const gasPerByte = 1500;
+    //const gasPerByte = 1500;
+    const gasPerByte = 2000; // safer with larger attibutes (tags)?
     const dataSize = Buffer.from(payload).length;
     const estimatedGas = baseGas + dataSize * gasPerByte;
 
