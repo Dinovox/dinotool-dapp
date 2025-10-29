@@ -60,17 +60,17 @@ export const Home = () => {
       image: cardWip
     },
     {
+      title: 'QR code reader',
+      link: '/claim',
+      image: cardWip
+    },
+    {
       title: t('home:feedback_title'),
       link: 'https://docs.google.com/forms/d/e/1FAIpQLSc1PKfBjGfBSl1pyiSBckAos9xHPOOy1cYEgeLZGR6Ws1923Q/viewform',
       image: cardFeedback,
       external: true
     },
-    {
-      title: 'QR code reader',
-      link: '/claim',
-      image: cardWip,
-      blured: environment == 'devnet' ? false : true
-    },
+
     {
       title: 'Locker',
       link: '/locker',
@@ -80,6 +80,12 @@ export const Home = () => {
     {
       title: 'Vouchers',
       link: '/vouchers',
+      image: cardWip,
+      blured: environment == 'devnet' ? false : true
+    },
+    {
+      title: 'Marketplace',
+      link: '/marketplace',
       image: cardWip,
       blured: environment == 'devnet' ? false : true
     }

@@ -398,6 +398,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         <div className='col-span-2'>
           <CampaignRewardsManager
             campaignId={editedCampaign.id}
+            hostedWalletAddress={balanceTested?.wallet?.address}
             testedBalance={balanceTested}
             onEvent={(e) => {
               if (

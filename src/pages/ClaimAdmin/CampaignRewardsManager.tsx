@@ -9,6 +9,7 @@ import {
   parseTokenIdentifier
 } from 'helpers/parseToken';
 import shortenString from 'helpers/ShortenString';
+import { useGetUserNFT } from 'helpers/useGetUserNft';
 import { getTokenDecimals } from 'helpers/useTokenDecimals';
 import { useGetLoginInfo, useGetNetworkConfig } from 'lib';
 import React from 'react';
@@ -78,6 +79,7 @@ const sameEditState = (a: any, b: any) =>
 
 export const CampaignRewardsManager: React.FC<{
   campaignId: string;
+  hostedWalletAddress: string;
   testedBalance: any;
   onEvent?: (e: RewardsEvent) => void;
   onLoaded?: (list: Reward[]) => void;
@@ -88,6 +90,7 @@ export const CampaignRewardsManager: React.FC<{
   onCanceled?: (reward: Reward, list: Reward[]) => void;
 }> = ({
   campaignId,
+  hostedWalletAddress,
   testedBalance,
   onEvent,
   onLoaded,
@@ -108,6 +111,28 @@ export const CampaignRewardsManager: React.FC<{
   // normalise juste en trim; garde la casse (les ids MultiversX sont sensibles)
   const normCollection = (s?: string) => (s ?? '').trim();
 
+  const walletBalance = useGetUserNFT(hostedWalletAddress);
+  console.log('walletBalance', walletBalance, hostedWalletAddress);
+  const toKey = (collection?: string, nonce?: number | string) =>
+    `${(collection ?? '').trim().toUpperCase()}:${Number(nonce ?? 0)}`;
+
+  // 1) Construire l’ensemble des clés déjà présentes dans la liste
+  const existingKeys = React.useMemo(() => {
+    const s = new Set<string>();
+    for (const r of list) {
+      s.add(toKey(r.collection, r.nonce));
+    }
+    return s;
+  }, [list]);
+
+  // 2) Filtrer le walletBalance pour ne garder que les nouveaux items
+  const filteredWalletBalance = React.useMemo(() => {
+    return (walletBalance ?? []).filter((t: any) => {
+      // t.collection et t.nonce sont normalement fournis par ton objet walletBalance
+      // (sinon, tu peux fallback sur parseTokenIdentifier(t.identifier))
+      return !existingKeys.has(toKey(t.collection, t.nonce));
+    });
+  }, [walletBalance, existingKeys]);
   // vérifie si une paire (collection, nonce) existe déjà dans la liste (sauf ignoreId)
   const isDuplicatePair = (
     collection: string | undefined,
@@ -380,7 +405,7 @@ export const CampaignRewardsManager: React.FC<{
     return null;
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (newRow: Partial<Reward>) => {
     if (!authHeader) return;
     const err = validateRow(newRow /* ignoreId undefined pour create */);
     if (err) return setError(err);
@@ -413,8 +438,12 @@ export const CampaignRewardsManager: React.FC<{
 
         setList((prev) => {
           const newList = [normalized, ...prev];
-          onEvent?.({ type: 'created', reward: normalized, list: newList });
-          onCreated?.(normalized, newList);
+
+          //on recharge la liste complète pour être sûr seulement si créé manuellement
+          if (newRow.active) {
+            onEvent?.({ type: 'created', reward: normalized, list: newList });
+            onCreated?.(normalized, newList);
+          }
           return newList;
         });
         originalMapRef.current.set(created.id, toEditableState(normalized));
@@ -787,7 +816,8 @@ export const CampaignRewardsManager: React.FC<{
                   </td>
                 </tr>
               )}
-              {/* New row */}
+
+              {/* New row from input*/}
               {showNew && (
                 <tr className='bg-white/70'>
                   <td className='px-3 py-2 text-gray-500'>
@@ -904,9 +934,19 @@ export const CampaignRewardsManager: React.FC<{
                         (e.currentTarget as HTMLInputElement).blur()
                       }
                       value={newRow.nonce ?? 0}
-                      onChange={(e) =>
-                        onAddFieldChange('nonce', Number(e.target.value))
-                      }
+                      onChange={(e) => {
+                        const newNonce = Number(e.target.value);
+
+                        // Mets à jour le champ nonce
+
+                        // Reconstruit l'identifier à partir de la collection + nonce
+                        const newIdentifier = buildTokenIdentifier(
+                          newRow.collection ? newRow.collection : '',
+                          newNonce
+                        );
+                        onAddFieldChange('nonce', newNonce);
+                        onAddFieldChange('identifier', newIdentifier);
+                      }}
                     />
                   </td>
                   <td className='px-3 py-2'>
@@ -947,7 +987,7 @@ export const CampaignRewardsManager: React.FC<{
                   <td className='px-3 py-2 text-right'>
                     <div className='flex gap-2 justify-end'>
                       <button
-                        onClick={handleCreate}
+                        onClick={() => handleCreate(newRow)}
                         className='px-3 py-1.5 rounded bg-[#4b4bb7] text-white'
                         disabled={!!validateRow(newRow)}
                       >
@@ -972,7 +1012,86 @@ export const CampaignRewardsManager: React.FC<{
                   </td>
                 </tr>
               )}
+              {/* Liste des tokens détectés */}
+              {filteredWalletBalance.map((token: any) => (
+                <tr key={token.identifier} className='bg-white/70'>
+                  <td className='px-3 py-2 text-gray-500'>
+                    {/* Affiche l’aperçu visuel si présent */}
+                    <div className='flex items-center gap-2'>
+                      {token.media?.[0]?.thumbnailUrl && (
+                        <img
+                          src={token.media[0].thumbnailUrl}
+                          alt={token.name}
+                          className='w-10 h-10 rounded'
+                        />
+                      )}
+                      <div>
+                        <div className='font-medium text-gray-800'>
+                          {token.name}
+                        </div>
+                        <div className='text-xs text-gray-500'>
+                          {token.identifier}
+                        </div>
+                      </div>
+                    </div>
 
+                    {/* Lien vers explorer */}
+                    <div className='mt-1 text-xs text-blue-700'>
+                      <a
+                        href={`${network.explorerAddress}/nfts/${token.identifier}`}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='underline hover:no-underline'
+                      >
+                        View on Explorer
+                      </a>
+                    </div>
+                  </td>
+
+                  {/* Nonce */}
+                  <td className='px-3 py-2 text-gray-500 text-center'>
+                    {token.nonce}
+                  </td>
+
+                  {/* Amount per claim (par défaut 1) */}
+                  <td className='px-3 py-2 text-gray-500 text-center'>1</td>
+
+                  {/* Supply total (valeur initiale) */}
+                  <td className='px-3 py-2 text-gray-500 text-center'>
+                    {token.balance}
+                  </td>
+
+                  {/* Placeholders */}
+                  <td className='px-3 py-2 text-gray-400 text-center'>—</td>
+                  <td className='px-3 py-2 text-gray-400 text-center'>—</td>
+                  <td className='px-3 py-2 text-gray-400 text-center'>—</td>
+
+                  {/* Active */}
+                  <td className='px-3 py-2 text-center'>
+                    <input type='checkbox' defaultChecked={false} readOnly />
+                  </td>
+
+                  {/* Bouton Add */}
+                  <td className='px-3 py-2 text-right'>
+                    <button
+                      onClick={() => {
+                        const newReward = {
+                          identifier: token.identifier,
+                          collection: token.collection,
+                          nonce: token.nonce,
+                          amount_per_claim: '1',
+                          supply_total: token.balance,
+                          active: false
+                        };
+                        handleCreate(newReward); // tu adaptes à ta logique existante
+                      }}
+                      className='px-3 py-1.5 rounded bg-[#4b4bb7] text-white hover:bg-[#3a3aa3]'
+                    >
+                      Add
+                    </button>
+                  </td>
+                </tr>
+              ))}
               {/* Existing rows */}
               {loading ? (
                 <tr>
@@ -1248,20 +1367,26 @@ export const CampaignRewardsManager: React.FC<{
                                   </>
                                 ) : (
                                   <>
-                                    <span className='inline-flex items-center gap-1'>
-                                      <span>
-                                        {hasBalance ? available : '—'}
+                                    {r.active && (
+                                      <span className='inline-flex items-center gap-1'>
+                                        <span>
+                                          {hasBalance ? available : '—'}
+                                        </span>
+                                        <span>/</span>
+                                        <span>{required}</span>
                                       </span>
-                                      <span>/</span>
-                                      <span>{required}</span>
-                                    </span>
-                                    <span className='ml-1 opacity-80'>
-                                      {status === 'excédent'
-                                        ? '(excédent)'
-                                        : status === 'suffisant'
-                                        ? '(suffisant)'
-                                        : '(insuffisant)'}
-                                    </span>
+                                    )}
+                                    {!r.active ? (
+                                      <span className='ml-1'>Inactive</span>
+                                    ) : (
+                                      <span className='ml-1 opacity-80'>
+                                        {status === 'excédent'
+                                          ? '(excédent)'
+                                          : status === 'suffisant'
+                                          ? '(suffisant)'
+                                          : '(insuffisant)'}
+                                      </span>
+                                    )}
                                   </>
                                 )}
                                 {!isDirty &&

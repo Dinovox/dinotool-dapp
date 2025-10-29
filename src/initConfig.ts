@@ -3,8 +3,18 @@ import './styles/globals.css';
 import { environment, walletConnectV2ProjectId } from 'config';
 import { EnvironmentsEnum, ICustomProvider, InitAppType } from './lib';
 import { InMemoryProvider } from './provider/inMemoryProvider';
+import { GaupaProvider } from './provider/gaupaProvider';
 
 const providers: ICustomProvider[] = [
+  environment == 'devnet'
+    ? {
+        name: 'Gaupa Login',
+        type: 'gaupaProvider',
+        iconUrl: GaupaProvider.iconUrl,
+        constructor: async (options) => new GaupaProvider(options)
+      }
+    : ({} as ICustomProvider)
+
   // {
   //   name: 'In Memory Provider',
   //   type: 'inMemoryProvider',

@@ -99,9 +99,14 @@ export const Header = () => {
         >
           <img
             src={
-              ['/lotteries', '/drop', '/collections', '/nfts'].some((route) =>
-                currentRouteName.startsWith(route)
-              )
+              [
+                '/lotteries',
+                '/drop',
+                '/collections',
+                '/nfts',
+                '/claim',
+                '/claimadmin'
+              ].some((route) => currentRouteName.startsWith(route))
                 ? DinoToolsAlpha
                 : dinovoxLogo
             }
