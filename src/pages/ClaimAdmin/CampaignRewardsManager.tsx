@@ -76,6 +76,18 @@ function toEditableState(r: Reward) {
 // compare deux états éditables d’une Reward
 const sameEditState = (a: any, b: any) =>
   JSON.stringify(a) === JSON.stringify(b);
+type BalanceInfo = {
+  available: number;
+  required: number;
+  missing: number;
+  tx_hash: string;
+};
+type RewardToSend = {
+  collection: string;
+  nonce: number;
+  identifier: string;
+  token: { available: number; required: number; missing: number };
+};
 
 export const CampaignRewardsManager: React.FC<{
   campaignId: string;
@@ -88,6 +100,8 @@ export const CampaignRewardsManager: React.FC<{
   onDeleted?: (id: string, list: Reward[]) => void;
   onDirtyChange?: (dirtyIds: string[]) => void;
   onCanceled?: (reward: Reward, list: Reward[]) => void;
+  onBalanceComputed?: (balances: Map<string, BalanceInfo>) => void; // 🆕
+  onTransferComputed?: (rewards: RewardToSend[]) => void;
 }> = ({
   campaignId,
   hostedWalletAddress,
@@ -98,7 +112,9 @@ export const CampaignRewardsManager: React.FC<{
   onUpdated,
   onDeleted,
   onDirtyChange,
-  onCanceled
+  onCanceled,
+  onBalanceComputed,
+  onTransferComputed
 }) => {
   const { network } = useGetNetworkConfig();
   const { tokenLogin } = useGetLoginInfo();
@@ -112,7 +128,7 @@ export const CampaignRewardsManager: React.FC<{
   const normCollection = (s?: string) => (s ?? '').trim();
 
   const walletBalance = useGetUserNFT(hostedWalletAddress);
-  console.log('walletBalance', walletBalance, hostedWalletAddress);
+  // console.log('walletBalance', walletBalance, hostedWalletAddress);
   const toKey = (collection?: string, nonce?: number | string) =>
     `${(collection ?? '').trim().toUpperCase()}:${Number(nonce ?? 0)}`;
 
@@ -196,28 +212,132 @@ export const CampaignRewardsManager: React.FC<{
     missing: number;
     tx_hash: string;
   };
+  type RewardToSend = {
+    collection: string;
+    nonce: number;
+    identifier: string; // ⬅️ demandé
+    token: { available: number; required: number; missing: number };
+  };
+
+  // Map <"COLLECTION:nonce", availableBalance> from wallet (only SFTs: nonce > 0)
+  const walletAvailMap = React.useMemo(() => {
+    const m = new Map<string, number>();
+    (walletBalance ?? []).forEach((t: any) => {
+      const key = toKey(t.collection, t.nonce);
+      const bal = Number(t.balance ?? 0);
+      if (Number(t.nonce) > 0) {
+        m.set(key, Number.isFinite(bal) ? bal : 0);
+      }
+    });
+    return m;
+  }, [walletBalance]);
+
+  // helper: cible locale si le backend ne la fournit pas
+  const computeUiRequired = (rw?: Reward) => {
+    if (!rw) return 0;
+    const claimed = Number(rw.supply_claimed ?? 0);
+    const total = Number(rw.supply_total ?? 0);
+    return Math.max(0, total - claimed);
+  };
+
+  // ⚠️ balanceMap: wallet pour nonce>0, backend pour nonce=0, et fallback si backend vide
   const balanceMap = React.useMemo(() => {
     const m = new Map<string, BalanceInfo>();
-    const rewards = (testedBalanceRaw as TestedBalance)?.wallet?.rewards ?? [];
 
-    for (const r of rewards) {
-      const id = String(r?.id ?? '').trim();
-      const av = Number(r?.token?.available ?? 0);
-      const rq = Number(r?.token?.required ?? 0);
-      const ms = Number(r?.token?.missing ?? 0);
+    // backend peut être vide → fallback sur list pour couvrir tous les rewards
+    const backendRewards = (
+      (testedBalanceRaw as TestedBalance)?.wallet?.rewards ?? []
+    )
+      .map((r) => ({
+        id: String(r?.id ?? '').trim(),
+        token: {
+          available: Number(r?.token?.available ?? 0),
+          required: Number(r?.token?.required ?? 0),
+          missing: Number(r?.token?.missing ?? 0)
+        }
+      }))
+      .filter((r) => r.id);
 
-      if (!id) continue;
+    const source =
+      backendRewards.length > 0
+        ? backendRewards
+        : list.map((rw) => ({
+            id: rw.id,
+            token: { available: 0, required: 0, missing: 0 }
+          }));
+
+    for (const r of source) {
+      const id = r.id;
+      const rw = list.find((x) => x.id === id);
+      if (!rw) continue;
+
+      const nonce = Number(rw.nonce ?? 0);
+
+      // available:
+      //  - SFT/NFT (nonce>0) → balance réelle du wallet
+      //  - FT (nonce=0)      → dispo backend
+      const walletKey = toKey(rw.collection, nonce);
+      const avWallet = Number(walletAvailMap.get(walletKey)) || 0;
+      const avBackend = Number(r.token.available ?? 0);
+
+      const available =
+        nonce > 0 ? avWallet : Number.isFinite(avBackend) ? avBackend : 0;
+
+      // required:
+      //  - si backend fournit (>0), on garde
+      //  - sinon on calcule localement sur list (supply_total - supply_claimed)
+      const rqBackend = Number(r.token.required ?? 0);
+      const required = rqBackend > 0 ? rqBackend : computeUiRequired(rw);
+
+      // missing = max(required - available, 0)
+      const missing = Math.max(0, required - available);
 
       m.set(id, {
-        available: Number.isFinite(av) ? av : 0,
-        required: Number.isFinite(rq) ? rq : 0,
-        missing: Number.isFinite(ms) ? ms : 0,
-        tx_hash: ''
+        available,
+        required,
+        missing,
+        tx_hash: '' // rempli ailleurs au withdraw
       });
     }
 
     return m;
-  }, [testedBalanceRaw]);
+  }, [testedBalanceRaw, walletAvailMap, list]);
+
+  // 2) keep a stable ref to the parent's callback
+  const onBalanceComputedRef = React.useRef(onBalanceComputed);
+  React.useEffect(() => {
+    onBalanceComputedRef.current = onBalanceComputed;
+  }, [onBalanceComputed]);
+
+  // 3) compute a stable signature to avoid useless notifications
+  const balanceSignature = React.useMemo(() => {
+    // deterministic order
+    const entries = Array.from(balanceMap.entries()).sort(([a], [b]) =>
+      a.localeCompare(b)
+    );
+    return entries
+      .map(
+        ([id, v]) =>
+          `${id}:${v.available}|${v.required}|${v.missing}|${v.tx_hash}`
+      )
+      .join(',');
+  }, [balanceMap]);
+
+  // 4) notify parent ONLY when content actually changes
+  React.useEffect(() => {
+    if (onBalanceComputedRef.current) {
+      onBalanceComputedRef.current(balanceMap);
+    }
+  }, [balanceSignature]); // <- not the function identity
+  const getAvailableForRow = React.useCallback(
+    (row: Reward) => {
+      if (Number(row.nonce) > 0) {
+        return walletAvailMap.get(toKey(row.collection, row.nonce)) ?? 0;
+      }
+      return balanceMap.get(row.id)?.available ?? 0;
+    },
+    [walletAvailMap, balanceMap]
+  );
 
   const onEventRef = React.useRef(onEvent);
   const onDirtyChangeRef = React.useRef(onDirtyChange);
@@ -343,7 +463,7 @@ export const CampaignRewardsManager: React.FC<{
 
   // helpers
   const onFieldChange = (id: string, field: keyof Reward, value: any) => {
-    console.log('onFieldChange', id, field, value);
+    // console.log('onFieldChange', id, field, value);
     // 1) update UI
     setList((prev) =>
       prev.map((r) => (r.id === id ? ({ ...r, [field]: value } as Reward) : r))
@@ -502,12 +622,7 @@ export const CampaignRewardsManager: React.FC<{
             available: Math.max(0, avail - excedent),
             tx_hash: res.data.data?.tx_hash ?? ''
           });
-          console.log(
-            'Updated balance after withdraw:',
-            balanceMap.get(id),
-            res.data,
-            res.data.data.tx_hash
-          );
+
           // force a re-render so the badge updates
           setList((prev) => [...prev]);
         }
@@ -711,6 +826,41 @@ export const CampaignRewardsManager: React.FC<{
     }
   };
 
+  // 👉 construire la liste "transfer" prête à être envoyée au parent
+  const transferRewards = React.useMemo<RewardToSend[]>(() => {
+    return list
+      .map((rw) => {
+        const b = balanceMap.get(rw.id);
+        if (!b) return null;
+        return {
+          collection: rw.collection,
+          nonce: Number(rw.nonce ?? 0),
+          identifier:
+            rw.identifier || `${rw.collection}-${Number(rw.nonce ?? 0)}`,
+          token: {
+            available: b.available,
+            required: b.required,
+            missing: Math.max(0, b.required - b.available) // sécurité
+          }
+        };
+      })
+      .filter(Boolean) as RewardToSend[];
+  }, [list, balanceMap]);
+
+  // notifier le parent SEULEMENT quand le contenu change
+  const transferSignature = React.useMemo(() => {
+    return transferRewards
+      .map(
+        (r) =>
+          `${r.collection}:${r.nonce}:${r.identifier}:${r.token.available}|${r.token.required}|${r.token.missing}`
+      )
+      .join(',');
+  }, [transferRewards]);
+
+  React.useEffect(() => {
+    onTransferComputed?.(transferRewards);
+  }, [transferSignature, onTransferComputed, transferRewards]);
+
   if (!authHeader) return <div>Authentication required.</div>;
 
   return (
@@ -811,7 +961,7 @@ export const CampaignRewardsManager: React.FC<{
                       className='px-3 py-1.5 rounded bg-[#4b4bb7] text-white'
                       onClick={() => setShowNew(true)}
                     >
-                      + New reward
+                      + New
                     </button>
                   </td>
                 </tr>
@@ -1317,12 +1467,36 @@ export const CampaignRewardsManager: React.FC<{
                       <td className='px-2 py-2'>
                         {(() => {
                           const bal = balanceMap.get(r.id); // balance disponible actuelle (may be undefined)
-                          const available =
-                            balanceMap.get(r.id)?.available ?? 0;
-                          const required = balanceMap.get(r.id)?.required ?? 0;
-                          const missing = balanceMap.get(r.id)?.missing ?? 0;
+                          // const available =
+                          //   balanceMap.get(r.id)?.available ?? 0;
+                          // const required = balanceMap.get(r.id)?.required ?? 0;
+                          // const missing = balanceMap.get(r.id)?.missing ?? 0;
 
-                          // "needed" = quantité réellement nécessaire
+                          // // "needed" = quantité réellement nécessaire
+                          // const needed =
+                          //   required > 0
+                          //     ? required
+                          //     : Math.max(
+                          //         0,
+                          //         (r.supply_total ?? 0) -
+                          //           (r.supply_claimed ?? 0)
+                          //       );
+
+                          // const hasBalance = Number.isFinite(available);
+                          // const isMissing = missing > 0;
+                          // const isEnough = hasBalance && required >= needed;
+                          // const excedent = isEnough
+                          //   ? Math.max(0, available - needed)
+                          //   : 0;
+
+                          const available = getAvailableForRow(r); // wallet si nonce>0, sinon backend
+                          const supply_reserved = Number(
+                            r.supply_reserved ?? 0
+                          );
+                          const required = balanceMap.get(r.id)?.required ?? 0;
+                          // "needed" côté UI si pas de 'required' fourni
+                          console.log('consumed for row', r.id, r, bal);
+                          console.log('supply_reserved', supply_reserved);
                           const needed =
                             required > 0
                               ? required
@@ -1331,12 +1505,16 @@ export const CampaignRewardsManager: React.FC<{
                                   (r.supply_total ?? 0) -
                                     (r.supply_claimed ?? 0)
                                 );
+                          console.log('needed', needed);
 
+                          // cible réelle à couvrir
+                          const target = needed + supply_reserved;
+
+                          // états
                           const hasBalance = Number.isFinite(available);
-                          const isMissing = missing > 0;
-                          const isEnough = hasBalance && required >= needed;
+                          const isEnough = hasBalance && available >= target;
                           const excedent = isEnough
-                            ? Math.max(0, available - needed)
+                            ? Math.max(0, available - target)
                             : 0;
 
                           type Status =
@@ -1345,7 +1523,7 @@ export const CampaignRewardsManager: React.FC<{
                             | 'excédent';
                           let status: Status = 'insuffisant';
                           if (excedent > 0) status = 'excédent';
-                          else if (isEnough && !isMissing) status = 'suffisant';
+                          else if (isEnough) status = 'suffisant';
 
                           const baseBadge =
                             'inline-flex items-center rounded-full px-2 py-0.5 text-xs border font-medium';
@@ -1373,7 +1551,7 @@ export const CampaignRewardsManager: React.FC<{
                                           {hasBalance ? available : '—'}
                                         </span>
                                         <span>/</span>
-                                        <span>{required}</span>
+                                        <span>{target}</span>
                                       </span>
                                     )}
                                     {!r.active ? (
@@ -1454,6 +1632,11 @@ export const CampaignRewardsManager: React.FC<{
                                   <button
                                     className='px-3 py-1 rounded border disabled:opacity-50'
                                     disabled={savingRow === r.id || !canSave}
+                                    // disabled={
+                                    //   deletingRow === r.id ||
+                                    //   r.supply_claimed! > 0 ||
+                                    //   getAvailableForRow(r) > 0
+                                    // }
                                     onClick={() => handleCancel(r)}
                                     title={rowError || undefined}
                                   >

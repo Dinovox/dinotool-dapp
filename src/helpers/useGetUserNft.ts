@@ -24,7 +24,7 @@ export const useGetUserNFT = (
     url = url + `&collections=${collection}`;
   }
   const getUserNFT = async () => {
-    if (hasPendingTransactions == true || address == '') {
+    if (!address || hasPendingTransactions == true || address == '') {
       return;
     }
     try {

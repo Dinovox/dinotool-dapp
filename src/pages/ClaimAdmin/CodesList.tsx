@@ -6,6 +6,7 @@ import { ReserveCodeButton } from 'helpers/api/dinoclaim/postCampaignCodes';
 import { QRCode } from 'antd';
 import { PrettyQRCardsPrintFold } from './ToQrCode';
 import shortenString from 'helpers/ShortenString';
+import TextCopy from 'helpers/textCopy';
 
 interface Code {
   id: string;
@@ -319,7 +320,16 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
                 {filteredCodes.map((code) => (
                   <tr key={code.id} className='text-sm'>
                     {/* Code */}
-                    <td className='px-3 py-2 font-mono'>{code.code}</td>
+                    <td className='px-3 py-2 font-mono'>
+                      <TextCopy text={code.code} />
+
+                      <div className='mt-2'>
+                        <TextCopy
+                          text={`Copy link`}
+                          copy={`${dino_claim_url}/${code.code}`}
+                        />
+                      </div>
+                    </td>
 
                     {/* Statut */}
                     <td className='px-3 py-2'>
@@ -335,6 +345,57 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
                       >
                         {code.status}
                       </span>
+                      {code.status == 'reserved' && (
+                        <>
+                          <>
+                            <div className='mt-1'>
+                              <button
+                                className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      'Force consume this reserved code?'
+                                    )
+                                  )
+                                    return;
+                                  try {
+                                    await axios.post(
+                                      `${dinoclaim_api}/campaigns/${campaignId}/codes/${code.id}/consume`,
+                                      {},
+                                      {
+                                        headers: {
+                                          Authorization: `Bearer ${authToken}`
+                                        }
+                                      }
+                                    );
+                                    setCodes((prev) =>
+                                      prev.map((c) =>
+                                        c.id === code.id
+                                          ? {
+                                              ...c,
+                                              status: 'consumed',
+                                              claimed_at:
+                                                new Date().toISOString()
+                                            }
+                                          : c
+                                      )
+                                    );
+                                  } catch (err: any) {
+                                    console.error('Consume code error:', err);
+                                    alert(
+                                      err?.response?.data?.message ||
+                                        err?.message ||
+                                        'Failed to consume code'
+                                    );
+                                  }
+                                }}
+                              >
+                                Mark consumed
+                              </button>
+                            </div>
+                          </>
+                        </>
+                      )}
                     </td>
 
                     {/* QR */}
@@ -387,22 +448,107 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
                     {/* Actions */}
                     <td className='px-3 py-2'>
                       <div className='flex items-center gap-2'>
-                        <button
-                          className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
-                          onClick={() => copyToClipboard(code.code)}
-                          title='Copy code'
-                        >
-                          Copy
-                        </button>
-                        <button
-                          className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
-                          onClick={() =>
-                            copyToClipboard(`${dino_claim_url}/${code.code}`)
-                          }
-                          title='Copy link'
-                        >
-                          Copy link
-                        </button>
+                        {' '}
+                        {code.status == 'open' && (
+                          <div className='mt-1'>
+                            <button
+                              className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
+                              onClick={async () => {
+                                if (
+                                  !confirm(
+                                    'Delete this code? (cannot be undone)'
+                                  )
+                                )
+                                  return;
+                                try {
+                                  await axios.delete(
+                                    `${dinoclaim_api}/campaigns/${campaignId}/codes/${code.id}`,
+                                    {
+                                      headers: {
+                                        Authorization: `Bearer ${authToken}`
+                                      }
+                                    }
+                                  );
+                                  // 🧹 Supprime la ligne au lieu de la mettre à jour
+                                  setCodes((prev) =>
+                                    prev.filter((c) => c.id !== code.id)
+                                  );
+                                } catch (err: any) {
+                                  console.error('Delete code error:', err);
+                                  alert(
+                                    err?.response?.data?.message ||
+                                      err?.message ||
+                                      'Failed to delete code'
+                                  );
+                                }
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                        {code.status != 'copied' ? (
+                          <div className='mt-1'>
+                            <button
+                              className='rounded border px-2 py-1 text-xs hover:bg-gray-50'
+                              onClick={async () => {
+                                const qtyStr = prompt(
+                                  'How many copies do you want to create?',
+                                  '1'
+                                );
+                                if (!qtyStr) return; // cancel
+                                const qty = parseInt(qtyStr, 10);
+                                if (isNaN(qty) || qty <= 0) {
+                                  alert('Please enter a valid number');
+                                  return;
+                                }
+
+                                try {
+                                  const res = await axios.post(
+                                    `${dinoclaim_api}/campaigns/${campaignId}/codes/${code.id}/copy`,
+                                    { qty },
+                                    {
+                                      headers: {
+                                        Authorization: `Bearer ${authToken}`
+                                      }
+                                    }
+                                  );
+                                  for (
+                                    let i = 0;
+                                    i < res.data.codes.totalInstancesCreated;
+                                    i++
+                                  ) {
+                                    setCodes((prev) =>
+                                      prev.concat({
+                                        code: code.code,
+                                        status: 'copied'
+                                      } as Code)
+                                    );
+                                  }
+                                } catch (err: any) {
+                                  console.error('Copy code error:', err);
+                                  alert(
+                                    err?.response?.data?.message ||
+                                      err?.message ||
+                                      'Failed to copy code'
+                                  );
+                                }
+                              }}
+                            >
+                              Duplicate
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type='button'
+                            onClick={() => {
+                              setLoading(true);
+                            }}
+                            className='rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-gray-50'
+                          >
+                            Refresh
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

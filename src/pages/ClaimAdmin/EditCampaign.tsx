@@ -34,11 +34,22 @@ type EditCampaignProps = {
   onSaved?: (updated: CampaignPreview) => void;
 };
 
+type RewardToSend = {
+  collection: string;
+  nonce: number;
+  identifier: string;
+  required: number;
+  token: { available: number; required: number; missing: number };
+};
+
 const EditCampaign: React.FC<EditCampaignProps> = ({
   campaign,
   onBack,
   onSaved
 }) => {
+  const [balanceMap, setBalanceMap] = useState<Map<string, any>>(new Map());
+  const [transferRewards, setTransferRewards] = useState<RewardToSend[]>([]); // ⬅️ NEW
+
   const { tokenLogin } = useGetLoginInfo();
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
@@ -71,8 +82,11 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   });
   const [hasUnsavedRewards, setHasUnsavedRewards] = useState<boolean>(false);
 
-  // 🔁 resync quand la prop campaign change (réouverture)
-
+  const missingRewards = useMemo(() => {
+    return Array.from(balanceMap.entries())
+      .filter(([_, v]) => v.missing > 0)
+      .map(([id, v]) => ({ id, ...v }));
+  }, [balanceMap]);
   // resync quand la prop change (réouverture)
   useEffect(() => {
     setEditedCampaign(campaign);
@@ -95,7 +109,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           : ''
     });
   }, [campaign]);
-
+  console.log('Missing rewards:', missingRewards);
   // dirty check pour éviter les saves inutiles
   // header version
   const isDirty = useMemo(() => {
@@ -400,6 +414,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
             campaignId={editedCampaign.id}
             hostedWalletAddress={balanceTested?.wallet?.address}
             testedBalance={balanceTested}
+            onBalanceComputed={(map) => setBalanceMap(map)} // 🆕
+            onTransferComputed={(rewards: any) => setTransferRewards(rewards)} // adapter pour compatibilité de type
             onEvent={(e) => {
               if (
                 e.type === 'updated' ||
@@ -423,7 +439,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                 ? balanceTested.wallet?.egld?.missingWei
                 : 0
             }
-            rewards={balanceTested?.wallet?.rewards || []}
+            rewards={transferRewards} // ⬅️ ici maintenant
             receiver_address={balanceTested?.wallet?.address}
           />
         )}

@@ -12,18 +12,30 @@ import {
 } from 'lib';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 
+// type RewardToSend = {
+//   collection: string; // ex: "DYNASFT-d4f18f"
+//   nonce: string | number | bigint; // ex: 2
+//   required: string | number; // quantité totale à posséder
+//   available?: string | number; // quantité déjà en wallet (optionnel)
+//   token?: {
+//     available?: string | number;
+//     required?: string | number;
+//     missing?: string | number;
+//   };
+// };
+
 type RewardToSend = {
-  collection: string; // ex: "DYNASFT-d4f18f"
-  nonce: string | number | bigint; // ex: 2
-  required: string | number; // quantité totale à posséder
-  available?: string | number; // quantité déjà en wallet (optionnel)
+  collection: string;
+  nonce: string | number | bigint;
+  identifier: string; // ⬅️ NEW
+  required: string | number; // (optionnel si tu n’en as plus l’usage direct)
+  available?: string | number;
   token?: {
     available?: string | number;
     required?: string | number;
-    missing?: string | number;
+    missing?: string | number; // utilisé pour le toSend
   };
 };
-
 type Props = {
   egld_amount: string | number | BigNumber; // en WEI (unités brutes)
   rewards: RewardToSend[];
