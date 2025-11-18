@@ -1,7 +1,12 @@
 // src/pages/Marketplace/index.tsx
+import { decodeBigNumber } from '@multiversx/sdk-core/out';
+import { ActionWithdraw } from 'contracts/dinauction/actions/Withdraw';
+import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import bignumber from 'bignumber.js';
+import { useNft } from 'helpers/contexts/NftContext';
+import DisplayNftByToken from 'helpers/DisplayNftByToken';
 type MarketSource = 'dinovox' | 'xoxno';
 type SaleType = 'fixed' | 'auction';
 
@@ -304,6 +309,9 @@ export const Marketplace = () => {
     [filteredListings]
   );
 
+  const listings = useGetAuctionsPaginated({ page: 1, limit: 10 });
+
+  console.log('listings from hook:', listings);
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
       {/* Header + CTA Sell */}
@@ -425,36 +433,46 @@ export const Marketplace = () => {
           </Link>
         </div>
         <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
-          {liveAuctions.map((l) => (
-            <Card key={l.id}>
+          {listings?.auctions.map((l) => (
+            <Card key={l.auction_id}>
               <CardHeader className='p-0'>
                 <div className='relative aspect-square bg-gray-100'>
-                  <img
-                    src={l.image}
-                    alt={l.name}
-                    className='h-full w-full object-cover'
+                  <DisplayNftByToken
+                    tokenIdentifier={l?.auctioned_tokens.token_identifier}
+                    nonce={l?.auctioned_tokens.token_nonce}
+                    className='absolute inset-0'
                   />
                   <div className='absolute left-2 top-2 flex gap-1'>
-                    <Badge>{l.source}</Badge>
-                    <Badge>{l.saleType}</Badge>
+                    <Badge>{l?.source}</Badge>
+                    <Badge>{l?.saleType}</Badge>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className='space-y-1 pt-4'>
-                <div className='font-medium text-slate-900'>{l.name}</div>
-                <div className='text-sm text-slate-500'>{l.collectionSlug}</div>
+                <div className='font-medium text-slate-900'>{l?.name}</div>
+                <div className='text-sm text-slate-500'>
+                  {l?.auctioned_tokens.token_identifier}
+                </div>
                 <div className='text-sm'>
                   Current bid:{' '}
                   <span className='font-semibold text-slate-900'>
                     {formatToken(
-                      l.auction?.currentBid || l.auction?.startPrice
+                      l?.auction?.current_bid || l?.auction?.startPrice
                     )}
                   </span>
+                </div>
+                <div className='text-sm'>
+                  Min bid:
+                  {l?.min_bid?.toString()}
+                </div>
+                <div className='text-sm'>
+                  Max bid:
+                  {l?.max_bid?.toString()}
                 </div>
               </CardContent>
               <CardFooter>
                 <div className='text-sm text-slate-500'>
-                  <Countdown endTime={l.auction!.endTime} />
+                  <Countdown endTime={l?.auction?.endTime} />
                 </div>
                 <Link
                   to={`/marketplace/listings/${encodeURIComponent(l.id)}`}

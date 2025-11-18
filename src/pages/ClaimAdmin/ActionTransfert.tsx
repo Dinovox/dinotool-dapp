@@ -112,6 +112,11 @@ export const ActionTransfert: React.FC<Props> = ({
   rewards,
   receiver_address
 }) => {
+  // console.log('ActionTransfert render', {
+  //   egld_amount,
+  //   rewards,
+  //   receiver_address
+  // });
   const { address } = useGetAccountInfo();
   const { network } = useGetNetworkConfig();
   const pending = useGetPendingTransactions();
@@ -140,21 +145,37 @@ export const ActionTransfert: React.FC<Props> = ({
 
   const sendFundTransaction = async () => {
     try {
-      const { payload, assetCount } = buildMultiEsdtPayload(
+      let value = BigInt(0);
+      let { payload, assetCount } = buildMultiEsdtPayload(
         receiver_address,
         egld_amount,
         rewards
       );
-      const gasLimit = BigInt(estimateGasForMultiEsdt(payload, assetCount));
+      let gasLimit = BigInt(estimateGasForMultiEsdt(payload, assetCount));
+
+      if (!assetsPlanned || assetsPlanned === 0) {
+        payload = '';
+        value = egld_amount ? BigInt(egld_amount.toString()) : BigInt(0);
+        assetCount = 0;
+        gasLimit = 100_000n; // simple transfert EGLD
+      }
       const tx = new Transaction({
-        value: BigInt(0), // valeur envoyée “au champ value” (reste 0 en MultiESDT)
+        value: BigInt(value), // valeur envoyée “au champ value” (reste 0 en MultiESDT)
         data: new TextEncoder().encode(payload), // payload
-        receiver: new Address(address), // same as sender
+        receiver: payload
+          ? new Address(address)
+          : new Address(receiver_address), // same as sender if not simple EGLD transfer
         gasLimit,
         gasPrice: BigInt(GAS_PRICE),
         chainID: network.chainId,
         sender: new Address(address),
         version: 1
+      });
+      console.log('Sending transfer tx:', {
+        tx,
+        payload,
+        assetCount,
+        gasLimit
       });
 
       const sessionId = await signAndSendTransactions({

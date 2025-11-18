@@ -54,7 +54,6 @@ export const useGetNftInformations = (
   // }
 
   const getInfo = async () => {
-    // console.log('getinfo', identifier, toHex(nonce));
     //using storage to reduce calls
     const expire_test = Number(
       localStorage.getItem(
@@ -96,11 +95,11 @@ export const useGetNftInformations = (
       //storage of 1000 minutes
       const expire = time.getTime() + 1000 * 60 * 1000;
       localStorage.setItem(
-        'esdt_' + data.identifier + '-' + toHex(nonce),
+        'esdt_' + data.collection + '-' + toHex(nonce),
         JSON.stringify(data)
       );
       localStorage.setItem(
-        'esdt_' + data.identifier + '-' + toHex(nonce) + '_expire',
+        'esdt_' + data.collection + '-' + toHex(nonce) + '_expire',
         expire.toString()
       );
     } catch (err) {

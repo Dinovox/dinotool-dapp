@@ -29,6 +29,7 @@ type Reward = {
   balance_required?: string;
   balance_missing?: string;
   balance_tx_hash?: string;
+  code?: string;
 };
 
 type RewardsEvent =
@@ -124,10 +125,14 @@ export const CampaignRewardsManager: React.FC<{
   const [error, setError] = React.useState<string | null>(null);
   const [savingRow, setSavingRow] = React.useState<string | null>(null);
   const [deletingRow, setDeletingRow] = React.useState<string | null>(null);
+  const [walletReload, setWalletReload] = React.useState(0);
+
   // normalise juste en trim; garde la casse (les ids MultiversX sont sensibles)
   const normCollection = (s?: string) => (s ?? '').trim();
 
-  const walletBalance = useGetUserNFT(hostedWalletAddress);
+  const walletBalance = useGetUserNFT(hostedWalletAddress, '', '', {
+    refreshKey: walletReload
+  });
   // console.log('walletBalance', walletBalance, hostedWalletAddress);
   const toKey = (collection?: string, nonce?: number | string) =>
     `${(collection ?? '').trim().toUpperCase()}:${Number(nonce ?? 0)}`;
@@ -949,6 +954,12 @@ export const CampaignRewardsManager: React.FC<{
                 <th className='px-3 py-2'>Reserved</th>
                 <th className='px-3 py-2'>Claimed</th>
                 <th className='px-3 py-2'>Active</th>
+                <th className='px-3 py-2'>
+                  Code{' '}
+                  <Tooltip content='If set, this reward will be assigned with the specified code only.'>
+                    <span className='ml-2 cursor-pointer'>ℹ️</span>
+                  </Tooltip>
+                </th>
                 <th className='px-3 py-2 text-right'>Actions</th>
               </tr>
             </thead>
@@ -956,6 +967,26 @@ export const CampaignRewardsManager: React.FC<{
               {!showNew && (
                 <tr className='bg-white/70'>
                   <td colSpan={8}></td>
+                  <td className='px-3 py-2 text-center'>
+                    <>
+                      <button
+                        onClick={async () => {
+                          setLoading(true);
+                          try {
+                            await fetchList();
+                            setWalletReload((n) => n + 1);
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        className='px-3 py-1.5 rounded border mr-2'
+                        disabled={loading}
+                        title='Refresh list'
+                      >
+                        {loading ? 'Refreshing…' : 'Refresh'}
+                      </button>
+                    </>
+                  </td>
                   <td className='px-3 py-2 text-center'>
                     <button
                       className='px-3 py-1.5 rounded bg-[#4b4bb7] text-white'
@@ -1134,6 +1165,7 @@ export const CampaignRewardsManager: React.FC<{
                       }
                     />
                   </td>
+                  <td className='px-3 py-2 text-gray-500'>—</td>
                   <td className='px-3 py-2 text-right'>
                     <div className='flex gap-2 justify-end'>
                       <button
@@ -1221,6 +1253,7 @@ export const CampaignRewardsManager: React.FC<{
                     <input type='checkbox' defaultChecked={false} readOnly />
                   </td>
 
+                  <td className='px-3 py-2 text-gray-400 text-center'>—</td>
                   {/* Bouton Add */}
                   <td className='px-3 py-2 text-right'>
                     <button
@@ -1495,8 +1528,8 @@ export const CampaignRewardsManager: React.FC<{
                           );
                           const required = balanceMap.get(r.id)?.required ?? 0;
                           // "needed" côté UI si pas de 'required' fourni
-                          console.log('consumed for row', r.id, r, bal);
-                          console.log('supply_reserved', supply_reserved);
+                          // console.log('consumed for row', r.id, r, bal);
+                          // console.log('supply_reserved', supply_reserved);
                           const needed =
                             required > 0
                               ? required
@@ -1505,7 +1538,7 @@ export const CampaignRewardsManager: React.FC<{
                                   (r.supply_total ?? 0) -
                                     (r.supply_claimed ?? 0)
                                 );
-                          console.log('needed', needed);
+                          // console.log('needed', needed);
 
                           // cible réelle à couvrir
                           const target = needed + supply_reserved;
@@ -1618,6 +1651,37 @@ export const CampaignRewardsManager: React.FC<{
                             onFieldChange(r.id, 'active', e.target.checked)
                           }
                         />
+                      </td>
+                      <td className='px-3 py-2 text-gray-400 text-center'>
+                        <span className='inline-flex items-center gap-2'>
+                          {r.code ? r.code : '—'}
+                          <button
+                            type='button'
+                            title='Generate random code'
+                            onClick={() => {
+                              const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                              let code = '';
+                              for (let i = 0; i < 10; i++) {
+                                code +=
+                                  chars[
+                                    Math.floor(Math.random() * chars.length)
+                                  ];
+                              }
+                              onFieldChange(r.id, 'code', code);
+                            }}
+                            className='ml-2 inline-flex items-center justify-center w-7 h-7 rounded border text-sm hover:bg-gray-100'
+                          >
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='w-4 h-4'
+                              viewBox='0 0 24 24'
+                              fill='currentColor'
+                              aria-hidden
+                            >
+                              <path d='M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3.5 4.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-4.5 4.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z' />
+                            </svg>
+                          </button>
+                        </span>
                       </td>
                       <td className='px-3 py-2 text-right'>
                         <div className='flex items-center justify-end gap-2'>

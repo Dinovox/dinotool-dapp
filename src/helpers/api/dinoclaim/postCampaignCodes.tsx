@@ -7,7 +7,9 @@ interface Props {
   campaignId: string;
 }
 
-export const ReserveCodeButton: React.FC<Props> = ({ campaignId }) => {
+export const ReserveCodeButton: React.FC<
+  Props & { onDone?: (result?: any, error?: any) => void }
+> = ({ campaignId, onDone }) => {
   const { tokenLogin } = useGetLoginInfo();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -16,6 +18,7 @@ export const ReserveCodeButton: React.FC<Props> = ({ campaignId }) => {
   const [showModal, setShowModal] = useState(false);
   const [qtyState, setQty] = useState(1);
   const [usesState, setUses] = useState(1);
+  const [formCode, setFormCode] = useState('');
 
   const handleClick = async () => {
     if (!tokenLogin) return;
@@ -32,13 +35,16 @@ export const ReserveCodeButton: React.FC<Props> = ({ campaignId }) => {
         {
           qty: qtyState,
           uses: usesState,
-          prefix: '' // optionnel
+          prefix: '', // optionnel
+          formCode: formCode ? formCode : undefined
         },
         config
       );
       setResult(data);
+      onDone?.(data, null);
     } catch (err: any) {
       setError(err);
+      onDone?.(null, err);
     } finally {
       setLoading(false);
     }
@@ -85,7 +91,10 @@ export const ReserveCodeButton: React.FC<Props> = ({ campaignId }) => {
                   type='number'
                   min={1}
                   value={qtyState}
-                  onChange={(e) => setQty(Number(e.target.value))}
+                  onChange={(e) => {
+                    setQty(Number(e.target.value));
+                    setFormCode('');
+                  }}
                   style={{ width: 60 }}
                 />
               </label>
@@ -97,11 +106,29 @@ export const ReserveCodeButton: React.FC<Props> = ({ campaignId }) => {
                   type='number'
                   min={1}
                   value={usesState}
-                  onChange={(e) => setUses(Number(e.target.value))}
+                  onChange={(e) => {
+                    setUses(Number(e.target.value));
+                  }}
                   style={{ width: 60 }}
                 />
               </label>
             </div>
+            {/* Code manuel seulement pour un code unique: */}
+            {qtyState === 1 && (
+              <div style={{ marginBottom: 12 }}>
+                <label>
+                  Code (optionnal)&nbsp;
+                  <input
+                    type='text'
+                    value={formCode}
+                    onChange={(e) => setFormCode(e.target.value)}
+                    placeholder='Manual code'
+                    style={{ width: 200 }}
+                  />
+                </label>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: 8 }}>
               <button
                 className='px-4 py-2 rounded bg-[#4b4bb7] text-white disabled:opacity-50'

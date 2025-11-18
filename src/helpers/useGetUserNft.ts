@@ -1,18 +1,76 @@
 import { useEffect, useState } from 'react';
-import {
-  useGetAccountInfo,
-  useGetNetworkConfig,
-  useGetPendingTransactions
-} from 'lib';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import axios from 'axios';
 import { API_URL } from 'config';
+
+export type NftMedia = {
+  url: string;
+  originalUrl?: string;
+  thumbnailUrl?: string;
+  fileType?: string;
+  fileSize?: number;
+};
+
+export type NftAttribute = {
+  trait_type?: string;
+  value?: string | number | boolean | null;
+};
+
+export type NftMetadata =
+  | {
+      tokenId?: number;
+      name?: string;
+      description?: string;
+      attributes?: NftAttribute[] | Record<string, any>;
+      [key: string]: any;
+    }
+  | {
+      error: {
+        code: string;
+        message: string;
+        timestamp: number;
+        [k: string]: any;
+      };
+    };
+
+export type UserNft = {
+  identifier: string;
+  collection: string;
+  attributes?: string;
+  hash?: string;
+  nonce?: number;
+  type: string;
+  subType?: string;
+  name: string;
+  creator?: string;
+  royalties?: number;
+  uris?: string[];
+  url?: string;
+  media?: NftMedia[];
+  isWhitelistedStorage?: boolean;
+  tags?: string[];
+  metadata?: NftMetadata | Record<string, any>;
+  balance: string;
+  ticker: string;
+  decimals?: number;
+  score?: number;
+  rank?: number;
+  isNsfw?: boolean;
+  [key: string]: any;
+};
+
+export type UserNftResponse = UserNft[];
+
 export const useGetUserNFT = (
   address: string,
   identifier?: string,
-  collection?: string
+  collection?: string,
+  opts?: { refreshKey?: number }
 ) => {
   const network = useGetNetworkConfig();
   const [esdtBalance, setNftBalance] = useState(<any>[]);
+  const refreshKey = opts?.refreshKey ?? 0;
+
   // const address = useGetAccountInfo().address;
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
@@ -41,7 +99,7 @@ export const useGetUserNFT = (
 
   useEffect(() => {
     getUserNFT();
-  }, [address, identifier]);
+  }, [address, identifier, refreshKey]);
 
-  return esdtBalance;
+  return esdtBalance as UserNftResponse;
 };

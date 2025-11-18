@@ -7,7 +7,7 @@ import { QRCode } from 'antd';
 import { PrettyQRCardsPrintFold } from './ToQrCode';
 import shortenString from 'helpers/ShortenString';
 import TextCopy from 'helpers/textCopy';
-
+import DinoQrPro from 'components/QrCodes/DinoQrPro';
 interface Code {
   id: string;
   catalog_id: string;
@@ -53,18 +53,77 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
 
   // jeux filtrés pour le tableau
   const filteredCodes = React.useMemo(() => {
-    if (statusFilter === 'all') return codes;
-    return codes.filter((c) => c.status === statusFilter);
+    if (statusFilter === 'all') return codes ?? [];
+    return (codes ?? []).filter((c) => c.status === statusFilter);
   }, [codes, statusFilter]);
 
-  const codes_items = useMemo(() => {
-    return filteredCodes.map((code) => ({
-      code: code.code,
-      amount: 1,
-      styleParam: '',
-      status: code.status
-    }));
-  }, [filteredCodes]);
+  type CodeItem = {
+    showQr: any;
+    tx_hash: any;
+    code: string;
+    amount: number; // nb d’instances (open groupées)
+    styleParam: string;
+    status: Code['status'];
+    id: string; // prendre l'id de chaque première instance
+  };
+
+  const codes_items = React.useMemo<CodeItem[]>(() => {
+    if (!filteredCodes?.length) return [];
+
+    // si on n'est pas sur "all" → aucun regroupement
+    if (statusFilter !== 'all' && statusFilter !== 'open') {
+      console.log('filteredCodes', statusFilter, filteredCodes.length);
+      return filteredCodes.map((c) => ({
+        code: c.code,
+        amount: 1,
+        styleParam: '',
+        status: c.status,
+        id: c.id,
+        showQr: c.showQr,
+        tx_hash: c.tx_hash ?? undefined
+      }));
+    }
+
+    // "all" → regrouper uniquement les "open"
+    const items: CodeItem[] = [];
+    const openCounts = new Map<string, number>();
+
+    for (const c of filteredCodes) {
+      if (c.status === 'open') {
+        openCounts.set(c.code, (openCounts.get(c.code) ?? 0) + 1);
+      } else {
+        console.log('filteredCodes push', c.code);
+        items.push({
+          code: c.code,
+          amount: 1,
+          styleParam: '',
+          status: c.status,
+          id: c.id,
+          showQr: c.showQr,
+          tx_hash: c.tx_hash ?? undefined
+        });
+      }
+    }
+
+    for (const [code, count] of openCounts.entries()) {
+      const first = filteredCodes.find(
+        (c) => c.code === code && c.status === 'open'
+      );
+      items.push({
+        id:
+          filteredCodes.find((c) => c.code === code && c.status === 'open')
+            ?.id ?? '', // prendre l'id de la première instance open
+        code,
+        amount: count,
+        styleParam: '',
+        status: 'open',
+        showQr: first?.showQr,
+        tx_hash: undefined
+      });
+    }
+
+    return items;
+  }, [filteredCodes, statusFilter]);
 
   useEffect(() => {
     // Pas d’ID ou pas d’auth -> pas de fetch, et on sort proprement du loading
@@ -208,7 +267,13 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
         </p>
       </div>
       <div className='mb-4'>
-        <ReserveCodeButton campaignId={campaignId} />
+        <ReserveCodeButton
+          campaignId={campaignId}
+          onDone={() => {
+            // trigger a reload of codes after generation
+            setLoading(true);
+          }}
+        />
         {/* Bouton manuel pour recharger si besoin */}
       </div>
       {!hasCodes ? (
@@ -317,16 +382,22 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
                 </tr>
               </thead>
               <tbody className='divide-y'>
-                {filteredCodes.map((code) => (
+                {codes_items.map((code) => (
                   <tr key={code.id} className='text-sm'>
                     {/* Code */}
                     <td className='px-3 py-2 font-mono'>
                       <TextCopy text={code.code} />
-
+                      {code.amount > 1 && (
+                        <span className='ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs'>
+                          {code.amount}×
+                        </span>
+                      )}
                       <div className='mt-2'>
                         <TextCopy
                           text={`Copy link`}
-                          copy={`${dino_claim_url}/${code.code}`}
+                          copy={`${dino_claim_url}/${encodeURIComponent(
+                            code.code
+                          )}`}
                         />
                       </div>
                     </td>
@@ -419,11 +490,42 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
 
                       {code.showQr && (
                         <div className='mt-2'>
-                          <QRCode
+                          {/* <QRCode
                             value={`${dino_claim_url}/${code.code}`}
-                            size={128}
+                            size={256}
                             style={{ marginLeft: 8, verticalAlign: 'middle' }}
-                          />
+                          /> */}
+                          {/* <DinoCenterLogoQR
+                            value={`${dino_claim_url}/${code.code}`}
+                            size={256}
+                            // logoSrc='/multiversx-white.svg'
+                            iconSrc='/safari-pinned-tab.svg'
+                            logoRatio={0.42} // ~22% du QR
+                            level='H' // haute tolérance
+                            excavate // fenêtre blanche sous le logo
+                          /> */}
+                          <div className='flex flex-wrap items-start gap-6'>
+                            <DinoQrPro
+                              value={`${dino_claim_url}/${code.code}`}
+                              size={128}
+                              iconSrc='/safari-pinned-tab.svg'
+                              iconRatio={0.25}
+                              showDownload={true}
+                            />
+                            <DinoQrPro
+                              value={`${dino_claim_url}/${code.code}`}
+                              size={128}
+                              iconSrc='/assets/img/qr-dino-tr.png'
+                              iconRatio={0.25}
+                              showDownload={true}
+                            />
+                            <DinoQrPro
+                              value={`${dino_claim_url}/${code.code}`}
+                              size={128}
+                              iconSrc='/multiversx-white.webp'
+                              showDownload={true}
+                            />
+                          </div>
                         </div>
                       )}
                     </td>

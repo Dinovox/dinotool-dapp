@@ -1,6 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { dino_claim_url } from 'config';
+import DinoQrPrint from 'components/QrCodes/DinoQrPrint';
 
 const THEME = {
   aquaLight: '#CFF4F6',
@@ -180,7 +181,7 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
       THEME.textDark
     }; text-align:center; line-height:1.25; margin-top:0mm; white-space:pre-line; }
 
-    @media print { .no-print { display:none !important; } .card { box-shadow:none; } }
+    @media print { .no-print { display:none !important; } .card { box-shadow:none; } .tape { box-shadow:none; }    .qr-wrap { box-shadow:none; } }
   `,
     [pageSize, orientation, marginMm, gapMm, foldGapMm, layout]
   );
@@ -294,16 +295,21 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
                     <div className='card'>
                       <div className='tape'>{host}</div>
                       <div className='qr-wrap'>
-                        <QRCodeSVG
+                        {/* <QRCodeSVG
                           value={urlWithStyle}
                           size={qrSizePx}
                           level='M'
+                        /> */}
+                        <DinoQrPrint
+                          value={urlWithStyle}
+                          size={qrSizePx}
+                          iconSrc='/assets/img/qr-dino-tr.png'
                         />
                       </div>
                       <div className='code-badge'>{id}</div>
                       <div className='meta'>
                         {it.amount > 1
-                          ? `Chaque code peut être réclamé ${it.amount} fois.`
+                          ? `Ce code peut être réclamé ${it.amount} fois.`
                           : 'Code utilisable une seule fois.'}
                       </div>
                     </div>
@@ -316,10 +322,16 @@ export const PrettyQRCardsPrintFold: React.FC<Props> = ({
                       <div className='back-card'>
                         <div className='back-title'>Instructions</div>
                         <div className='back-qr-wrap'>
-                          <QRCodeSVG
+                          {/* <QRCodeSVG
                             value={xPortalUrl}
                             size={qrSizePx}
                             level='M'
+                          /> */}
+
+                          <DinoQrPrint
+                            value={xPortalUrl}
+                            size={qrSizePx}
+                            iconSrc='/svg/mvx-black.svg'
                           />
                         </div>
                         <div className='back-steps'>{`

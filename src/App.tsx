@@ -9,6 +9,7 @@ import { AxiosInterceptors, BatchTransactionsContextProvider } from 'wrappers';
 import { Layout } from './components';
 import { useRoutesWithTranslation } from 'routes';
 import { PageNotFound, Unlock } from 'pages';
+import { NftProvider } from './helpers/contexts/NftContext';
 
 export const App = () => {
   const routes = useRoutesWithTranslation();

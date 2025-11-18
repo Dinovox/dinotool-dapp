@@ -40,24 +40,42 @@ export const CreateSft: React.FC<{
     setMetadatas(value);
     setMetaUri('https://ipfs.io/ipfs/' + value);
 
-    const isPotentialCID = (v: string) =>
-      v.length >= 46 && /^[a-zA-Z0-9]+$/.test(v);
+    // const isPotentialCID = (v: string) =>
+    //   v.length >= 46 && /^[a-zA-Z0-9]+$/.test(v);
+    // if (!isPotentialCID(value)) {
+    //   setIpfsData('Invalid IPFS CID');
+    //   return;
+    // }
+
+    const extractCID = (value: string): string => value.split('/')[0];
+    const isPotentialCID = (value: string): boolean => {
+      const cid = extractCID(value);
+      return cid.length >= 46 && /^[a-zA-Z0-9]+$/.test(cid);
+    };
     if (!isPotentialCID(value)) {
       setIpfsData('Invalid IPFS CID');
       return;
     }
 
     try {
+      //test via gateway pinata
       const url = `${ipfsGateway}${value}`;
-      const response = await fetch(url);
+      let response = await fetch(url);
 
+      console.log('response2', response);
       // const url =
       //   'https://gateway.pinata.cloud/ipfs/QmRxfHkLoZM3Pd9EayzQ9PWTGQLbWmswV8fgG3QckCoZCZ/902.json';
       // const response = await fetch(url);
       console.log('response', response);
 
       if (!response.ok) {
-        throw new Error('Erreur lors du téléchargement du JSON');
+        //test via ipfs.io
+        const url2 = 'https://ipfs.io/ipfs/' + value;
+        response = await fetch(url2);
+
+        if (!response.ok) {
+          throw new Error('Erreur lors du téléchargement du JSON');
+        }
       }
 
       const json = await response.json();

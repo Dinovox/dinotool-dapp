@@ -109,7 +109,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           : ''
     });
   }, [campaign]);
-  console.log('Missing rewards:', missingRewards);
+  // console.log('Missing rewards:', missingRewards);
   // dirty check pour éviter les saves inutiles
   // header version
   const isDirty = useMemo(() => {
