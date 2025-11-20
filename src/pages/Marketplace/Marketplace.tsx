@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import bignumber from 'bignumber.js';
 import { useNft } from 'helpers/contexts/NftContext';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
+import { Auction } from './Auction';
 type MarketSource = 'dinovox' | 'xoxno';
 type SaleType = 'fixed' | 'auction';
 
@@ -434,54 +435,7 @@ export const Marketplace = () => {
         </div>
         <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
           {listings?.auctions.map((l) => (
-            <Card key={l.auction_id}>
-              <CardHeader className='p-0'>
-                <div className='relative aspect-square bg-gray-100'>
-                  <DisplayNftByToken
-                    tokenIdentifier={l?.auctioned_tokens.token_identifier}
-                    nonce={l?.auctioned_tokens.token_nonce}
-                    className='absolute inset-0'
-                  />
-                  <div className='absolute left-2 top-2 flex gap-1'>
-                    <Badge>{l?.source}</Badge>
-                    <Badge>{l?.saleType}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className='space-y-1 pt-4'>
-                <div className='font-medium text-slate-900'>{l?.name}</div>
-                <div className='text-sm text-slate-500'>
-                  {l?.auctioned_tokens.token_identifier}
-                </div>
-                <div className='text-sm'>
-                  Current bid:{' '}
-                  <span className='font-semibold text-slate-900'>
-                    {formatToken(
-                      l?.auction?.current_bid || l?.auction?.startPrice
-                    )}
-                  </span>
-                </div>
-                <div className='text-sm'>
-                  Min bid:
-                  {l?.min_bid?.toString()}
-                </div>
-                <div className='text-sm'>
-                  Max bid:
-                  {l?.max_bid?.toString()}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <div className='text-sm text-slate-500'>
-                  <Countdown endTime={l?.auction?.endTime} />
-                </div>
-                <Link
-                  to={`/marketplace/listings/${encodeURIComponent(l.id)}`}
-                  className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
-                >
-                  Bid
-                </Link>
-              </CardFooter>
-            </Card>
+            <Auction key={l.auction_id} auction={l} />
           ))}
         </div>
       </section>

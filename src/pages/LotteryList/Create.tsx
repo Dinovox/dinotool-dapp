@@ -22,7 +22,10 @@ import NftDisplay from './NftDisplay';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { Trans, useTranslation } from 'react-i18next';
-import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
+import {
+  useGetEsdtInformations,
+  FormatAmount
+} from 'helpers/api/useGetEsdtInformations';
 
 const CreateLotteryModal: React.FC<{
   count: string;

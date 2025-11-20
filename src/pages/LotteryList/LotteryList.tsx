@@ -316,9 +316,10 @@ export const LotteryList = () => {
                     price_identifier: lottery.price_identifier || 'N/A',
                     cancelled: lottery.cancelled || false,
                     price_data: lottery.price_data,
+                    prize_data: lottery.prize_data,
                     image_url:
                       lottery?.prize_data?.media[0]?.thumbnailUrl ||
-                      lottery?.price_data?.media[0]?.url ||
+                      lottery?.prize_data?.media[0]?.url ||
                       '/default-lottery-image.png',
                     winner_id: lottery.winner_id
                   }}

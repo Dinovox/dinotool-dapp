@@ -22,7 +22,28 @@ interface LotteryData {
   cancelled: boolean;
   winner_id?: number;
   price_data: {
-    decimals: number;
+    decimals?: number;
+    identifier?: string;
+    type?: string;
+    media?: Array<{
+      url: string;
+      originalUrl?: string;
+      thumbnailUrl?: string;
+      fileType?: string;
+      fileSize?: number;
+    }>;
+  };
+  prize_data: {
+    decimals?: number;
+    identifier?: string;
+    type?: string;
+    media?: Array<{
+      url: string;
+      originalUrl?: string;
+      thumbnailUrl?: string;
+      fileType?: string;
+      fileSize?: number;
+    }>;
   };
 }
 
@@ -52,16 +73,27 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({
 
   // Get status
   const now = Math.floor(Date.now() / 1000);
-  const start = parseInt(data.start_time);
 
+  // Parse timestamps - handle both Unix timestamps and ISO date strings
+  const parseTimestamp = (timeStr: string): number => {
+    if (!timeStr || timeStr === '0') return 0;
+    // If it's an ISO string, convert to Unix timestamp
+    if (timeStr.includes('-') || timeStr.includes('T')) {
+      return Math.floor(new Date(timeStr).getTime() / 1000);
+    }
+    // Otherwise, parse as integer (Unix timestamp in seconds)
+    return parseInt(timeStr);
+  };
+
+  const start = parseTimestamp(data.start_time);
+  const end = parseTimestamp(data.end_time);
   const status = data.cancelled
     ? 'cancelled'
     : data.winner_id && data.winner_id > 0
     ? 'ended'
     : start > now
     ? 'soon'
-    : data.tickets_sold >= data.max_tickets ||
-      (parseInt(data.end_time) > 0 && parseInt(data.end_time) < now)
+    : end > 0 && end < now
     ? 'draw'
     : 'ongoing';
 
@@ -99,8 +131,8 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({
   useEffect(() => {
     const updateTimer = () => {
       const now = Math.floor(Date.now() / 1000);
-      const start = parseInt(data.start_time);
-      const end = data.end_time === '0' ? 0 : parseInt(data.end_time);
+      const start = parseTimestamp(data.start_time);
+      const end = parseTimestamp(data.end_time);
 
       if (now < start) {
         // Not started yet

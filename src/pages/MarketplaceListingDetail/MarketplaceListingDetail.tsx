@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useGetFullAuctionData } from 'contracts/dinauction/helpers/useGetFullAuctionData';
+import { useGetNftInformations } from 'pages/LotteryList/Transaction/helpers/useGetNftInformation';
+import { DisplayNft } from 'helpers/DisplayNft';
+import type { UserNft } from 'helpers/useGetUserNft';
+import { ActionBid } from 'contracts/dinauction/actions/Bid';
+import BigNumber from 'bignumber.js';
+import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 
 /* ---------------- Types ---------------- */
 type MarketSource = 'dinovox' | 'xoxno';
@@ -14,113 +21,36 @@ type Bid = {
 };
 
 type Listing = {
-  id: string;
+  id: string; // Listing ID
   source: MarketSource;
   saleType: SaleType;
-  identifier: string;
-  collectionSlug: string;
+  identifier: string; // NFT identifier
+  collection: string; // NFT collection
   name: string;
   images: string[]; // gallery
-  seller: string;
-  price?: TokenAmount; // for fixed
+  seller: string; // Original owner of the NFT (original_owner in contract)
+  price?: TokenAmount; // for fixed price listings
   auction?: {
-    startPrice: TokenAmount;
-    currentBid?: TokenAmount;
-    startTime: number;
-    endTime: number;
-    bidsCount: number;
-    history: Bid[];
+    auctionId: string; // Corresponds to auction_id from the contract
+    auctionType?: string; // Corresponds to auction_type
+    startPrice: TokenAmount; // Corresponds to min_bid
+    currentBid?: TokenAmount; // Corresponds to current_bid
+    maxBid?: TokenAmount; // Corresponds to max_bid
+    minBidDiff: TokenAmount; // Corresponds to min_bid_diff
+    paymentNonce: number; // Corresponds to payment_nonce
+    startTime: number; // Corresponds to start_time
+    endTime: number; // Corresponds to deadline
+    currentWinner?: string; // Corresponds to current_winner (ManagedAddress)
+    marketplaceCutPercentage?: string; // Corresponds to marketplace_cut_percentage (BigUint as percentage string)
+    creatorRoyaltiesPercentage?: string; // Corresponds to creator_royalties_percentage (BigUint as percentage string)
+    bidsCount: number; // Retained from original type
+    history: Bid[]; // Retained from original type
   };
   attributes?: Array<{ trait: string; value: string }>;
   status: 'active' | 'sold' | 'cancelled' | 'ended';
   createdAt: number;
   description?: string;
 };
-
-/* ---------------- Mock fetch ---------------- */
-// Remplace par un vrai fetch (SC/Indexer). On simule local + xoxno.
-const MOCK_DB: Listing[] = (() => {
-  const baseImg = 'https://placehold.co';
-  const mkImgs = (seed: number) => [
-    `${baseImg}/1024/png?text=Main+${seed}`,
-    `${baseImg}/512/png?text=Alt+${seed}+A`,
-    `${baseImg}/512/png?text=Alt+${seed}+B`
-  ];
-  const now = Date.now();
-  const items: Listing[] = [];
-  for (let i = 0; i < 10; i++) {
-    // fixed
-    items.push({
-      id: `dinovox:${0 + i}`,
-      source: 'dinovox',
-      saleType: 'fixed',
-      identifier: `DINOVOX-${0 + i}`,
-      collectionSlug: 'dinovox',
-      name: `Dino #${0 + i}`,
-      images: mkImgs(i),
-      seller: i % 3 === 0 ? 'erd1vip...aaaa' : 'erd1...abcd',
-      price: {
-        ticker: 'EGLD',
-        amount: (0.35 + i * 0.01).toFixed(2),
-        decimals: 18
-      },
-      status: 'active',
-      createdAt: now - i * 3600 * 1000,
-      attributes: [
-        { trait: 'Background', value: 'Volcano' },
-        { trait: 'Eyes', value: 'Laser' },
-        { trait: 'Rarity', value: i % 5 === 0 ? 'Mythic' : 'Common' }
-      ],
-      description: 'Fixed-price listing on local marketplace.'
-    });
-  }
-  for (let i = 0; i < 10; i++) {
-    // auction (some xoxno)
-    const start = now - (i + 1) * 45 * 60 * 1000;
-    const end = now + (i + 2) * 20 * 60 * 1000;
-    const history: Bid[] = Array.from({ length: (i % 4) + 1 }).map((_, j) => ({
-      id: `b${i}-${j}`,
-      bidder: j % 2 ? 'erd1...abcd' : 'erd1k3y...zzz',
-      amount: {
-        ticker: 'EGLD',
-        amount: (0.2 + j * 0.07).toFixed(2),
-        decimals: 18
-      },
-      time: start + (j + 1) * 8 * 60 * 1000
-    }));
-    items.push({
-      id: (i % 2 ? 'xoxno' : 'dinovox') + `:A-${2000 + i}`,
-      source: i % 2 ? 'xoxno' : 'dinovox',
-      saleType: 'auction',
-      identifier: `DINOVOX-A-${2000 + i}`,
-      collectionSlug: 'dinovox',
-      name: `Dino Auction #${2000 + i}`,
-      images: mkImgs(100 + i),
-      seller: 'erd1...wxyz',
-      auction: {
-        startPrice: { ticker: 'EGLD', amount: '0.20', decimals: 18 },
-        currentBid: history[history.length - 1]?.amount,
-        startTime: start,
-        endTime: end,
-        bidsCount: history.length,
-        history
-      },
-      status: end < now ? 'ended' : 'active',
-      createdAt: now - i * 5400 * 1000,
-      attributes: [
-        { trait: 'Skin', value: 'Emerald' },
-        { trait: 'Accessory', value: 'Bone Club' }
-      ],
-      description: 'Auction listing (may be mirrored from Xoxno).'
-    });
-  }
-  return items;
-})();
-
-async function fetchListingById(id: string): Promise<Listing | null> {
-  await new Promise((r) => setTimeout(r, 150)); // fake latency
-  return MOCK_DB.find((l) => l.id === id) || null;
-}
 
 /* ---------------- Utils ---------------- */
 const fmt = (t?: TokenAmount) => (t ? `${t.amount} ${t.ticker}` : '-');
@@ -176,26 +106,117 @@ export const MarketplaceListingDetail = () => {
     | 'bids'
     | 'activity';
 
-  const [loading, setLoading] = React.useState(true);
-  const [listing, setListing] = React.useState<Listing | null>(null);
   const [qty, setQty] = React.useState('1'); // for fixed buy (1/1 NFTs -> juste cosmétique)
   const [bidAmount, setBidAmount] = React.useState('');
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  React.useEffect(() => {
-    let active = true;
-    setLoading(true);
-    fetchListingById(decodeURIComponent(id)).then((l) => {
-      if (active) {
-        setListing(l);
-        setLoading(false);
-      }
-    });
-    return () => {
-      active = false;
+  // 1. Fetch Auction Data from Contract
+  const { auction: rawAuction, isLoading: loadingAuction } =
+    useGetFullAuctionData(id);
+
+  // 2. Extract Token Info for NFT Fetch
+  const tokenIdentifier =
+    rawAuction?.auctioned_tokens?.token_identifier?.toString();
+  const tokenNonce = rawAuction?.auctioned_tokens?.token_nonce?.toString();
+
+  // 3. Fetch NFT Data from API
+  const nftInfo: any = useGetNftInformations(tokenIdentifier, tokenNonce);
+
+  // 4. Normalize Data
+  const listing: Listing | null = useMemo(() => {
+    if (!rawAuction) return null;
+
+    const paymentToken = rawAuction.payment_token?.toString() || 'EGLD';
+    const minBid = rawAuction.min_bid?.toString() || '0';
+    const currentBidAmount = rawAuction.current_bid?.toString();
+    const endTime = Number(rawAuction.deadline || 0) * 1000;
+    const startTime = Number(rawAuction.start_time || 0) * 1000;
+    const seller = rawAuction.original_owner?.toString() || '';
+
+    // NFT Metadata
+    const name = nftInfo?.name || `${tokenIdentifier} #${tokenNonce}`;
+    const images =
+      nftInfo?.media?.map((m: any) => m.url) || [nftInfo?.url].filter(Boolean);
+    if (images.length === 0)
+      images.push('https://placehold.co/512/png?text=No+Image');
+
+    const attributes = nftInfo?.attributes
+      ? // Handle different attribute formats if needed, assuming array of objects or string
+        Array.isArray(nftInfo.attributes)
+        ? nftInfo.attributes
+        : []
+      : [];
+
+    const description =
+      nftInfo?.metadata?.description || 'No description provided.';
+    const collection =
+      nftInfo?.collection || tokenIdentifier?.split('-')[0] || 'Unknown';
+
+    return {
+      id: id,
+      source: 'dinovox', // Contract is always dinovox for now
+      saleType: 'auction', // Assuming only auctions for now based on hook
+      identifier: tokenIdentifier || 'Unknown',
+      collection,
+      name,
+      images,
+      seller,
+      auction: {
+        auctionId: id,
+        auctionType: rawAuction.auction_type?.toString(),
+        startPrice: { ticker: paymentToken, amount: minBid, decimals: 18 },
+        currentBid: currentBidAmount
+          ? { ticker: paymentToken, amount: currentBidAmount, decimals: 18 }
+          : undefined,
+        maxBid: rawAuction.max_bid
+          ? {
+              ticker: paymentToken,
+              amount: rawAuction.max_bid.toString(),
+              decimals: 18
+            }
+          : undefined,
+        minBidDiff: {
+          ticker: paymentToken,
+          amount: rawAuction.min_bid_diff?.toString() || '0',
+          decimals: 18
+        },
+        paymentNonce: Number(rawAuction.payment_nonce || 0),
+        startTime,
+        endTime,
+        currentWinner: rawAuction.current_winner?.toString(),
+        marketplaceCutPercentage:
+          rawAuction.marketplace_cut_percentage?.toString(),
+        creatorRoyaltiesPercentage:
+          rawAuction.creator_royalties_percentage?.toString(),
+        bidsCount: 0, // TODO: Fetch bids count if available or calculate from history
+        history: [] // TODO: Fetch bid history if available
+      },
+      status: Date.now() > endTime ? 'ended' : 'active',
+      createdAt: startTime,
+      attributes,
+      description
     };
-  }, [id]);
+  }, [rawAuction, nftInfo, id, tokenIdentifier, tokenNonce]);
+
+  const loading =
+    loadingAuction || (!listing && tokenIdentifier && !nftInfo?.identifier);
 
   const timeLeft = useCountdown(listing?.auction?.endTime);
+
+  // Construct active NFT object for DisplayNft
+  const activeNft = useMemo(() => {
+    if (!listing) return null;
+    // Create a fake UserNft that points to the currently selected image
+    // This ensures DisplayNft renders the selected image/video
+    // const currentUrl = listing.images[activeImageIndex] || listing.images[0];
+    return {
+      ...nftInfo
+      // name: listing.name,
+      // identifier: listing.identifier,
+      // collection: listing.collection,
+      // media: [{ url: currentUrl, fileType: 'image/png' }] // Default to image, DisplayNft will check extension for video
+    } as UserNft;
+  }, [listing, nftInfo, activeImageIndex]);
 
   if (loading) {
     return (
@@ -255,10 +276,10 @@ export const MarketplaceListingDetail = () => {
         </Link>
         <span className='px-2'>/</span>
         <Link
-          to={`/marketplace/collections/${listing.collectionSlug}`}
+          to={`/marketplace/collections/${listing.collection}`}
           className='underline'
         >
-          {listing.collectionSlug}
+          {listing.collection}
         </Link>
         <span className='px-2'>/</span>
         <span>{listing.identifier}</span>
@@ -283,35 +304,42 @@ export const MarketplaceListingDetail = () => {
           {/* Gallery (aperçu large) */}
           <Card>
             <CardHeader className='p-0'>
-              <div className='relative aspect-[4/3] bg-slate-100 rounded-t-2xl overflow-hidden'>
-                <img
-                  src={listing.images[0]}
-                  alt={listing.name}
-                  className='h-full w-full object-cover'
+              {activeNft && (
+                <DisplayNft
+                  nft={activeNft}
+                  variant='media-only'
+                  className='aspect-[4/3] w-full rounded-t-2xl'
                 />
-              </div>
+              )}
             </CardHeader>
+
             {listing.images.length > 1 && (
               <CardContent className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
                 {listing.images.map((src, i) => (
                   <button
                     key={i}
-                    onClick={() => {
-                      // simple swap main image
-                      const next = [...listing.images];
-                      const [head] = next.splice(i, 1);
-                      setListing({ ...listing, images: [head, ...next] });
-                    }}
-                    className='aspect-square rounded-lg overflow-hidden border hover:opacity-80'
+                    onClick={() => setActiveImageIndex(i)}
+                    className={`aspect-square rounded-lg overflow-hidden border hover:opacity-80 ${
+                      activeImageIndex === i ? 'ring-2 ring-slate-900' : ''
+                    }`}
                     title={`Preview ${i + 1}`}
                   >
-                    <img
-                      src={src}
-                      alt={`thumb-${i}`}
-                      className='h-full w-full object-cover'
-                    />
+                    aaaa
                   </button>
                 ))}
+                <DisplayNft
+                  nft={
+                    {
+                      name: listing.name,
+                      identifier: listing.identifier,
+                      collection: listing.collection,
+                      media: [{ url: listing.images[0], fileType: 'image/png' }]
+                    } as UserNft
+                  }
+                  variant='media-only'
+                  className='h-full w-full object-cover'
+                />{' '}
+                ???
               </CardContent>
             )}
           </Card>
@@ -358,10 +386,10 @@ export const MarketplaceListingDetail = () => {
                 <CardContent>
                   {listing.attributes && listing.attributes.length ? (
                     <div className='grid grid-cols-2 gap-2'>
-                      {listing.attributes.map((a, i) => (
+                      {listing.attributes.map((a: any, i) => (
                         <div key={i} className='rounded-md border p-2'>
                           <div className='text-[11px] uppercase tracking-wide text-slate-500'>
-                            {a.trait}
+                            {a.trait_type || a.trait}
                           </div>
                           <div className='text-sm font-medium'>{a.value}</div>
                         </div>
@@ -388,9 +416,9 @@ export const MarketplaceListingDetail = () => {
                       Collection:{' '}
                       <Link
                         className='underline'
-                        to={`/marketplace/collections/${listing.collectionSlug}`}
+                        to={`/marketplace/collections/${listing.collection}`}
                       >
-                        {listing.collectionSlug}
+                        {listing.collection}
                       </Link>
                     </li>
                   </ul>
@@ -470,11 +498,18 @@ export const MarketplaceListingDetail = () => {
                   {isAuction ? 'Current bid' : 'Price'}
                 </div>
                 <div className='mt-1 text-2xl font-semibold'>
-                  {fmt(currentPrice)}
+                  <FormatAmount
+                    amount={listing.auction?.currentBid?.amount}
+                    identifier={listing.auction?.currentBid?.ticker || 'EGLD'}
+                  />
                 </div>
                 {isAuction && listing.auction?.startPrice && (
                   <div className='mt-1 text-xs text-slate-500'>
-                    Start price {fmt(listing.auction.startPrice)}
+                    Start price{' '}
+                    <FormatAmount
+                      amount={listing.auction?.startPrice.amount}
+                      identifier={listing.auction?.startPrice.ticker || 'EGLD'}
+                    />
                   </div>
                 )}
                 {isAuction && (
@@ -500,12 +535,18 @@ export const MarketplaceListingDetail = () => {
                       inputMode='decimal'
                       className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                     />
-                    <button
-                      onClick={onPlaceBid}
-                      className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800'
-                    >
-                      Place bid
-                    </button>
+                    <ActionBid
+                      auctionId={id}
+                      nftType={listing.identifier}
+                      nftNonce={tokenNonce || '0'}
+                      paymentToken={
+                        listing.auction?.startPrice.ticker || 'EGLD'
+                      }
+                      amount={new BigNumber(bidAmount || '0')
+                        .shiftedBy(listing.auction?.startPrice.decimals || 18)
+                        .toFixed(0)}
+                      disabled={!bidAmount || parseFloat(bidAmount) <= 0}
+                    />
                   </div>
                   <div className='text-xs text-slate-500'>
                     Your wallet must be connected • Min bid step & signature
@@ -544,9 +585,9 @@ export const MarketplaceListingDetail = () => {
                   <div className='text-xs text-slate-500'>Collection</div>
                   <Link
                     className='font-medium underline'
-                    to={`/marketplace/collections/${listing.collectionSlug}`}
+                    to={`/marketplace/collections/${listing.collection}`}
                   >
-                    {listing.collectionSlug}
+                    {listing.collection}
                   </Link>
                 </div>
                 {isAuction && (
@@ -575,40 +616,8 @@ export const MarketplaceListingDetail = () => {
               <div className='font-semibold'>More from this collection</div>
             </CardHeader>
             <CardContent>
-              <div className='grid grid-cols-2 gap-3'>
-                {MOCK_DB.filter(
-                  (x) =>
-                    x.collectionSlug === listing.collectionSlug &&
-                    x.id !== listing.id
-                )
-                  .slice(0, 4)
-                  .map((x) => (
-                    <Link
-                      key={x.id}
-                      to={`/marketplace/listings/${encodeURIComponent(x.id)}`}
-                      className='group rounded-lg overflow-hidden border'
-                    >
-                      <div className='aspect-square bg-slate-100'>
-                        <img
-                          src={x.images[0]}
-                          alt={x.name}
-                          className='h-full w-full object-cover'
-                        />
-                      </div>
-                      <div className='px-2 py-1'>
-                        <div className='text-xs text-slate-500'>
-                          {x.identifier}
-                        </div>
-                        <div className='text-sm font-medium group-hover:underline'>
-                          {x.saleType === 'auction'
-                            ? `Bid ${fmt(
-                                x.auction?.currentBid || x.auction?.startPrice
-                              )}`
-                            : `Price ${fmt(x.price)}`}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+              <div className='text-sm text-slate-500'>
+                Related items fetching not implemented yet.
               </div>
             </CardContent>
           </Card>

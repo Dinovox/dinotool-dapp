@@ -8,7 +8,10 @@ import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { useGetLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks';
 import { useGetUserTickets } from 'pages/Dashboard/widgets/LotteryAbi/hooks/useGetUserTickets';
-import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
+import {
+  useGetEsdtInformations,
+  FormatAmount
+} from 'helpers/api/useGetEsdtInformations';
 import EsdtDisplay from './EsdtDisplay';
 import NftDisplay from './NftDisplay';
 import { ActionDraw } from './Transaction/ActionDraw';

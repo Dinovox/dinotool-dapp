@@ -4,7 +4,10 @@ import FileDisplay from './FileDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useGetLottery } from 'pages/Dashboard/widgets/LotteryAbi/hooks';
 import { useGetNftInformations } from './Transaction/helpers/useGetNftInformation';
-import { useGetEsdtInformations } from './Transaction/helpers/useGetEsdtInformation';
+import {
+  useGetEsdtInformations,
+  FormatAmount
+} from 'helpers/api/useGetEsdtInformations';
 import notFound from './esdtnotfound.svg';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
