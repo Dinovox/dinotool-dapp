@@ -7,7 +7,6 @@ export async function getTokenDecimals(
   identifier: string,
   apiAddress: string = useGetNetworkConfig().network.apiAddress
 ): Promise<number | null> {
-  console.log('Getting token decimals for identifier:', identifier);
   if (!identifier) return null;
   //   const { network } = useGetNetworkConfig();
   // Cache global partagé

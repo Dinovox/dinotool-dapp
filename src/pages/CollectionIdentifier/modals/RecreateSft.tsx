@@ -60,12 +60,6 @@ export const RecreateSft: React.FC<{
       const url = `${ipfsGateway}${value}`;
       let response = await fetch(url);
 
-      console.log('response2', response);
-      // const url =
-      //   'https://gateway.pinata.cloud/ipfs/QmRxfHkLoZM3Pd9EayzQ9PWTGQLbWmswV8fgG3QckCoZCZ/902.json';
-      // const response = await fetch(url);
-      console.log('response', response);
-
       if (!response.ok) {
         //test via ipfs.io
         const url2 = 'https://ipfs.io/ipfs/' + value;
@@ -93,7 +87,6 @@ export const RecreateSft: React.FC<{
         // setJsonData(parsed);
 
         const stringified = JSON.stringify(json);
-        console.log('Stringified JSON:', stringified);
         // const hex = Buffer.from(stringified).toString('hex');
         setAttributes(stringified);
         // console.log('Hex-encoded attributes:', hex);
@@ -140,7 +133,6 @@ export const RecreateSft: React.FC<{
 
     const formData = new FormData();
     formData.append('collection', collection.collection);
-    console.log('formData', formData);
     for (const file of Array.from(files)) {
       formData.append('files', file);
     }
@@ -167,11 +159,9 @@ export const RecreateSft: React.FC<{
     //     ]
     // }
     const data = await res.json();
-    console.log('data', data);
     for (const f of data.uploaded) {
       const uri = `https://ipfs.io/ipfs/${f.cid}`;
       if (f.name.endsWith('.json')) {
-        console.log('json', f);
         setMetaUri(uri);
         handleFetchMetadata(f.cid);
         setUploadedFiles((prev) => [

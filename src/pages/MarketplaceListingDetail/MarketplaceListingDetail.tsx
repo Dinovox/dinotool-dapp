@@ -1,12 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useGetFullAuctionData } from 'contracts/dinauction/helpers/useGetFullAuctionData';
 import { useGetNftInformations } from 'pages/LotteryList/Transaction/helpers/useGetNftInformation';
 import { DisplayNft } from 'helpers/DisplayNft';
 import type { UserNft } from 'helpers/useGetUserNft';
 import { ActionBid } from 'contracts/dinauction/actions/Bid';
+import { ActionWithdraw } from 'contracts/dinauction/actions/Withdraw';
 import BigNumber from 'bignumber.js';
-import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import { useGetEsdtInformations, FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import { useGetAccount } from 'lib';
 
 /* ---------------- Types ---------------- */
 type MarketSource = 'dinovox' | 'xoxno';
@@ -32,17 +34,17 @@ type Listing = {
   price?: TokenAmount; // for fixed price listings
   auction?: {
     auctionId: string; // Corresponds to auction_id from the contract
-    auctionType?: string; // Corresponds to auction_type
-    startPrice: TokenAmount; // Corresponds to min_bid
-    currentBid?: TokenAmount; // Corresponds to current_bid
-    maxBid?: TokenAmount; // Corresponds to max_bid
-    minBidDiff: TokenAmount; // Corresponds to min_bid_diff
+    auctionType: string; // Corresponds to auction_type
+    startPrice: BigNumber; // Corresponds to min_bid
+    currentBid: BigNumber; // Corresponds to current_bid
+    maxBid: BigNumber; // Corresponds to max_bid
+    minBidDiff: BigNumber; // Corresponds to min_bid_diff
     paymentNonce: number; // Corresponds to payment_nonce
     startTime: number; // Corresponds to start_time
     endTime: number; // Corresponds to deadline
-    currentWinner?: string; // Corresponds to current_winner (ManagedAddress)
-    marketplaceCutPercentage?: string; // Corresponds to marketplace_cut_percentage (BigUint as percentage string)
-    creatorRoyaltiesPercentage?: string; // Corresponds to creator_royalties_percentage (BigUint as percentage string)
+    currentWinner: string; // Corresponds to current_winner (ManagedAddress)
+    marketplaceCutPercentage: string; // Corresponds to marketplace_cut_percentage (BigUint as percentage string)
+    creatorRoyaltiesPercentage: string; // Corresponds to creator_royalties_percentage (BigUint as percentage string)
     bidsCount: number; // Retained from original type
     history: Bid[]; // Retained from original type
   };
@@ -100,6 +102,7 @@ const CardContent: React.FC<
 /* ---------------- Page ---------------- */
 export const MarketplaceListingDetail = () => {
   const { id = '' } = useParams<{ id: string }>();
+  const { address } = useGetAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = (searchParams.get('tab') || 'details') as
     | 'details'
@@ -122,11 +125,13 @@ export const MarketplaceListingDetail = () => {
   // 3. Fetch NFT Data from API
   const nftInfo: any = useGetNftInformations(tokenIdentifier, tokenNonce);
 
+  const paymentToken = rawAuction?.payment_token?.toString() || 'EGLD';
+  const tokenInformations = useGetEsdtInformations(paymentToken);
+
   // 4. Normalize Data
   const listing: Listing | null = useMemo(() => {
     if (!rawAuction) return null;
 
-    const paymentToken = rawAuction.payment_token?.toString() || 'EGLD';
     const minBid = rawAuction.min_bid?.toString() || '0';
     const currentBidAmount = rawAuction.current_bid?.toString();
     const endTime = Number(rawAuction.deadline || 0) * 1000;
@@ -162,32 +167,24 @@ export const MarketplaceListingDetail = () => {
       images,
       seller,
       auction: {
-        auctionId: id,
+        auctionId: rawAuction.auction_id?.toString() || id,
         auctionType: rawAuction.auction_type?.toString(),
-        startPrice: { ticker: paymentToken, amount: minBid, decimals: 18 },
+        startPrice: new BigNumber(minBid),
         currentBid: currentBidAmount
-          ? { ticker: paymentToken, amount: currentBidAmount, decimals: 18 }
-          : undefined,
+          ? new BigNumber(currentBidAmount)
+          : new BigNumber(0),
         maxBid: rawAuction.max_bid
-          ? {
-              ticker: paymentToken,
-              amount: rawAuction.max_bid.toString(),
-              decimals: 18
-            }
-          : undefined,
-        minBidDiff: {
-          ticker: paymentToken,
-          amount: rawAuction.min_bid_diff?.toString() || '0',
-          decimals: 18
-        },
+          ? new BigNumber(rawAuction.max_bid.toString())
+          : new BigNumber(0),
+        minBidDiff: new BigNumber(rawAuction.min_bid_diff?.toString() || '0'),
         paymentNonce: Number(rawAuction.payment_nonce || 0),
         startTime,
         endTime,
-        currentWinner: rawAuction.current_winner?.toString(),
+        currentWinner: rawAuction.current_winner?.toString() || '',
         marketplaceCutPercentage:
-          rawAuction.marketplace_cut_percentage?.toString(),
+          rawAuction.marketplace_cut_percentage?.toString() || '0',
         creatorRoyaltiesPercentage:
-          rawAuction.creator_royalties_percentage?.toString(),
+          rawAuction.creator_royalties_percentage?.toString() || '0',
         bidsCount: 0, // TODO: Fetch bids count if available or calculate from history
         history: [] // TODO: Fetch bid history if available
       },
@@ -196,7 +193,7 @@ export const MarketplaceListingDetail = () => {
       attributes,
       description
     };
-  }, [rawAuction, nftInfo, id, tokenIdentifier, tokenNonce]);
+  }, [rawAuction, nftInfo, id, tokenIdentifier, tokenNonce, paymentToken, tokenInformations]);
 
   const loading =
     loadingAuction || (!listing && tokenIdentifier && !nftInfo?.identifier);
@@ -217,6 +214,33 @@ export const MarketplaceListingDetail = () => {
       // media: [{ url: currentUrl, fileType: 'image/png' }] // Default to image, DisplayNft will check extension for video
     } as UserNft;
   }, [listing, nftInfo, activeImageIndex]);
+
+  const minRequiredBid = useMemo(() => {
+    if (!listing?.auction) return null;
+    const minDiff = listing.auction.minBidDiff;
+    const startPrice = listing.auction.startPrice;
+    const currentBid = listing.auction.currentBid;
+
+    let effectiveMinDiff = minDiff;
+    if (minDiff.isZero() && currentBid.gt(0)) {
+      effectiveMinDiff = currentBid.multipliedBy(0.01);
+    }
+
+    return BigNumber.max(startPrice, currentBid.plus(effectiveMinDiff));
+  }, [listing]);
+
+  useEffect(() => {
+    if (minRequiredBid && listing?.auction) {
+      const decimals = tokenInformations?.decimals || 0;
+      // Use toFixed() to avoid scientific notation for small numbers if possible, but BigNumber.toFixed() returns string.
+      // We need to shift back to human readable.
+      const formatted = minRequiredBid.shiftedBy(-decimals).toFixed();
+      if (bidAmount === '') {
+        setBidAmount(formatted);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minRequiredBid, listing]);
 
   if (loading) {
     return (
@@ -254,6 +278,8 @@ export const MarketplaceListingDetail = () => {
     ? listing.auction?.currentBid || listing.auction?.startPrice
     : listing.price;
 
+
+
   /* ---- Handlers (stub: à brancher à ton SDK/SC) ---- */
   const onBuyNow = () => {
     alert(
@@ -263,7 +289,7 @@ export const MarketplaceListingDetail = () => {
   const onPlaceBid = () => {
     if (!bidAmount) return alert('Enter a bid amount');
     alert(
-      `Bid ${bidAmount} ${listing.auction?.startPrice.ticker} on ${listing.identifier} (stub)`
+      `Bid ${bidAmount} ${paymentToken} on ${listing.identifier} (stub)`
     );
   };
 
@@ -499,16 +525,16 @@ export const MarketplaceListingDetail = () => {
                 </div>
                 <div className='mt-1 text-2xl font-semibold'>
                   <FormatAmount
-                    amount={listing.auction?.currentBid?.amount}
-                    identifier={listing.auction?.currentBid?.ticker || 'EGLD'}
+                    amount={listing.auction?.currentBid?.toFixed()}
+                    identifier={paymentToken}
                   />
                 </div>
                 {isAuction && listing.auction?.startPrice && (
                   <div className='mt-1 text-xs text-slate-500'>
                     Start price{' '}
                     <FormatAmount
-                      amount={listing.auction?.startPrice.amount}
-                      identifier={listing.auction?.startPrice.ticker || 'EGLD'}
+                      amount={listing.auction?.startPrice.toFixed()}
+                      identifier={paymentToken}
                     />
                   </div>
                 )}
@@ -528,30 +554,119 @@ export const MarketplaceListingDetail = () => {
               ) : isAuction ? (
                 <div className='space-y-3'>
                   <div className='flex items-center gap-2'>
-                    <input
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      placeholder={`Bid in ${listing.auction?.startPrice.ticker}`}
-                      inputMode='decimal'
-                      className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
-                    />
-                    <ActionBid
-                      auctionId={id}
-                      nftType={listing.identifier}
-                      nftNonce={tokenNonce || '0'}
-                      paymentToken={
-                        listing.auction?.startPrice.ticker || 'EGLD'
-                      }
-                      amount={new BigNumber(bidAmount || '0')
-                        .shiftedBy(listing.auction?.startPrice.decimals || 18)
-                        .toFixed(0)}
-                      disabled={!bidAmount || parseFloat(bidAmount) <= 0}
-                    />
+                    {address === listing.seller ? (
+                      listing.auction?.currentBid && listing.auction.currentBid.gt(0) ? (
+                        <div className='w-full rounded-md bg-amber-50 p-3 text-sm text-amber-800'>
+                          Auction has bids. You cannot withdraw.
+                        </div>
+                      ) : (
+                        <ActionWithdraw
+                          auction_id={
+                            new BigNumber(listing.auction?.auctionId || id)
+                          }
+                        />
+                      )
+                    ) : (
+                      <>
+                        <input
+                          value={bidAmount}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (
+                              listing.auction?.maxBid &&
+                              listing.auction.maxBid.gt(0)
+                            ) {
+                              const maxVal = listing.auction.maxBid.shiftedBy(
+                                -(tokenInformations?.decimals || 0)
+                              );
+                              if (new BigNumber(val).gt(maxVal)) {
+                                setBidAmount(maxVal.toFixed());
+                                return;
+                              }
+                            }
+                            setBidAmount(val);
+                          }}
+                          placeholder={`Bid in ${paymentToken}`}
+                          inputMode='decimal'
+                          className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                        />
+                        <ActionBid
+                          auctionId={listing.auction?.auctionId || id}
+                          nftType={listing.identifier}
+                          nftNonce={tokenNonce || '0'}
+                          paymentToken={
+                            paymentToken
+                          }
+                          amount={new BigNumber(bidAmount || '0')
+                            .shiftedBy(
+                              tokenInformations?.decimals || 0
+                            )
+                            .toFixed(0)}
+                          disabled={
+                            !bidAmount ||
+                            parseFloat(bidAmount) <= 0 ||
+                            (minRequiredBid
+                              ? new BigNumber(bidAmount)
+                                  .shiftedBy(
+                                    tokenInformations?.decimals || 0
+                                  )
+                                  .lt(minRequiredBid)
+                              : false) ||
+                            address === listing.auction?.currentWinner
+                          }
+                        />
+                        {listing.auction?.maxBid &&
+                          listing.auction.maxBid.gt(
+                            0
+                          ) && (
+                            <ActionBid
+                              auctionId={listing.auction?.auctionId || id}
+                              nftType={listing.identifier}
+                              nftNonce={tokenNonce || '0'}
+                              paymentToken={
+                                paymentToken
+                              }
+                              amount={listing.auction.maxBid.toFixed(0)}
+                              directBuy
+                              label={
+                                <>
+                                  Buy now for{' '}
+                                  <FormatAmount
+                                    amount={listing.auction.maxBid.toFixed()}
+                                    identifier={
+                                      paymentToken
+                                    }
+                                  />
+                                </>
+                              }
+                            />
+                          )}
+                      </>
+                    )}
                   </div>
-                  <div className='text-xs text-slate-500'>
-                    Your wallet must be connected • Min bid step & signature
-                    handled by SC.
-                  </div>
+                    <div className='text-xs text-slate-500'>
+                      {address === listing.seller ? (
+                        // Owner view: no helper text needed for withdraw/disabled state
+                        null
+                      ) : address === listing.auction?.currentWinner ? (
+                        <span className='text-green-600 font-medium'>
+                          You are the current winner!
+                        </span>
+                      ) : (
+                        minRequiredBid && (
+                          <>
+                            Minimum bid:{' '}
+                            <FormatAmount
+                              amount={minRequiredBid.toFixed(0)}
+                              identifier={
+                                paymentToken
+                              }
+                            />
+                          </>
+                        )
+                      )}
+                    </div>
+
                 </div>
               ) : (
                 <div className='space-y-3'>

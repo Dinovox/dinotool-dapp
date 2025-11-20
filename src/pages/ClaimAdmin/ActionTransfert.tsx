@@ -171,12 +171,6 @@ export const ActionTransfert: React.FC<Props> = ({
         sender: new Address(address),
         version: 1
       });
-      console.log('Sending transfer tx:', {
-        tx,
-        payload,
-        assetCount,
-        gasLimit
-      });
 
       const sessionId = await signAndSendTransactions({
         transactions: [tx],

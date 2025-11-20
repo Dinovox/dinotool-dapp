@@ -60,7 +60,6 @@ export const useGetCollections = (collection: string) => {
 
       try {
         const response = await axios.get<Collection>(url, config);
-        console.log('response', response);
         setData(response.data as Collection);
       } catch (err: any) {
         setError('Failed to fetch roles collections');

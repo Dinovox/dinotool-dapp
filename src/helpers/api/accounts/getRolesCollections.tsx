@@ -72,11 +72,9 @@ export const useAccountsRolesCollections = (
         baseURL: API_URL,
         params: { ...options }
       };
-      console.log('fetching roles collections', url, config);
 
       try {
         const response = await axios.get<RolesCollections[]>(url, config);
-        console.log('response', response);
         setData(response.data);
       } catch (err: any) {
         setError('Failed to fetch roles collections');

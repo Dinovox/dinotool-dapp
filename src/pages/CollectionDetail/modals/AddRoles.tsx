@@ -91,7 +91,6 @@ export const AddRoles: React.FC<{
       address == defaultAddress
     ) {
       //Owner sans role create -> On ajoute
-      console.log('test', isAlreadyAssigned, isAlreadyInNew);
       setNewRoles((prev) => [...prev, 'ESDTRoleNFTCreate']);
     } else if (
       collection &&

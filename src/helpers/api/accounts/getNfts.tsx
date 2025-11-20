@@ -58,7 +58,6 @@ export const useGetNfts = (identifier: string) => {
 
       try {
         const response = await axios.get<Nfts>(url, config);
-        console.log('response', response);
         setData(response.data as Nfts);
       } catch (err: any) {
         setError('Failed to fetch roles collections');

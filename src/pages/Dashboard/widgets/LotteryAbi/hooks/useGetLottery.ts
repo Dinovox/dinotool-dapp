@@ -93,7 +93,6 @@ export const useGetLottery = (lottery_id: any) => {
     /*using internal api & cache*/
     try {
       if (!mintable.loading) {
-        console.log('Lottery loaded');
         return;
       }
       const response = await fetch(
@@ -172,7 +171,6 @@ export const useGetLottery = (lottery_id: any) => {
             );
           }
           const lastActionsData = await lastActionsResponse.json();
-          console.log('Last actions:', lastActionsData);
         } catch (err) {
           console.error('Unable to fetch last actions', err);
         }

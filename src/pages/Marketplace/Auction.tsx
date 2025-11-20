@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import { useGetAccount } from 'lib';
 // Types adapted from Marketplace.tsx
 type TokenAmount = {
   ticker: string;
@@ -35,12 +36,10 @@ type AuctionItem = {
   };
   min_bid?: string;
   max_bid?: string;
+  original_owner?: string;
+  current_winner?: string;
 };
 
-function formatToken(t?: TokenAmount) {
-  if (!t) return '-';
-  return `${t.amount} ${t.ticker}`;
-}
 
 function Countdown({ endTime }: { endTime: number }) {
   const [now, setNow] = useState(Date.now());
@@ -60,15 +59,16 @@ function Countdown({ endTime }: { endTime: number }) {
   );
 }
 
-const Badge = ({ children }: { children: React.ReactNode }) => (
-  <span className='inline-flex items-center rounded-md border border-gray-200 bg-white/90 backdrop-blur-sm px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm'>
+const Badge = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <span className={`inline-flex items-center rounded-md border border-gray-200 bg-white/90 backdrop-blur-sm px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm ${className}`}>
     {children}
   </span>
 );
 
 export const Auction = ({ auction: rawAuction }: { auction: any }) => {
+
+  const { address } = useGetAccount();
   // Normalize contract data to AuctionItem
-  console.log('rawAuction', rawAuction);
   const auction: AuctionItem = useMemo(() => {
     if (!rawAuction) return {} as AuctionItem;
 
@@ -113,9 +113,14 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
         endTime: Number(rawAuction.deadline || 0) * 1000 // Contract usually uses seconds, JS uses ms
       },
       min_bid: rawAuction.min_bid?.toString(),
-      max_bid: rawAuction.max_bid?.toString()
+      max_bid: rawAuction.max_bid?.toString(),
+      original_owner: rawAuction.original_owner?.toString(),
+      current_winner: rawAuction.current_winner?.toString()
     };
   }, [rawAuction]);
+
+  const isCreator = address && auction.original_owner === address;
+  const isWinner = address && auction.current_winner === address;
 
   return (
     <div className='group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col h-full'>
@@ -128,9 +133,11 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
         />
 
         {/* Badges overlay */}
-        <div className='absolute left-2 top-2 flex gap-1'>
+        <div className='absolute left-2 top-2 flex gap-1 flex-wrap'>
           {auction?.source && <Badge>{String(auction.source)}</Badge>}
           {auction?.saleType && <Badge>{String(auction.saleType)}</Badge>}
+          {isCreator && <Badge className='!bg-blue-100 !text-blue-700 !border-blue-200'>Creator</Badge>}
+          {isWinner && <Badge className='!bg-green-100 !text-green-700 !border-green-200'>Winning</Badge>}
         </div>
       </div>
 

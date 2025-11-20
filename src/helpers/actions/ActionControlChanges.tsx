@@ -31,7 +31,6 @@ export const ActionControlChanges: React.FC<ActionControlChangesProps> = ({
   const handleIssue = async () => {
     if (!address) return;
 
-    console.log('controls', controls);
     const collectionHex = Buffer.from(tokenIdentifier).toString('hex');
 
     const controlsMap = {

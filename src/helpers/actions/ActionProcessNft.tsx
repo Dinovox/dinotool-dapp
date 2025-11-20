@@ -15,7 +15,6 @@ export const ActionProcessNft: React.FC<{
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { tokenLogin } = useGetLoginInfo();
-  console.log('tokenLogin', tokenLogin);
   const handleSend = async () => {
     if (!collection || !tokenLogin) return;
 
@@ -50,7 +49,6 @@ export const ActionProcessNft: React.FC<{
 
       const result = await res.json();
       setResponse('Thumbnail refresh successfully triggered.');
-      console.log('Process NFT result:', result);
     } catch (err: any) {
       console.error('Error processing NFT:', err);
       setError(err.message || 'Unknown error');

@@ -312,7 +312,6 @@ export const Marketplace = () => {
 
   const listings = useGetAuctionsPaginated({ page: 1, limit: 10 });
 
-  console.log('listings from hook:', listings);
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
       {/* Header + CTA Sell */}

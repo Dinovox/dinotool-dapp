@@ -245,7 +245,6 @@ const CreateLotteryModal: React.FC<{
   const handlePriceAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let rawValue = e.target.value.replace(',', '.');
 
-    console.log('rawValue', rawValue);
     // Permet la saisie vide sans réinitialisation
     if (rawValue === '') {
       setPriceDisplay('');
@@ -764,7 +763,6 @@ const CreateLotteryModal: React.FC<{
                                 setPriceIdentifier(value);
                                 const splited = splitIdentifier(value);
                                 if (splited.is_valid) {
-                                  console.log('splited', splited);
 
                                   setChecked(true);
                                   setPriceTicker(splited.ticker);

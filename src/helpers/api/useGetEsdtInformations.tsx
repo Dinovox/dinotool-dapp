@@ -12,10 +12,11 @@ export const useGetEsdtInformations = (
   const [esdtInfo, setEsdtInfo] = useState<any>({});
 
   const getEsdtInfo = async () => {
-    if (!identifier || priceType == 'Sft' || identifier == 'EGLD') {
+    if (!identifier || priceType == 'Sft') {
       return;
     }
-    console.log('priceType filter', priceType);
+    if(identifier == 'EGLD')
+    {identifier = 'EGLD-000000'}
 
     //using storage to reduce calls
     const expire_test = Number(

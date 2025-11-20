@@ -258,7 +258,6 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           `${dinoclaim_api}/campaigns/${campaign.id}/testbalance`,
           config
         );
-        console.log('Fetched campaign details:', data);
         setBalanceTested(data);
       } catch (err: any) {
         setError(

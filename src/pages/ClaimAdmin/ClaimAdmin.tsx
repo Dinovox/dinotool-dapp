@@ -40,13 +40,11 @@ export const ClaimAdmin = () => {
             <>
               <PostCampaignButton
                 onCreated={(id) => {
-                  console.log('Created campaign ID:', id);
                   setEditedCampaign(id);
                 }}
               />
               <GetCampaigns
                 onEditCampaign={(campaign: CampaignPreview) => {
-                  console.log('Selected campaign:', campaign);
                   setEditedCampaign(campaign);
                 }}
               />

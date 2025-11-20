@@ -64,7 +64,6 @@ export const CollectionDetail = () => {
   const { data: collection } = useGetCollections(tokenIdentifier);
   const { data: nfts } = useGetCollectionsNfts(tokenIdentifier);
 
-  console.log('collection ??', collection);
   const navigate = useNavigate();
 
   const { id } = useParams<{ id: string }>();
@@ -128,8 +127,7 @@ export const CollectionDetail = () => {
       : [])
   ];
 
-  console.log('definedRoles', definedRoles);
-  console.log('collection.roles', collection.roles);
+
   if (loading) {
     return <div>Loading...</div>;
   }

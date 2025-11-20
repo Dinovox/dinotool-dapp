@@ -164,7 +164,6 @@ export const Locker = () => {
       });
 
       if (sessionId) {
-        console.log('Transaction session ID:', sessionId);
         setTransactionSessionId(sessionId);
       } else {
         console.error('Transaction session ID is null');
@@ -194,7 +193,6 @@ export const Locker = () => {
       const data = await res.json();
 
       if (data?.status === 'success') {
-        console.log('✅ Transaction successful!');
         setCurrentStep('success');
         setTransactionHash(txHash);
         return true;
@@ -210,17 +208,13 @@ export const Locker = () => {
   useEffect(() => {
     if (!transactionSessionId) return;
 
-    console.log('! Waiting for transaction session ID:', transactionSessionId);
-    console.log('! Pending transactions:', pendingTransactions);
 
     // const tx = pendingTransactions[transactionSessionId]?.transactions[0];
     const tx = pendingTransactions[0];
     // txManager.setCallbacks
 
-    console.log('Pending transactions:', pendingTransactions);
-    console.log('Transaction session ID:', transactionSessionId);
     if (tx?.hash) {
-      console.log('✅ Tx hash now available:', tx.hash);
+      console.error('✅ Tx hash now available:', tx.hash);
       waitForTxSuccess(tx.hash);
       // (optionnel : reset si tu veux le faire une seule fois)
       setTransactionSessionId(null);

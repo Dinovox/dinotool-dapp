@@ -72,7 +72,6 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
 
     // si on n'est pas sur "all" → aucun regroupement
     if (statusFilter !== 'all' && statusFilter !== 'open') {
-      console.log('filteredCodes', statusFilter, filteredCodes.length);
       return filteredCodes.map((c) => ({
         code: c.code,
         amount: 1,
@@ -92,7 +91,6 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
       if (c.status === 'open') {
         openCounts.set(c.code, (openCounts.get(c.code) ?? 0) + 1);
       } else {
-        console.log('filteredCodes push', c.code);
         items.push({
           code: c.code,
           amount: 1,
@@ -144,7 +142,6 @@ const CodesList: React.FC<{ campaignId: string }> = ({ campaignId }) => {
         signal: controller.signal
       })
       .then((res) => {
-        console.log('Fetched codes:', res.data);
         // Normalise la forme de la réponse
         const arr = Array.isArray(res.data)
           ? res.data

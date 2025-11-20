@@ -62,8 +62,6 @@ export const ScanSuccess = ({ messageToSign }: { messageToSign: string }) => {
           { code: messageToSign },
           { headers: { Authorization: `Bearer ${tokenLogin.nativeAuthToken}` } }
         );
-        console.log('data', data);
-        console.log('data mess', data.message);
         if (data.data?.campaign) {
           setCodeWithCampaign(data.data);
         }

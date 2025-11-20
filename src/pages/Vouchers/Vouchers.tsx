@@ -14,7 +14,6 @@ export const Vouchers = () => {
   const { t } = useTranslation();
 
   const vouchers = useGetVouchers();
-  console.log('vouchers', vouchers);
   const { address } = useGetAccount();
   const userNftBalance = useGetUserNFT(address, '', 'VOUCHERS-e6045e');
 
@@ -26,7 +25,6 @@ export const Vouchers = () => {
       'VOUCHERS-e6045e-06'
     ].includes(nft.identifier)
   );
-  console.log('filteredNftBalance', filteredNftBalance);
   // VOUCHERS-e6045e-04
   // VOUCHERS-e6045e-05
   // VOUCHERS-e6045e-06
@@ -39,7 +37,6 @@ export const Vouchers = () => {
     'VOUCHERS-e6045e-06': 50
   };
 
-  console.log('userNftBalance', userNftBalance);
   // helpers au-dessus du composant
   // helpers
   const toInt = (v: unknown) => {

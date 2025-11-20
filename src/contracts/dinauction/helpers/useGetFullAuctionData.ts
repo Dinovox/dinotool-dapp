@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
-import { useGetNetworkConfig } from 'lib';
+import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import dinauctionAbi from '../dinauction.abi.json';
 import { marketplaceContractAddress } from 'config';
 
@@ -9,6 +9,9 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const transactions: Record<string, any> = useGetPendingTransactions();
+  const hasPendingTransactions = Object.keys(transactions).length > 0;
+
   const { network } = useGetNetworkConfig();
 
   const fetchAuction = useCallback(async () => {
@@ -16,7 +19,9 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
         setAuction(null);
         return;
     }
-
+    if(hasPendingTransactions ){
+        return;
+    }
     try {
       setIsLoading(true);
       setError(null);
@@ -48,7 +53,7 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
     } finally {
       setIsLoading(false);
     }
-  }, [auctionId, network.apiAddress]);
+  }, [auctionId, network.apiAddress, hasPendingTransactions]);
 
   useEffect(() => {
     fetchAuction();

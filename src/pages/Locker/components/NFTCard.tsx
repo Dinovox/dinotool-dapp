@@ -75,7 +75,6 @@ const NFTCard: React.FC<NFTCardProps> = ({
     new BigNumber(nft.nonce).toFixed(),
     isLocked ? 'get' : 'ignore'
   );
-  console.log('?', lockedNft?.owner);
   return (
     <div
       className={`

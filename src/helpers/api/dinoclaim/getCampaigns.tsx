@@ -36,7 +36,6 @@ export const GetCampaigns: React.FC<{
         }
       };
       const { data } = await axios.get(dinoclaim_api + '/campaigns', config);
-      console.log('Fetched campaigns:', data);
       setResult(data);
     } catch (err) {
       setError(err);

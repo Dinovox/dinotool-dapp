@@ -873,7 +873,7 @@ export const MarketplaceSell = () => {
                     <div className='rounded-md border p-3'>
                       <div className='text-xs text-slate-500'>Options</div>
                       <div className='font-medium'>
-                        Min step {minBidStep}%{' '}
+                        Min step {minBidStep}{' '}
                         {allowBuyNow && buyNowPrice
                           ? `· Buy now ${fmt({
                               ticker: PAYMENT_TOKEN_TICKER,

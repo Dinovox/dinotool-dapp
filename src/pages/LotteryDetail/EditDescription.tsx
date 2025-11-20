@@ -42,7 +42,6 @@ export const EditDescription = ({ lottery_id, lottery_description }: any) => {
         }
       } catch (err) {
         console.error('Unable to call updateDescription', err);
-        console.log(err);
       }
     }
   };
