@@ -8,6 +8,7 @@ import bignumber from 'bignumber.js';
 import { useNft } from 'helpers/contexts/NftContext';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import { Auction } from './Auction';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 type MarketSource = 'dinovox' | 'xoxno';
 type SaleType = 'fixed' | 'auction';
 
@@ -324,8 +325,14 @@ export const Marketplace = () => {
 
   const listings = useGetAuctionsPaginated({ page: 1, limit: 8 });
 
+  // ...
+
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
+      <Breadcrumb
+        items={[{ label: 'Home', path: '/' }, { label: 'Marketplace' }]}
+      />
+
       {/* Header + CTA Sell */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>

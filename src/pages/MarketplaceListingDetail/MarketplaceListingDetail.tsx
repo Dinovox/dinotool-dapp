@@ -7,8 +7,12 @@ import type { UserNft } from 'helpers/useGetUserNft';
 import { ActionBid } from 'contracts/dinauction/actions/Bid';
 import { ActionWithdraw } from 'contracts/dinauction/actions/Withdraw';
 import BigNumber from 'bignumber.js';
-import { useGetEsdtInformations, FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import {
+  useGetEsdtInformations,
+  FormatAmount
+} from 'helpers/api/useGetEsdtInformations';
 import { useGetAccount } from 'lib';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 /* ---------------- Types ---------------- */
 type MarketSource = 'dinovox' | 'xoxno';
@@ -193,7 +197,15 @@ export const MarketplaceListingDetail = () => {
       attributes,
       description
     };
-  }, [rawAuction, nftInfo, id, tokenIdentifier, tokenNonce, paymentToken, tokenInformations]);
+  }, [
+    rawAuction,
+    nftInfo,
+    id,
+    tokenIdentifier,
+    tokenNonce,
+    paymentToken,
+    tokenInformations
+  ]);
 
   const loading =
     loadingAuction || (!listing && tokenIdentifier && !nftInfo?.identifier);
@@ -278,8 +290,6 @@ export const MarketplaceListingDetail = () => {
     ? listing.auction?.currentBid || listing.auction?.startPrice
     : listing.price;
 
-
-
   const isDirectSale =
     isAuction &&
     listing.auction?.startPrice &&
@@ -294,28 +304,20 @@ export const MarketplaceListingDetail = () => {
   };
   const onPlaceBid = () => {
     if (!bidAmount) return alert('Enter a bid amount');
-    alert(
-      `Bid ${bidAmount} ${paymentToken} on ${listing.identifier} (stub)`
-    );
+    alert(`Bid ${bidAmount} ${paymentToken} on ${listing.identifier} (stub)`);
   };
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
       {/* Breadcrumb */}
-      <div className='text-sm text-slate-600'>
-        <Link to='/marketplace' className='underline'>
-          Marketplace
-        </Link>
-        <span className='px-2'>/</span>
-        <Link
-          to={`/marketplace/collections/${listing.collection}`}
-          className='underline'
-        >
-          {listing.collection}
-        </Link>
-        <span className='px-2'>/</span>
-        <span>{listing.identifier}</span>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: 'Home', path: '/' },
+          { label: 'Marketplace', path: '/marketplace' },
+          { label: 'Listings', path: '/marketplace/listings' },
+          { label: listing.name || listing.identifier }
+        ]}
+      />
 
       {/* Header */}
       <div className='flex items-center gap-2'>
@@ -565,7 +567,8 @@ export const MarketplaceListingDetail = () => {
                 <div className='space-y-3'>
                   <div className='flex items-center gap-2'>
                     {address === listing.seller ? (
-                      listing.auction?.currentBid && listing.auction.currentBid.gt(0) ? (
+                      listing.auction?.currentBid &&
+                      listing.auction.currentBid.gt(0) ? (
                         <div className='w-full rounded-md bg-amber-50 p-3 text-sm text-amber-800'>
                           Auction has bids. You cannot withdraw.
                         </div>
@@ -588,9 +591,10 @@ export const MarketplaceListingDetail = () => {
                                   listing.auction?.maxBid &&
                                   listing.auction.maxBid.gt(0)
                                 ) {
-                                  const maxVal = listing.auction.maxBid.shiftedBy(
-                                    -(tokenInformations?.decimals || 0)
-                                  );
+                                  const maxVal =
+                                    listing.auction.maxBid.shiftedBy(
+                                      -(tokenInformations?.decimals || 0)
+                                    );
                                   if (new BigNumber(val).gt(maxVal)) {
                                     setBidAmount(maxVal.toFixed());
                                     return;
@@ -606,13 +610,9 @@ export const MarketplaceListingDetail = () => {
                               auctionId={listing.auction?.auctionId || id}
                               nftType={listing.identifier}
                               nftNonce={tokenNonce || '0'}
-                              paymentToken={
-                                paymentToken
-                              }
+                              paymentToken={paymentToken}
                               amount={new BigNumber(bidAmount || '0')
-                                .shiftedBy(
-                                  tokenInformations?.decimals || 0
-                                )
+                                .shiftedBy(tokenInformations?.decimals || 0)
                                 .toFixed(0)}
                               disabled={
                                 !bidAmount ||
@@ -630,16 +630,12 @@ export const MarketplaceListingDetail = () => {
                           </>
                         )}
                         {listing.auction?.maxBid &&
-                          listing.auction.maxBid.gt(
-                            0
-                          ) && (
+                          listing.auction.maxBid.gt(0) && (
                             <ActionBid
                               auctionId={listing.auction?.auctionId || id}
                               nftType={listing.identifier}
                               nftNonce={tokenNonce || '0'}
-                              paymentToken={
-                                paymentToken
-                              }
+                              paymentToken={paymentToken}
                               amount={listing.auction.maxBid.toFixed(0)}
                               directBuy
                               label={
@@ -647,9 +643,7 @@ export const MarketplaceListingDetail = () => {
                                   Buy now for{' '}
                                   <FormatAmount
                                     amount={listing.auction.maxBid.toFixed()}
-                                    identifier={
-                                      paymentToken
-                                    }
+                                    identifier={paymentToken}
                                   />
                                 </>
                               }
@@ -658,29 +652,25 @@ export const MarketplaceListingDetail = () => {
                       </>
                     )}
                   </div>
-                    <div className='text-xs text-slate-500'>
-                      {address === listing.seller ? (
-                        // Owner view: no helper text needed for withdraw/disabled state
-                        null
-                      ) : address === listing.auction?.currentWinner ? (
-                        <span className='text-green-600 font-medium'>
-                          You are the current winner!
-                        </span>
-                      ) : (
-                        minRequiredBid && !isDirectSale && (
-                          <>
-                            Minimum bid:{' '}
-                            <FormatAmount
-                              amount={minRequiredBid.toFixed(0)}
-                              identifier={
-                                paymentToken
-                              }
-                            />
-                          </>
-                        )
-                      )}
-                    </div>
-
+                  <div className='text-xs text-slate-500'>
+                    {address === listing.seller ? null : address === // Owner view: no helper text needed for withdraw/disabled state
+                      listing.auction?.currentWinner ? (
+                      <span className='text-green-600 font-medium'>
+                        You are the current winner!
+                      </span>
+                    ) : (
+                      minRequiredBid &&
+                      !isDirectSale && (
+                        <>
+                          Minimum bid:{' '}
+                          <FormatAmount
+                            amount={minRequiredBid.toFixed(0)}
+                            identifier={paymentToken}
+                          />
+                        </>
+                      )
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className='space-y-3'>

@@ -32,6 +32,7 @@ import { t } from 'i18next';
 import { ArrowRight, Leaf, Plus, Sparkles } from 'lucide-react';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 import TransferOwnership from './modals/TransferOwnership';
 export type ModalType =
   | 'createSft'
@@ -71,7 +72,7 @@ export const CollectionDetail = () => {
     if (id) {
       setTokenIdentifier(id);
     } else {
-      navigate('/collections');
+      navigate('/marketplace/collections');
     }
   }, [id]);
 
@@ -127,7 +128,6 @@ export const CollectionDetail = () => {
       : [])
   ];
 
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -138,21 +138,16 @@ export const CollectionDetail = () => {
         <DecorativeIconCorners animated />
 
         {/* Header Section - Dinovox Style */}
+        <div className='max-w-7xl mx-auto px-6 pt-6'>
+          <Breadcrumb
+            items={[
+              { label: 'Home', path: '/' },
+              { label: 'Collections', path: '/collections' },
+              { label: collection?.name || 'Collection' }
+            ]}
+          />
+        </div>
         <div className='bg-white/90 backdrop-blur-sm rounded-3xl mx-6 mt-6 shadow-lg border border-white/50'>
-          <div
-            style={{
-              float: 'right',
-              marginTop: '20px',
-              marginRight: '20px',
-              position: 'relative',
-              zIndex: '1'
-            }}
-          >
-            {' '}
-            <button onClick={() => navigate('/collections')} className=''>
-              {t('lotteries:return')}
-            </button>
-          </div>
           <div className='max-w-7xl mx-auto px-8 py-6'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center space-x-4'>

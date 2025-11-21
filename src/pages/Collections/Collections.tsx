@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
 import { internal_api_v2 } from 'config';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 export const Collections = () => {
   const [collectionsData, setCollectionsData] = useState<Record<string, any>>(
@@ -128,6 +129,13 @@ export const Collections = () => {
     <PageWrapper>
       <div className='min-h-screen bg-gradient-to-br from-cyan-100 to-cyan-200 relative overflow-hidden'>
         <DecorativeIconCorners animated />
+
+        {/* Breadcrumb */}
+        <div className='max-w-7xl mx-auto px-6 pt-6'>
+          <Breadcrumb
+            items={[{ label: 'Home', path: '/' }, { label: 'Collections' }]}
+          />
+        </div>
 
         {/* Header Section - Dinovox Style */}
         <div className='bg-white/90 backdrop-blur-sm rounded-3xl mx-6 mt-6 shadow-lg border border-white/50'>

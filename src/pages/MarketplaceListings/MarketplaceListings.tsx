@@ -2,6 +2,7 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import { Auction } from 'pages/Marketplace/Auction';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 /** ---------------- Types ---------------- **/
 type MarketSource = 'dinovox' | 'xoxno';
@@ -135,6 +136,13 @@ export const MarketplaceListings = () => {
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
+      <Breadcrumb
+        items={[
+          { label: 'Home', path: '/' },
+          { label: 'Marketplace', path: '/marketplace' },
+          { label: 'Listings' }
+        ]}
+      />
       {/* Header */}
       <div className='flex items-center gap-2'>
         <div className='h-6 w-6 rounded-md bg-slate-200' />

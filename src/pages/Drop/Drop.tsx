@@ -13,6 +13,7 @@ import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import { FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 // --- Helper: normalizeAmountInput ---
 function normalizeAmountInput(input: string | number): string {
@@ -365,295 +366,302 @@ export const Drop = () => {
   // --- Render ---
   return (
     <PageWrapper>
-      <div className='w-full flex justify-center items-center py-8'>
-        <div className='bg-white rounded-2xl shadow-xl p-8 max-w-xl w-full flex flex-col items-center gap-6 border border-yellow-100'>
-          <div className='w-full text-center mb-2'>
-            <div className='mintGazTitle dinoTitle'>DROP</div>
-            <div className='mx-auto' style={{ margin: '10px' }}>
-              <span>{t('drop:title')}</span>
-            </div>
-
-            {/* 1. Type selection */}
-            <div className='w-full flex flex-col gap-2'>
-              <label className='font-semibold text-gray-700 mb-1'>
-                {t('drop:what_to_send')}
-              </label>
-              <div className='flex gap-6 justify-center'>
-                <label className='flex items-center gap-2 cursor-pointer'>
-                  <input
-                    type='radio'
-                    name='tokenType'
-                    value='SFT'
-                    checked={tokenType === 'SFT'}
-                    onChange={handleTokenTypeChange}
-                  />
-                  <span className='font-bold text-gray-700'>SFT</span>
-                </label>
-                <label className='flex items-center gap-2 cursor-pointer'>
-                  <input
-                    type='radio'
-                    name='tokenType'
-                    value='ESDT'
-                    checked={tokenType === 'ESDT'}
-                    onChange={handleTokenTypeChange}
-                  />
-                  <span className='font-bold text-gray-700'>ESDT</span>
-                </label>
+      <div className='flex flex-col w-full max-w-7xl mx-auto'>
+        <div className='px-6 pt-6'>
+          <Breadcrumb
+            items={[{ label: 'Home', path: '/' }, { label: 'Drop' }]}
+          />
+        </div>
+        <div className='w-full flex justify-center items-center py-8'>
+          <div className='bg-white rounded-2xl shadow-xl p-8 max-w-xl w-full flex flex-col items-center gap-6 border border-yellow-100'>
+            <div className='w-full text-center mb-2'>
+              <div className='mintGazTitle dinoTitle'>DROP</div>
+              <div className='mx-auto' style={{ margin: '10px' }}>
+                <span>{t('drop:title')}</span>
               </div>
-            </div>
 
-            {/* 2. Token selection */}
-            {tokenType && (
-              <div className='w-full flex flex-col gap-2'>
-                <select
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
-                  value={selectedKey}
-                  onChange={handleTokenSelect}
-                >
-                  <option value=''>
-                    {t('drop:choose_token_type', { tokenType })} --
-                  </option>
-                  {tokenOptions.map((item: BaseToken) => {
-                    const key = getTokenKey(item, tokenType);
-                    return (
-                      <option key={key} value={key}>
-                        {item.identifier}
-                        {tokenType === 'SFT' &&
-                          item.nonce != null &&
-                          ` (nonce: ${item.nonce})`}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            )}
-
-            {/* 3. Quantity */}
-            {selectedToken && (
+              {/* 1. Type selection */}
               <div className='w-full flex flex-col gap-2'>
                 <label className='font-semibold text-gray-700 mb-1'>
-                  {t('drop:amount_title')}
+                  {t('drop:what_to_send')}
                 </label>
-                <input
-                  type='number'
-                  min='1'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
-                  value={defaultQty.toString()}
-                  onChange={handleQtyChange}
-                  disabled={submitted}
-                />
-                {decimals.gt(0) && (
-                  <div className='flex items-center gap-4'>
-                    <label className='text-gray-600'>
-                      {t('drop:use_decimals')}
-                    </label>
+                <div className='flex gap-6 justify-center'>
+                  <label className='flex items-center gap-2 cursor-pointer'>
                     <input
-                      type='checkbox'
-                      checked={useDecimals}
-                      onChange={() => setUseDecimals((v) => !v)}
-                      disabled={submitted}
+                      type='radio'
+                      name='tokenType'
+                      value='SFT'
+                      checked={tokenType === 'SFT'}
+                      onChange={handleTokenTypeChange}
                     />
-                  </div>
-                )}
-                <div className='flex flex-col gap-1 text-xs text-gray-400'>
-                  <span>
-                    Solde disponible:{' '}
-                    <span className='font-mono text-yellow-600 font-bold'>
-                      {Number(
-                        selectedBalance
-                          .dividedBy(new BigNumber(10).pow(decimals))
-                          .toFixed()
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: decimals.gt(0) ? 6 : 0
-                      })}
-                    </span>
-                  </span>
+                    <span className='font-bold text-gray-700'>SFT</span>
+                  </label>
+                  <label className='flex items-center gap-2 cursor-pointer'>
+                    <input
+                      type='radio'
+                      name='tokenType'
+                      value='ESDT'
+                      checked={tokenType === 'ESDT'}
+                      onChange={handleTokenTypeChange}
+                    />
+                    <span className='font-bold text-gray-700'>ESDT</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* 2. Token selection */}
+              {tokenType && (
+                <div className='w-full flex flex-col gap-2'>
+                  <select
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
+                    value={selectedKey}
+                    onChange={handleTokenSelect}
+                  >
+                    <option value=''>
+                      {t('drop:choose_token_type', { tokenType })} --
+                    </option>
+                    {tokenOptions.map((item: BaseToken) => {
+                      const key = getTokenKey(item, tokenType);
+                      return (
+                        <option key={key} value={key}>
+                          {item.identifier}
+                          {tokenType === 'SFT' &&
+                            item.nonce != null &&
+                            ` (nonce: ${item.nonce})`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
+
+              {/* 3. Quantity */}
+              {selectedToken && (
+                <div className='w-full flex flex-col gap-2'>
+                  <label className='font-semibold text-gray-700 mb-1'>
+                    {t('drop:amount_title')}
+                  </label>
+                  <input
+                    type='number'
+                    min='1'
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
+                    value={defaultQty.toString()}
+                    onChange={handleQtyChange}
+                    disabled={submitted}
+                  />
                   {decimals.gt(0) && (
-                    <span>Décimales : {decimals.toString()}</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 4. Addresses */}
-            {selectedToken && (
-              <div className='w-full flex flex-col gap-2'>
-                <label className='font-semibold text-gray-700 mb-1'>
-                  {t('drop:list_of_addresses')}
-                </label>
-
-                <div className='form-group'>
-                  <div className='checkbox-wrapper'>
-                    <input
-                      type='checkbox'
-                      id='voxStakers'
-                      checked={voxStakers}
-                      onChange={() => {
-                        setAddresses('');
-                        setVoxStakers(!voxStakers);
-                      }}
-                    />
-                    <label htmlFor='voxStakers' className='checkbox-label'>
-                      Dino Stakers{' '}
-                      <span className='tooltip-inline'>
-                        (ℹ)
-                        <span className='tooltiptext-inline'>
-                          {t('drop:dino_stakers_tooltip')}
-                        </span>
-                      </span>
-                    </label>
-
-                    <input
-                      type='checkbox'
-                      id='boxHolders'
-                      checked={boxHolders}
-                      onChange={() => {
-                        setAddresses('');
-                        setBoxHolders(!boxHolders);
-                      }}
-                    />
-                    <label htmlFor='boxHolders' className='checkbox-label'>
-                      Box Holders{' '}
-                      <span className='tooltip-inline'>
-                        (ℹ)
-                        <span className='tooltiptext-inline'>
-                          {t('drop:box_holders_tooltip')}
-                        </span>
-                      </span>
-                    </label>
-
-                    <input
-                      type='checkbox'
-                      id='voxHolders'
-                      checked={voxHolders}
-                      onChange={() => {
-                        setAddresses('');
-                        setVoxHolders(!voxHolders);
-                      }}
-                    />
-                    <label htmlFor='voxHolders' className='checkbox-label'>
-                      Vox Holders{' '}
-                      <span className='tooltip-inline'>
-                        (ℹ)
-                        <span className='tooltiptext-inline'>
-                          {t('drop:vox_holders_tooltip')}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                <textarea
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
-                  value={addresses}
-                  placeholder={t('drop:addresses_placeholder')}
-                  onChange={handleAddressChange}
-                  required
-                  style={{ minHeight: '120px' }}
-                  disabled={submitted}
-                />
-                <div className='text-xs text-gray-400'>
-                  <span>
-                    Une adresse par ligne. Vous pouvez ajouter une quantité
-                    après l'adresse (ex:{' '}
-                    <span className='font-mono'>erd1... 10</span>)
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* 5. Résumé & Action */}
-            {(validCount > 0 || invalidCount > 0) && (
-              <div className='w-full flex flex-col gap-2 mt-2'>
-                <div className='flex items-center gap-2'>
-                  <FaCheckCircle className='text-green-500' />
-                  <span className='font-semibold text-green-700'>
-                    {validCount} adresses valides
-                  </span>
-                </div>
-                {invalidCount > 0 && (
-                  <div className='flex items-center gap-2'>
-                    <FaExclamationCircle className='text-red-500' />
-                    <span className='font-semibold text-red-700'>
-                      {invalidCount} adresses invalides
-                    </span>
-                  </div>
-                )}
-                {invalidAddresses.length > 0 && (
-                  <ul className='text-xs text-red-500 list-disc ml-6'>
-                    {invalidAddresses.map((line, idx) => (
-                      <li key={idx}>{line}</li>
-                    ))}
-                  </ul>
-                )}
-                <div
-                  className='rounded-lg px-4 py-2 mt-2'
-                  style={{
-                    backgroundColor: selectedBalance.lt(totalQuantity)
-                      ? '#ffcccc'
-                      : '#e6ffe6'
-                  }}
-                >
-                  <span>
-                    Total à envoyer:{' '}
-                    <span className='font-mono text-yellow-600 font-bold'>
-                      {Number(
-                        new BigNumber(totalQuantity)
-                          .dividedBy(new BigNumber(10).pow(decimals))
-                          .toFixed()
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: decimals.toNumber()
-                      })}
-                      {/* <FormatAmount
-                        value={totalQuantity.toFixed()}
-                        showLabel={false}
-                      /> */}
-                    </span>
-                  </span>
-                  <br />
-                  <span>
-                    Solde disponible:{' '}
-                    <span className='font-mono text-yellow-600 font-bold'>
-                      {Number(
-                        selectedBalance
-                          .dividedBy(new BigNumber(10).pow(decimals))
-                          .toFixed()
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: decimals.gt(0) ? 6 : 0
-                      })}
-                      {/* <FormatAmount
-                        value={selectedBalance.toFixed()}
-                        showLabel={false}
-                      /> */}
-                    </span>
-                  </span>
-                </div>
-                {selectedToken &&
-                  validCount > 0 &&
-                  invalidCount === 0 &&
-                  selectedBalance.isGreaterThanOrEqualTo(totalQuantity) && (
-                    <div className='w-full flex justify-center mt-2'>
-                      <ActionBuy
-                        identifier={
-                          (selectedToken.collection ||
-                            selectedToken.identifier) as string
-                        }
-                        nonce={selectedToken.nonce as any}
-                        batches={batches}
-                        submitted={submitted}
-                        onSubmit={() => setSubmitted(true)}
-                        disabled={
-                          selectedBalance.isLessThan(totalQuantity) ||
-                          !selectedToken.identifier
-                        }
+                    <div className='flex items-center gap-4'>
+                      <label className='text-gray-600'>
+                        {t('drop:use_decimals')}
+                      </label>
+                      <input
+                        type='checkbox'
+                        checked={useDecimals}
+                        onChange={() => setUseDecimals((v) => !v)}
+                        disabled={submitted}
                       />
                     </div>
                   )}
-              </div>
-            )}
+                  <div className='flex flex-col gap-1 text-xs text-gray-400'>
+                    <span>
+                      Solde disponible:{' '}
+                      <span className='font-mono text-yellow-600 font-bold'>
+                        {Number(
+                          selectedBalance
+                            .dividedBy(new BigNumber(10).pow(decimals))
+                            .toFixed()
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: decimals.gt(0) ? 6 : 0
+                        })}
+                      </span>
+                    </span>
+                    {decimals.gt(0) && (
+                      <span>Décimales : {decimals.toString()}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Addresses */}
+              {selectedToken && (
+                <div className='w-full flex flex-col gap-2'>
+                  <label className='font-semibold text-gray-700 mb-1'>
+                    {t('drop:list_of_addresses')}
+                  </label>
+
+                  <div className='form-group'>
+                    <div className='checkbox-wrapper'>
+                      <input
+                        type='checkbox'
+                        id='voxStakers'
+                        checked={voxStakers}
+                        onChange={() => {
+                          setAddresses('');
+                          setVoxStakers(!voxStakers);
+                        }}
+                      />
+                      <label htmlFor='voxStakers' className='checkbox-label'>
+                        Dino Stakers{' '}
+                        <span className='tooltip-inline'>
+                          (ℹ)
+                          <span className='tooltiptext-inline'>
+                            {t('drop:dino_stakers_tooltip')}
+                          </span>
+                        </span>
+                      </label>
+
+                      <input
+                        type='checkbox'
+                        id='boxHolders'
+                        checked={boxHolders}
+                        onChange={() => {
+                          setAddresses('');
+                          setBoxHolders(!boxHolders);
+                        }}
+                      />
+                      <label htmlFor='boxHolders' className='checkbox-label'>
+                        Box Holders{' '}
+                        <span className='tooltip-inline'>
+                          (ℹ)
+                          <span className='tooltiptext-inline'>
+                            {t('drop:box_holders_tooltip')}
+                          </span>
+                        </span>
+                      </label>
+
+                      <input
+                        type='checkbox'
+                        id='voxHolders'
+                        checked={voxHolders}
+                        onChange={() => {
+                          setAddresses('');
+                          setVoxHolders(!voxHolders);
+                        }}
+                      />
+                      <label htmlFor='voxHolders' className='checkbox-label'>
+                        Vox Holders{' '}
+                        <span className='tooltip-inline'>
+                          (ℹ)
+                          <span className='tooltiptext-inline'>
+                            {t('drop:vox_holders_tooltip')}
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <textarea
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400'
+                    value={addresses}
+                    placeholder={t('drop:addresses_placeholder')}
+                    onChange={handleAddressChange}
+                    required
+                    style={{ minHeight: '120px' }}
+                    disabled={submitted}
+                  />
+                  <div className='text-xs text-gray-400'>
+                    <span>
+                      Une adresse par ligne. Vous pouvez ajouter une quantité
+                      après l'adresse (ex:{' '}
+                      <span className='font-mono'>erd1... 10</span>)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* 5. Résumé & Action */}
+              {(validCount > 0 || invalidCount > 0) && (
+                <div className='w-full flex flex-col gap-2 mt-2'>
+                  <div className='flex items-center gap-2'>
+                    <FaCheckCircle className='text-green-500' />
+                    <span className='font-semibold text-green-700'>
+                      {validCount} adresses valides
+                    </span>
+                  </div>
+                  {invalidCount > 0 && (
+                    <div className='flex items-center gap-2'>
+                      <FaExclamationCircle className='text-red-500' />
+                      <span className='font-semibold text-red-700'>
+                        {invalidCount} adresses invalides
+                      </span>
+                    </div>
+                  )}
+                  {invalidAddresses.length > 0 && (
+                    <ul className='text-xs text-red-500 list-disc ml-6'>
+                      {invalidAddresses.map((line, idx) => (
+                        <li key={idx}>{line}</li>
+                      ))}
+                    </ul>
+                  )}
+                  <div
+                    className='rounded-lg px-4 py-2 mt-2'
+                    style={{
+                      backgroundColor: selectedBalance.lt(totalQuantity)
+                        ? '#ffcccc'
+                        : '#e6ffe6'
+                    }}
+                  >
+                    <span>
+                      Total à envoyer:{' '}
+                      <span className='font-mono text-yellow-600 font-bold'>
+                        {Number(
+                          new BigNumber(totalQuantity)
+                            .dividedBy(new BigNumber(10).pow(decimals))
+                            .toFixed()
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: decimals.toNumber()
+                        })}
+                        {/* <FormatAmount
+                        value={totalQuantity.toFixed()}
+                        showLabel={false}
+                      /> */}
+                      </span>
+                    </span>
+                    <br />
+                    <span>
+                      Solde disponible:{' '}
+                      <span className='font-mono text-yellow-600 font-bold'>
+                        {Number(
+                          selectedBalance
+                            .dividedBy(new BigNumber(10).pow(decimals))
+                            .toFixed()
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: decimals.gt(0) ? 6 : 0
+                        })}
+                        {/* <FormatAmount
+                        value={selectedBalance.toFixed()}
+                        showLabel={false}
+                      /> */}
+                      </span>
+                    </span>
+                  </div>
+                  {selectedToken &&
+                    validCount > 0 &&
+                    invalidCount === 0 &&
+                    selectedBalance.isGreaterThanOrEqualTo(totalQuantity) && (
+                      <div className='w-full flex justify-center mt-2'>
+                        <ActionBuy
+                          identifier={
+                            (selectedToken.collection ||
+                              selectedToken.identifier) as string
+                          }
+                          nonce={selectedToken.nonce as any}
+                          batches={batches}
+                          submitted={submitted}
+                          onSubmit={() => setSubmitted(true)}
+                          disabled={
+                            selectedBalance.isLessThan(totalQuantity) ||
+                            !selectedToken.identifier
+                          }
+                        />
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,36 +1,38 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { useGetAccount } from 'lib';
-import { useGetCollections } from 'helpers/api/accounts/getCollections';
+import { useParams } from 'react-router-dom';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
+import { useGetCollections } from 'helpers/api/getCollections';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import { Auction } from 'pages/Marketplace/Auction';
 
-type SaleType = 'all' | 'fixed' | 'auction';
-type SortKey = 'newest' | 'priceAsc' | 'priceDesc' | 'endingSoon';
-
 /** ---------------- UI Components ---------------- **/
-const Badge: React.FC<
-  React.PropsWithChildren<{ tone?: 'neutral' | 'brand' | 'success' | 'info' }>
-> = ({ children, tone = 'neutral' }) => {
+const Badge = ({
+  children,
+  tone = 'neutral' as 'neutral' | 'brand'
+}: {
+  children: React.ReactNode;
+  tone?: 'neutral' | 'brand';
+}) => {
   const cls =
     tone === 'brand'
       ? 'border-amber-300 bg-amber-50 text-amber-700'
-      : tone === 'success'
-      ? 'border-green-300 bg-green-50 text-green-700'
-      : tone === 'info'
-      ? 'border-blue-300 bg-blue-50 text-blue-700'
       : 'border-gray-200 bg-gray-50 text-gray-700';
   return (
     <span
-      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${cls}`}
+      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs ${cls}`}
     >
       {children}
     </span>
   );
 };
 
-const Card: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className='rounded-2xl border border-gray-200 bg-white shadow-sm'>
+const Card: React.FC<React.PropsWithChildren<{ className?: string }>> = ({
+  children,
+  className = ''
+}) => (
+  <div
+    className={`rounded-2xl border border-gray-200 bg-white shadow-sm ${className}`}
+  >
     {children}
   </div>
 );
@@ -46,183 +48,124 @@ const CardContent: React.FC<
   <div className={`p-4 pt-0 ${className}`}>{children}</div>
 );
 
+/** ---------------- Types ---------------- **/
+type SortKey = 'newest' | 'priceAsc' | 'priceDesc' | 'endingSoon';
+type SaleType = 'all' | 'fixed' | 'auction';
+
 /** ---------------- Main Component ---------------- **/
 export const MarketplaceCollectionById = () => {
-  const { id = '' } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { address } = useGetAccount();
+  const { id = '' } = useParams<{ id: string }>();
+  const [page, setPage] = useState(1);
+  const [saleType, setSaleType] = useState<SaleType>('all');
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState<SortKey>('newest');
 
-  // Filters from URL
-  const initialSale = (searchParams.get('sale') as SaleType) || 'all';
-  const initialSort = (searchParams.get('sort') as SortKey) || 'newest';
-  const initialQ = searchParams.get('q') || '';
-  const initialPage = parseInt(searchParams.get('page') || '1', 10);
+  // 1. Fetch Collection Details
+  const { data: collection } = useGetCollections(id);
 
-  const [saleType, setSaleType] = useState<SaleType>(initialSale);
-  const [sort, setSort] = useState<SortKey>(initialSort);
-  const [q, setQ] = useState(initialQ);
-  const [page, setPage] = useState(initialPage);
-
-  // Fetch collection data
-  const {
-    data: collection,
-    loading: collectionLoading,
-    error: collectionError
-  } = useGetCollections(id);
-
-  // Fetch auctions for this collection
+  // 2. Fetch Listings (Auctions)
   const {
     auctions,
     isLoading: auctionsLoading,
-    error: auctionsError,
     hasMore
   } = useGetAuctionsPaginated({
     page,
-    limit: 24,
-    collection: id || null
+    limit: 20,
+    collection: id
   });
 
-  // Filter and sort auctions
+  // 3. Filter & Sort (Client-side for current page - limitation of contract pagination)
   const filteredAuctions = useMemo(() => {
     let list = [...auctions];
 
-    // Filter by search query
-    if (q.trim()) {
-      const query = q.toLowerCase();
-      list = list.filter((auction: any) => {
-        const tokenId =
-          auction.auctioned_tokens?.token_identifier?.toString() || '';
-        const nonce = auction.auctioned_tokens?.token_nonce?.toString() || '';
-        return (
-          tokenId.toLowerCase().includes(query) ||
-          nonce.toLowerCase().includes(query)
-        );
+    // Filter by Sale Type
+    if (saleType !== 'all') {
+      list = list.filter((a) => {
+        const isAuction =
+          !a.max_bid || a.max_bid === '0' || a.min_bid !== a.max_bid;
+        const isFixed = !isAuction;
+        return saleType === 'auction' ? isAuction : isFixed;
       });
     }
 
-    // Filter by sale type
-    if (saleType === 'auction') {
-      list = list.filter((auction: any) => {
-        const minBid = auction.min_bid?.toString() || '0';
-        const maxBid = auction.max_bid?.toString() || '0';
-        return minBid !== maxBid || maxBid === '0';
-      });
-    } else if (saleType === 'fixed') {
-      list = list.filter((auction: any) => {
-        const minBid = auction.min_bid?.toString() || '0';
-        const maxBid = auction.max_bid?.toString() || '0';
-        return minBid === maxBid && maxBid !== '0';
-      });
+    // Filter by Search Query
+    if (q.trim()) {
+      const query = q.toLowerCase();
+      list = list.filter(
+        (a) =>
+          a.auctioned_tokens?.token_identifier?.toLowerCase().includes(query) ||
+          a.auction_id?.toString().includes(query)
+      );
     }
 
     // Sort
-    if (sort === 'newest') {
-      list.sort((a: any, b: any) => {
-        const aTime = a.start_time?.valueOf() || 0;
-        const bTime = b.start_time?.valueOf() || 0;
-        return bTime - aTime;
-      });
-    } else if (sort === 'endingSoon') {
-      list.sort((a: any, b: any) => {
-        const aEnd = a.deadline?.valueOf() || Infinity;
-        const bEnd = b.deadline?.valueOf() || Infinity;
-        return aEnd - bEnd;
-      });
-    }
+    list.sort((a, b) => {
+      const priceA = BigInt(a.current_bid || a.min_bid || '0');
+      const priceB = BigInt(b.current_bid || b.min_bid || '0');
+      const timeA = Number(a.deadline || 0);
+      const timeB = Number(b.deadline || 0);
 
-    return list;
-  }, [auctions, q, saleType, sort]);
-
-  // Sync URL params
-  React.useEffect(() => {
-    const sp = new URLSearchParams();
-    if (saleType !== 'all') sp.set('sale', saleType);
-    if (sort !== 'newest') sp.set('sort', sort);
-    if (q) sp.set('q', q);
-    if (page !== 1) sp.set('page', page.toString());
-    setSearchParams(sp, { replace: true });
-  }, [saleType, sort, q, page, setSearchParams]);
-
-  // Calculate stats from auctions
-  const stats = useMemo(() => {
-    const activeListings = auctions.length;
-
-    // Calculate floor price (lowest current price)
-    let floorPrice: string | null = null;
-    let floorToken: string | null = null;
-
-    auctions.forEach((auction: any) => {
-      const currentBid = auction.current_bid?.amount?.toString();
-      const minBid = auction.min_bid?.toString();
-      const price = currentBid || minBid;
-      const token = auction.payment_token?.toString();
-
-      if (price && (!floorPrice || BigInt(price) < BigInt(floorPrice))) {
-        floorPrice = price;
-        floorToken = token;
+      switch (sort) {
+        case 'priceAsc':
+          return priceA < priceB ? -1 : priceA > priceB ? 1 : 0;
+        case 'priceDesc':
+          return priceA > priceB ? -1 : priceA < priceB ? 1 : 0;
+        case 'endingSoon':
+          return timeA - timeB;
+        case 'newest':
+        default:
+          // Assuming higher ID is newer or we rely on default order
+          return Number(b.auction_id) - Number(a.auction_id);
       }
     });
 
-    return {
-      activeListings,
-      floorPrice,
-      floorToken,
-      totalItems: collection?.name ? '...' : '0' // Would need additional API call
-    };
-  }, [auctions, collection]);
+    return list;
+  }, [auctions, saleType, q, sort]);
 
-  if (collectionLoading) {
-    return (
-      <div className='mx-auto max-w-7xl px-4 py-16 text-center'>
-        <div className='text-lg text-gray-500'>Loading collection...</div>
-      </div>
-    );
-  }
-
-  if (collectionError || !collection?.collection) {
-    return (
-      <div className='mx-auto max-w-7xl px-4 py-16 text-center'>
-        <div className='text-2xl font-semibold text-gray-900'>
-          Collection not found
-        </div>
-        <div className='mt-4'>
-          <Link
-            to='/marketplace/collections'
-            className='text-sm text-blue-600 hover:text-blue-800 underline'
-          >
-            Back to collections
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // 4. Stats (Placeholder or derived)
+  const stats = {
+    floorPrice: undefined, // TODO: Fetch floor price
+    floorToken: 'EGLD',
+    activeListings: auctions.length // Only shows count of fetched page
+  };
 
   return (
     <div className='mx-auto max-w-7xl px-4 pb-10'>
+      <div className='mb-6'>
+        <Breadcrumb
+          items={[
+            { label: 'Home', path: '/' },
+            { label: 'Marketplace', path: '/marketplace' },
+            { label: 'Collections', path: '/marketplace/collections' },
+            { label: collection?.name || 'Collection' }
+          ]}
+        />
+      </div>
+
       {/* Hero Section */}
       <div className='relative -mx-4 mb-6'>
         <div
           className='h-52 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-center bg-cover'
           style={{
             backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(https://placehold.co/1600x420/1e293b/ffffff?text=${encodeURIComponent(
-              collection.name || 'Collection'
+              collection?.name || 'Collection'
             )})`
           }}
         />
         <div className='container mx-auto px-4'>
           <div className='-mt-10 flex items-end gap-4'>
             <div className='h-24 w-24 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold'>
-              {collection.name?.charAt(0) || 'C'}
+              {collection?.name?.charAt(0) || 'C'}
             </div>
             <div className='pb-2 flex-1'>
               <h1 className='text-2xl font-semibold text-slate-900'>
-                {collection.name || 'Unknown Collection'}
+                {collection?.name || 'Unknown Collection'}
               </h1>
               <div className='mt-1 flex flex-wrap items-center gap-2'>
                 <Badge tone='brand'>Dinovox Marketplace</Badge>
-                <Badge>{collection.type || 'NFT'}</Badge>
+                <Badge>{collection?.type || 'NFT'}</Badge>
                 <span className='text-xs text-slate-500'>
-                  {collection.collection}
+                  {collection?.collection}
                 </span>
               </div>
             </div>
@@ -261,7 +204,7 @@ export const MarketplaceCollectionById = () => {
           <CardHeader>
             <div className='text-xs text-slate-500'>Owner</div>
             <div className='text-sm font-mono text-slate-900 truncate'>
-              {collection.owner
+              {collection?.owner
                 ? `${collection.owner.slice(0, 8)}...${collection.owner.slice(
                     -4
                   )}`
@@ -274,7 +217,7 @@ export const MarketplaceCollectionById = () => {
           <CardHeader>
             <div className='text-xs text-slate-500'>Type</div>
             <div className='text-lg font-semibold text-slate-900'>
-              {collection.type || 'NFT'}
+              {collection?.type || 'NFT'}
             </div>
           </CardHeader>
         </Card>
@@ -390,16 +333,6 @@ export const MarketplaceCollectionById = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Back Link */}
-      <div className='mt-6 text-center'>
-        <Link
-          to='/marketplace'
-          className='text-sm text-slate-600 hover:text-slate-900 underline'
-        >
-          ← Back to Marketplace
-        </Link>
-      </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 import { useGetAccountCollections } from 'helpers/api/accounts/useGetAccountCollections';
 import {
   marketplaceContractAddress,
@@ -228,6 +229,13 @@ export const MarketplaceCollections = () => {
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
+      <Breadcrumb
+        items={[
+          { label: 'Home', path: '/' },
+          { label: 'Marketplace', path: '/marketplace' },
+          { label: 'Collections' }
+        ]}
+      />
       {/* Header */}
       <div className='flex items-center gap-2'>
         <div className='h-6 w-6 rounded-md bg-slate-200' />
