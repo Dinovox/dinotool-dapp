@@ -1,5 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useGetAccountCollections } from 'helpers/api/accounts/useGetAccountCollections';
+import {
+  marketplaceContractAddress,
+  dinovox_collections,
+  friends_collections
+} from 'config';
 
 type MarketSource = 'local' | 'xoxno';
 
@@ -19,54 +25,10 @@ type Collection = {
   volume24h?: TokenAmount;
   volume7d?: TokenAmount;
   listingsActive: number;
-  // simple tag interne pour vos collections
   isOwnedByDinovox?: boolean;
-  // infos d’affichage, sans incidence on-chain
+  isFriendOfDinovox?: boolean;
   sources: MarketSource[];
 };
-
-/** ---------------- MOCK DATA ---------------- **/
-const MOCK_COLLECTIONS: Collection[] = [
-  {
-    slug: 'dinovox',
-    name: 'Dinovox',
-    logo: 'https://placehold.co/160/png?text=D',
-    banner: 'https://placehold.co/1600x400/png?text=Dinovox',
-    itemsCount: 1234,
-    floor: { ticker: 'EGLD', amount: '1.25', decimals: 18 },
-    volume24h: { ticker: 'EGLD', amount: '250', decimals: 18 },
-    volume7d: { ticker: 'EGLD', amount: '1100', decimals: 18 },
-    listingsActive: 48,
-    isOwnedByDinovox: true,
-    sources: ['local']
-  },
-  {
-    slug: 'dino-bones',
-    name: 'Dino Bones',
-    logo: 'https://placehold.co/160/png?text=B',
-    banner: 'https://placehold.co/1600x400/png?text=BONES',
-    itemsCount: 420,
-    floor: { ticker: 'EGLD', amount: '0.72', decimals: 18 },
-    volume24h: { ticker: 'EGLD', amount: '35', decimals: 18 },
-    volume7d: { ticker: 'EGLD', amount: '210', decimals: 18 },
-    listingsActive: 12,
-    isOwnedByDinovox: false,
-    sources: ['local']
-  },
-  {
-    slug: 'x-dinosaurs',
-    name: 'X Dinosaurs',
-    logo: 'https://placehold.co/160/png?text=X',
-    banner: 'https://placehold.co/1600x400/png?text=X+Dinos',
-    itemsCount: 980,
-    floor: { ticker: 'EGLD', amount: '0.55', decimals: 18 },
-    volume24h: { ticker: 'EGLD', amount: '120', decimals: 18 },
-    volume7d: { ticker: 'EGLD', amount: '610', decimals: 18 },
-    listingsActive: 31,
-    isOwnedByDinovox: false,
-    sources: ['local']
-  }
-];
 
 /** ---------------- Utils ---------------- **/
 function toNum(t?: TokenAmount) {
@@ -131,14 +93,16 @@ function formatToken(t?: TokenAmount) {
 /** ---------------- Mini UI ---------------- **/
 const Badge = ({
   children,
-  tone = 'neutral' as 'neutral' | 'brand'
+  tone = 'neutral' as 'neutral' | 'brand' | 'info'
 }: {
   children: React.ReactNode;
-  tone?: 'neutral' | 'brand';
+  tone?: 'neutral' | 'brand' | 'info';
 }) => {
   const cls =
     tone === 'brand'
       ? 'border-amber-300 bg-amber-50 text-amber-700'
+      : tone === 'info'
+      ? 'border-blue-300 bg-blue-50 text-blue-700'
       : 'border-gray-200 bg-gray-50 text-gray-700';
   return (
     <span
@@ -193,12 +157,44 @@ export const MarketplaceCollections = () => {
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('best');
   const [ownedOnly, setOwnedOnly] = useState(false);
+  const [friendsOnly, setFriendsOnly] = useState(false);
+
+  // Fetch collections from the marketplace contract account
+  const {
+    collections: accountCollections,
+    loading,
+    error
+  } = useGetAccountCollections(marketplaceContractAddress);
+
+  // Map API data to UI Collection type
+  const collections = useMemo(() => {
+    return accountCollections.map((c) => ({
+      slug: c.collection,
+      name: c.name || c.ticker,
+      logo: c.url || 'https://placehold.co/160/png?text=?',
+      banner: undefined,
+      itemsCount: c.count,
+      listingsActive: c.count, // Assuming count represents active items in the marketplace contract
+      isOwnedByDinovox: dinovox_collections.includes(c.collection),
+      isFriendOfDinovox: friends_collections.includes(c.collection),
+      sources: ['local'] as MarketSource[],
+      floor: undefined,
+      volume24h: undefined,
+      volume7d: undefined
+    }));
+  }, [accountCollections]);
 
   const filtered = useMemo(() => {
-    let out = [...MOCK_COLLECTIONS];
+    let out = [...collections];
 
-    // filtre Dinovox (vos collections)
-    if (ownedOnly) out = out.filter((c) => c.isOwnedByDinovox);
+    // Filter by ownership/friendship (OR logic)
+    if (ownedOnly || friendsOnly) {
+      out = out.filter((c) => {
+        if (ownedOnly && c.isOwnedByDinovox) return true;
+        if (friendsOnly && c.isFriendOfDinovox) return true;
+        return false;
+      });
+    }
 
     // texte
     if (query.trim()) {
@@ -210,7 +206,25 @@ export const MarketplaceCollections = () => {
     }
 
     return sortCollections(out, sort);
-  }, [query, sort, ownedOnly]);
+  }, [collections, query, sort, ownedOnly, friendsOnly]);
+
+  if (loading) {
+    return (
+      <div className='mx-auto max-w-7xl px-4 py-16 text-center'>
+        <div className='text-lg text-gray-500'>Loading collections...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='mx-auto max-w-7xl px-4 py-16 text-center'>
+        <div className='text-lg text-red-500'>
+          Error loading collections: {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
@@ -242,6 +256,15 @@ export const MarketplaceCollections = () => {
             Owned by Dinovox
           </label>
 
+          <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
+            <input
+              type='checkbox'
+              checked={friendsOnly}
+              onChange={(e) => setFriendsOnly(e.target.checked)}
+            />
+            Friends of Dinovox
+          </label>
+
           <div className='flex items-center gap-2'>
             <label className='text-xs font-medium text-slate-600'>Sort</label>
             <select
@@ -266,28 +289,28 @@ export const MarketplaceCollections = () => {
         {filtered.map((c) => (
           <Card key={c.slug}>
             {/* Aperçu plus large */}
-            {c.banner && (
-              <div
-                className='h-40 w-full bg-center bg-cover rounded-t-2xl'
-                style={{ backgroundImage: `url(${c.banner})` }}
-              />
-            )}
+            <div
+              className='h-40 w-full bg-center bg-cover rounded-t-2xl bg-slate-100'
+              style={c.banner ? { backgroundImage: `url(${c.banner})` } : {}}
+            />
 
             {/* avatar/logo plus grand */}
             <CardHeader className='-mt-12 flex items-center gap-4'>
               <img
                 src={c.logo}
                 alt={c.name}
-                className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow'
+                className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
               />
-              <div className='space-y-1'>
-                <div className='text-base font-semibold text-slate-900'>
+              <div className='space-y-1 overflow-hidden'>
+                <div className='text-base font-semibold text-slate-900 truncate'>
                   {c.name}
                 </div>
-                <div className='text-xs text-slate-500'>{c.slug}</div>
+                <div className='text-xs text-slate-500 truncate'>{c.slug}</div>
                 <div className='flex flex-wrap gap-1'>
                   {/* badge “owned” mis en avant */}
                   {c.isOwnedByDinovox && <Badge tone='brand'>Dinovox</Badge>}
+                  {/* badge “friends” */}
+                  {c.isFriendOfDinovox && <Badge tone='info'>Friends</Badge>}
                   {/* badges informatifs (disponibilité des listings par agrégateur) */}
                   {c.sources.map((s) => (
                     <Badge key={s}>{s}</Badge>
@@ -321,12 +344,7 @@ export const MarketplaceCollections = () => {
                   {formatToken(c.volume7d)}
                 </div>
               </div>
-              <div className='col-span-2'>
-                <div className='text-xs text-slate-500'>Items</div>
-                <div className='text-sm font-medium text-slate-900'>
-                  {c.itemsCount}
-                </div>
-              </div>
+              {/* Items count removed as it's redundant with listings for now since we only see listed items */}
             </CardContent>
 
             <CardFooter>
@@ -335,12 +353,6 @@ export const MarketplaceCollections = () => {
                 className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
               >
                 View collection
-              </Link>
-              <Link
-                to={`/marketplace?collection=${c.slug}`}
-                className='text-sm underline text-slate-700 hover:text-slate-900'
-              >
-                View listings
               </Link>
             </CardFooter>
           </Card>

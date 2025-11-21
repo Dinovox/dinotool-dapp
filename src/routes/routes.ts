@@ -16,6 +16,7 @@ import {
   ClaimAdmin,
   Marketplace,
   MarketplaceCollections,
+  MarketplaceCollectionById,
   MarketplaceCollectionDetail,
   MarketplaceListings,
   MarketplaceListingDetail,
@@ -121,9 +122,9 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       component: MarketplaceCollections
     },
     {
-      path: `${RouteNamesEnum.marketplaceCollections}/:slug`,
+      path: `${RouteNamesEnum.marketplaceCollections}/:id`,
       title: t('collection detail'),
-      component: MarketplaceCollectionDetail
+      component: MarketplaceCollectionById
     },
     {
       path: `${RouteNamesEnum.marketplace}/listings`,

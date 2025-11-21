@@ -22,3 +22,5 @@ export const BATCH_TRANSACTIONS_SC = {
     data: 'ESDTTransfer@4D45582D613635396430@0de0b6b3a7640000@6c6f636b546f6b656e73@05a0'
   }
 };
+
+export const dinovox_collections = ['DINOCARDS-ddaf7a', 'FAAPU-28e0bc'];

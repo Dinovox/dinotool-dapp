@@ -18,6 +18,7 @@ export * from './Claim';
 export * from './ClaimAdmin';
 export * from './Marketplace';
 export * from './MarketplaceCollection';
+export { MarketplaceCollectionById } from './MarketplaceCollections';
 export * from './MarketplaceCollectionDetail';
 export * from './MarketplaceListings';
 export * from './MarketplaceListingDetail';

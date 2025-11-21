@@ -41,3 +41,5 @@ export const lottery_cost = {
 export const dinoclaim_api = 'https://devnet-claim.dinovox.com';
 export const dino_claim_url = 'https://devnet-app.dinovox.com/claim';
 export const pox_api = 'https://api.poxp.xyz';
+export const dinovox_collections = ['FAAPU-28e0bc'];
+export const friends_collections = ['DINOBOOST-9f6811'];

@@ -1,137 +1,24 @@
 import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
+import { Auction } from 'pages/Marketplace/Auction';
 
 /** ---------------- Types ---------------- **/
 type MarketSource = 'dinovox' | 'xoxno';
 type SaleType = 'fixed' | 'auction';
 
-type TokenAmount = {
-  ticker: string;
-  amount: string;
-  decimals: number;
-};
-
-type AuctionData = {
-  currentBid?: TokenAmount;
-  startPrice: TokenAmount;
-  startTime: number;
-  endTime: number;
-  bidsCount: number;
-};
-
 type Listing = {
-  id: string;
-  source: MarketSource;
-  saleType: SaleType;
-  identifier: string;
-  collectionSlug: string;
-  name: string;
-  image: string;
-  seller: string;
-  price?: TokenAmount;
-  auction?: AuctionData;
   status: 'active' | 'sold' | 'cancelled' | 'ended';
-  createdAt: number;
 };
 
-/** ---------------- Mock data ---------------- **/
+/** ---------------- Mock data for filters ---------------- **/
 const MOCK_COLLECTIONS = [
   { slug: 'dinovox', name: 'Dinovox' },
   { slug: 'dino-bones', name: 'Dino Bones' },
   { slug: 'x-dinosaurs', name: 'X Dinosaurs' }
 ];
 
-function genMockListings(n = 64): Listing[] {
-  const slugs = MOCK_COLLECTIONS.map((c) => c.slug);
-  return Array.from({ length: n }).map((_, i) => {
-    const slug = slugs[i % slugs.length];
-    const isAuction = i % 3 === 1;
-    return {
-      id: `${slug}:${i + 1}`,
-      source: i % 4 === 0 ? 'xoxno' : 'dinovox',
-      saleType: isAuction ? 'auction' : 'fixed',
-      identifier: `${slug.toUpperCase()}-${1000 + i}`,
-      collectionSlug: slug,
-      name: `${slug} #${1000 + i}`,
-      image: 'https://placehold.co/600/png',
-      seller: i % 5 === 0 ? 'erd1vip...aaaa' : 'erd1...abcd',
-      price: !isAuction
-        ? {
-            ticker: 'EGLD',
-            amount: (0.35 + (i % 20) * 0.02).toFixed(2),
-            decimals: 18
-          }
-        : undefined,
-      auction: isAuction
-        ? {
-            startPrice: { ticker: 'EGLD', amount: '0.20', decimals: 18 },
-            currentBid: {
-              ticker: 'EGLD',
-              amount: (0.2 + (i % 7) * 0.06).toFixed(2),
-              decimals: 18
-            },
-            startTime: Date.now() - 60 * 60 * 1000,
-            endTime: Date.now() + (i + 1) * 15 * 60 * 1000,
-            bidsCount: (i % 6) + 1
-          }
-        : undefined,
-      status: (
-        ['active', 'active', 'active', 'ended', 'sold'] as Listing['status'][]
-      )[i % 5],
-      createdAt: Date.now() - i * 3600 * 1000
-    };
-  });
-}
-
-const ALL_LISTINGS = genMockListings(96);
-
-/** ---------------- Utils ---------------- **/
-function formatToken(t?: TokenAmount) {
-  if (!t) return '-';
-  return `${t.amount} ${t.ticker}`;
-}
-
-function priceOf(l: Listing) {
-  return l.saleType === 'fixed'
-    ? parseFloat(l.price?.amount || '0')
-    : parseFloat(
-        (l.auction?.currentBid || l.auction?.startPrice)?.amount || '0'
-      );
-}
-
-type SortKey = 'best' | 'newest' | 'priceAsc' | 'priceDesc' | 'endingSoon';
-
-function sortListings(list: Listing[], sort: SortKey): Listing[] {
-  const out = [...list];
-  if (sort === 'newest') out.sort((a, b) => b.createdAt - a.createdAt);
-  if (sort === 'priceAsc') out.sort((a, b) => priceOf(a) - priceOf(b));
-  if (sort === 'priceDesc') out.sort((a, b) => priceOf(b) - priceOf(a));
-  if (sort === 'endingSoon')
-    out.sort(
-      (a, b) =>
-        (a.auction?.endTime || Infinity) - (b.auction?.endTime || Infinity)
-    );
-  if (sort === 'best') {
-    out.sort((a, b) => {
-      const score = (x: Listing) =>
-        (x.saleType === 'auction' ? 2 : 0) +
-        (x.auction
-          ? Math.max(0, 1_000_000_000_000 - x.auction.endTime) / 10_000
-          : 0) +
-        (x.status === 'active' ? 1 : 0);
-      return score(b) - score(a);
-    });
-  }
-  return out;
-}
-
 /** ---------------- Petits composants UI ---------------- **/
-const Badge = ({ children }: { children: React.ReactNode }) => (
-  <span className='inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-700'>
-    {children}
-  </span>
-);
-
 const Card: React.FC<React.PropsWithChildren> = ({ children }) => (
   <div className='rounded-2xl border border-gray-200 bg-white shadow-sm'>
     {children}
@@ -146,28 +33,6 @@ const CardContent: React.FC<
 > = ({ children, className = '' }) => (
   <div className={`p-4 pt-0 ${className}`}>{children}</div>
 );
-const CardFooter: React.FC<React.PropsWithChildren<{ className?: string }>> = ({
-  children,
-  className = ''
-}) => <div className={`p-4 pt-0 ${className}`}>{children}</div>;
-
-function Countdown({ endTime }: { endTime: number }) {
-  const [now, setNow] = React.useState(Date.now());
-  React.useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const left = Math.max(0, endTime - now);
-  const s = Math.floor(left / 1000);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return (
-    <span>
-      {h}h {m}m {sec}s
-    </span>
-  );
-}
 
 /** ---------------- Page ---------------- **/
 export const MarketplaceListings = () => {
@@ -179,9 +44,7 @@ export const MarketplaceListings = () => {
     (searchParams.get(key) || '').split(',').filter(Boolean);
 
   const [query, setQuery] = React.useState(sp('q'));
-  const [sort, setSort] = React.useState<SortKey>(
-    (sp('sort') as SortKey) || 'best'
-  );
+  const [sort, setSort] = React.useState<string>(sp('sort') || 'best');
 
   const [sources, setSources] = React.useState<MarketSource[]>(
     sp('sources')
@@ -209,88 +72,15 @@ export const MarketplaceListings = () => {
   const [page, setPage] = React.useState<number>(
     parseInt(sp('page') || '1', 10)
   );
-  const pageSize = 24;
+  const pageSize = 8;
 
-  // compute filtered
-  const filtered = React.useMemo(() => {
-    let list = [...ALL_LISTINGS];
-
-    // sources
-    if (sources.length) list = list.filter((l) => sources.includes(l.source));
-    // sale types
-    if (saleTypes.length)
-      list = list.filter((l) => saleTypes.includes(l.saleType));
-    // status
-    if (status.length) list = list.filter((l) => status.includes(l.status));
-    // collections
-    if (collections.length)
-      list = list.filter((l) => collections.includes(l.collectionSlug));
-    // search text
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (l) =>
-          l.name.toLowerCase().includes(q) ||
-          l.identifier.toLowerCase().includes(q) ||
-          l.collectionSlug.toLowerCase().includes(q) ||
-          l.seller.toLowerCase().includes(q)
-      );
-    }
-    // token + price range
-    if (token) {
-      list = list.filter((l) => {
-        if (l.saleType === 'fixed') return l.price?.ticker === token;
-        return (
-          (l.auction?.currentBid || l.auction?.startPrice)?.ticker === token
-        );
-      });
-    }
-    const minV = min ? parseFloat(min) : undefined;
-    const maxV = max ? parseFloat(max) : undefined;
-    if (minV !== undefined || maxV !== undefined) {
-      list = list.filter((l) => {
-        const v = priceOf(l);
-        if (minV !== undefined && v < minV) return false;
-        if (maxV !== undefined && v > maxV) return false;
-        return true;
-      });
-    }
-    // ending within (minutes)
-    if (endingWithin) {
-      const m = parseInt(endingWithin, 10);
-      if (!Number.isNaN(m)) {
-        list = list.filter((l) =>
-          l.saleType === 'auction' && l.auction
-            ? (l.auction.endTime - Date.now()) / 60000 <= m
-            : false
-        );
-      }
-    }
-
-    // tri
-    list = sortListings(list, sort);
-    return list;
-  }, [
-    sources,
-    saleTypes,
-    status,
-    collections,
-    query,
-    token,
-    min,
-    max,
-    endingWithin,
-    sort
-  ]);
-
-  // pagination
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const pageClamped = Math.min(Math.max(1, page), totalPages);
-  const items = React.useMemo(() => {
-    const start = (pageClamped - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, pageClamped]);
+  // Fetch real auctions
+  // Note: Filters are currently client-side state only as the hook doesn't support them all yet
+  const { auctions, isLoading, error, hasMore } = useGetAuctionsPaginated({
+    page,
+    limit: pageSize,
+    collection: collections.length === 1 ? collections[0] : null
+  });
 
   // sync URL
   React.useEffect(() => {
@@ -322,7 +112,7 @@ export const MarketplaceListings = () => {
     if (min) sp.set('min', min);
     if (max) sp.set('max', max);
     if (endingWithin) sp.set('endingWithin', endingWithin);
-    if (pageClamped !== 1) sp.set('page', String(pageClamped));
+    if (page !== 1) sp.set('page', String(page));
     setSearchParams(sp, { replace: true });
   }, [
     query,
@@ -335,7 +125,7 @@ export const MarketplaceListings = () => {
     min,
     max,
     endingWithin,
-    pageClamped,
+    page,
     setSearchParams
   ]);
 
@@ -375,7 +165,7 @@ export const MarketplaceListings = () => {
           <label className='text-xs font-medium text-slate-600'>Sort</label>
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
+            onChange={(e) => setSort(e.target.value)}
             className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm'
           >
             <option value='best'>Best</option>
@@ -608,90 +398,46 @@ export const MarketplaceListings = () => {
         </Card>
 
         {/* Results */}
-        <div className='space-y-3'>
+        <div className='space-y-3 min-h-[600px]'>
           <div className='flex items-center justify-between'>
             <div className='text-sm text-slate-600'>
-              {filtered.length} results • page {pageClamped}/{totalPages}
+              {/* Note: Total count is not available from paginated hook yet */}
+              Page {page}
             </div>
             <div className='flex items-center gap-2'>
               <button
                 className='h-9 rounded-md border px-3 text-sm disabled:opacity-50'
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={pageClamped <= 1}
+                disabled={page <= 1 || isLoading}
               >
                 Prev
               </button>
               <button
                 className='h-9 rounded-md border px-3 text-sm disabled:opacity-50'
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={pageClamped >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                disabled={!hasMore || isLoading}
               >
                 Next
               </button>
             </div>
           </div>
 
-          {items.length === 0 ? (
+          {isLoading ? (
             <div className='py-16 text-center text-sm text-slate-500'>
-              No listings match your filters.
+              Loading listings...
+            </div>
+          ) : error ? (
+            <div className='py-16 text-center text-sm text-red-500'>
+              Error loading listings: {error}
+            </div>
+          ) : auctions.length === 0 ? (
+            <div className='py-16 text-center text-sm text-slate-500'>
+              No listings found.
             </div>
           ) : (
             <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
-              {items.map((l) => (
-                <Card key={l.id}>
-                  <CardHeader className='p-0'>
-                    <div className='relative aspect-square bg-slate-100'>
-                      <img
-                        src={l.image}
-                        alt={l.name}
-                        className='h-full w-full object-cover'
-                      />
-                      <div className='absolute left-2 top-2 flex gap-1'>
-                        <Badge>{l.source}</Badge>
-                        <Badge>{l.saleType}</Badge>
-                        {l.status !== 'active' && <Badge>{l.status}</Badge>}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className='pt-4 space-y-1'>
-                    <div className='font-medium'>{l.name}</div>
-                    <div className='text-xs text-slate-500'>{l.identifier}</div>
-                    <div className='text-sm'>
-                      {l.saleType === 'fixed' ? (
-                        <>
-                          Price:{' '}
-                          <span className='font-semibold'>
-                            {formatToken(l.price)}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          Current bid:{' '}
-                          <span className='font-semibold'>
-                            {formatToken(
-                              l.auction?.currentBid || l.auction?.startPrice
-                            )}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className='flex items-center justify-between'>
-                    {l.saleType === 'auction' && l.auction ? (
-                      <div className='text-xs text-slate-500'>
-                        <Countdown endTime={l.auction.endTime} />
-                      </div>
-                    ) : (
-                      <div />
-                    )}
-                    <Link
-                      to={`/marketplace/listings/${encodeURIComponent(l.id)}`}
-                      className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
-                    >
-                      {l.saleType === 'auction' ? 'Bid' : 'Buy now'}
-                    </Link>
-                  </CardFooter>
-                </Card>
+              {auctions.map((l: any) => (
+                <Auction key={l.auction_id} auction={l} />
               ))}
             </div>
           )}
@@ -701,33 +447,24 @@ export const MarketplaceListings = () => {
             <button
               className='h-9 rounded-md border px-3 text-sm disabled:opacity-50'
               onClick={() => setPage(1)}
-              disabled={pageClamped === 1}
+              disabled={page === 1 || isLoading}
             >
               « First
             </button>
             <button
               className='h-9 rounded-md border px-3 text-sm disabled:opacity-50'
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={pageClamped === 1}
+              disabled={page <= 1 || isLoading}
             >
               ‹ Prev
             </button>
-            <span className='text-sm text-slate-600'>
-              Page {pageClamped} / {totalPages}
-            </span>
+            <span className='text-sm text-slate-600'>Page {page}</span>
             <button
               className='h-9 rounded-md border px-3 text-sm disabled:opacity-50'
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={pageClamped === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!hasMore || isLoading}
             >
               Next ›
-            </button>
-            <button
-              className='h-9 rounded-md border px-3 text-sm disabled:opacity-50'
-              onClick={() => setPage(totalPages)}
-              disabled={pageClamped === totalPages}
-            >
-              Last »
             </button>
           </div>
         </div>

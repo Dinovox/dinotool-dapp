@@ -71,21 +71,15 @@ type ListingFilters = {
   endingWithin?: number;
 };
 
+import { useGetAccountCollections } from 'helpers/api/accounts/useGetAccountCollections';
+import { marketplaceContractAddress } from 'config';
+
+// ... (imports remain the same)
+
+// ... (types remain the same)
+
 /** ---------- MOCKS ---------- **/
-const MOCK_COLLECTIONS: Collection[] = [
-  {
-    slug: 'dinovox',
-    name: 'Dinovox',
-    logo: 'https://placehold.co/120x120/png',
-    banner: 'https://placehold.co/1200x240/png',
-    itemsCount: 1234,
-    floor: { ticker: 'EGLD', amount: '1.25', decimals: 18 },
-    volume24h: { ticker: 'EGLD', amount: '250', decimals: 18 },
-    volume7d: { ticker: 'EGLD', amount: '1100', decimals: 18 },
-    listingsActive: 48,
-    sources: ['dinovox', 'xoxno']
-  }
-];
+// MOCK_COLLECTIONS removed
 
 const MOCK_LISTINGS: Listing[] = Array.from({ length: 16 }).map((_, i) => ({
   id: `dinovox:${i + 1}`,
@@ -285,7 +279,25 @@ export const Marketplace = () => {
   });
   const [search, setSearch] = useState('');
 
-  const collections = MOCK_COLLECTIONS;
+  // Fetch collections for Trending section
+  const { collections: accountCollections } = useGetAccountCollections(
+    marketplaceContractAddress
+  );
+
+  const collections = useMemo(() => {
+    return accountCollections.slice(0, 3).map((c) => ({
+      slug: c.collection,
+      name: c.name || c.ticker,
+      logo: c.url || 'https://placehold.co/120x120/png',
+      banner: c.assets?.pngUrl || undefined, // Use asset image as banner fallback if needed, or keep undefined
+      itemsCount: c.count,
+      floor: undefined,
+      volume24h: undefined,
+      volume7d: undefined,
+      listingsActive: c.count,
+      sources: ['dinovox'] as MarketSource[]
+    }));
+  }, [accountCollections]);
 
   const filteredListings = useMemo(() => {
     let list = applyListingFilters(MOCK_LISTINGS, filters);
@@ -310,7 +322,7 @@ export const Marketplace = () => {
     [filteredListings]
   );
 
-  const listings = useGetAuctionsPaginated({ page: 1, limit: 10 });
+  const listings = useGetAuctionsPaginated({ page: 1, limit: 8 });
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
@@ -422,9 +434,7 @@ export const Marketplace = () => {
       {/* Live auctions */}
       <section className='space-y-3'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-lg font-semibold text-slate-900'>
-            Live auctions
-          </h2>
+          <h2 className='text-lg font-semibold text-slate-900'>Listings</h2>
           <Link
             to='/marketplace/listings'
             className='text-sm underline text-slate-700 hover:text-slate-900'
@@ -435,74 +445,6 @@ export const Marketplace = () => {
         <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
           {listings?.auctions.map((l) => (
             <Auction key={l.auction_id} auction={l} />
-          ))}
-        </div>
-      </section>
-
-      {/* All listings (newest) */}
-      <section className='space-y-3'>
-        <div className='flex items-center justify-between'>
-          <h2 className='text-lg font-semibold text-slate-900'>All listings</h2>
-          <Link
-            to='/marketplace/listings'
-            className='text-sm underline text-slate-700 hover:text-slate-900'
-          >
-            View more
-          </Link>
-        </div>
-        <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
-          {newest.map((l) => (
-            <Card key={l.id}>
-              <CardHeader className='p-0'>
-                <div className='relative aspect-square bg-gray-100'>
-                  <img
-                    src={l.image}
-                    alt={l.name}
-                    className='h-full w-full object-cover'
-                  />
-                  <div className='absolute left-2 top-2 flex gap-1'>
-                    <Badge>{l.source}</Badge>
-                    <Badge>{l.saleType}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className='space-y-1 pt-4'>
-                <div className='font-medium text-slate-900'>{l.name}</div>
-                <div className='text-sm text-slate-500'>{l.collectionSlug}</div>
-                {l.saleType === 'fixed' ? (
-                  <div className='text-sm'>
-                    Price:{' '}
-                    <span className='font-semibold text-slate-900'>
-                      {formatToken(l.price)}
-                    </span>
-                  </div>
-                ) : (
-                  <div className='text-sm'>
-                    Current bid:{' '}
-                    <span className='font-semibold text-slate-900'>
-                      {formatToken(
-                        l.auction?.currentBid || l.auction?.startPrice
-                      )}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                {l.saleType === 'auction' && l.auction ? (
-                  <div className='text-sm text-slate-500'>
-                    <Countdown endTime={l.auction.endTime} />
-                  </div>
-                ) : (
-                  <div />
-                )}
-                <Link
-                  to={`/marketplace/listings/${encodeURIComponent(l.id)}`}
-                  className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
-                >
-                  {l.saleType === 'auction' ? 'Bid' : 'Buy now'}
-                </Link>
-              </CardFooter>
-            </Card>
           ))}
         </div>
       </section>
