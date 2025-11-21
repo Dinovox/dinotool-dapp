@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import BigNumber from 'bignumber.js';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 import { useGetAccount } from 'lib';
@@ -16,6 +17,7 @@ type AuctionData = {
   startTime: number;
   endTime: number;
   bidsCount: number;
+  maxBid: BigNumber;
 };
 
 type AuctionItem = {
@@ -26,6 +28,7 @@ type AuctionItem = {
   auctioned_tokens: {
     token_identifier: string;
     token_nonce: number;
+    amount: string;
   };
   payment_token: string;
   payment_nonce: number;
@@ -39,7 +42,6 @@ type AuctionItem = {
   original_owner?: string;
   current_winner?: string;
 };
-
 
 function Countdown({ endTime }: { endTime: number }) {
   const [now, setNow] = useState(Date.now());
@@ -59,14 +61,21 @@ function Countdown({ endTime }: { endTime: number }) {
   );
 }
 
-const Badge = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <span className={`inline-flex items-center rounded-md border border-gray-200 bg-white/90 backdrop-blur-sm px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm ${className}`}>
+const Badge = ({
+  children,
+  className = ''
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <span
+    className={`inline-flex items-center rounded-md border border-gray-200 bg-white/90 backdrop-blur-sm px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm ${className}`}
+  >
     {children}
   </span>
 );
 
 export const Auction = ({ auction: rawAuction }: { auction: any }) => {
-
   const { address } = useGetAccount();
   // Normalize contract data to AuctionItem
   const auction: AuctionItem = useMemo(() => {
@@ -93,7 +102,8 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
       name: `${tokenIdentifier} #${tokenNonce}`, // Fallback name
       auctioned_tokens: {
         token_identifier: tokenIdentifier,
-        token_nonce: tokenNonce
+        token_nonce: tokenNonce,
+        amount: rawAuction.auctioned_tokens?.amount?.toString() || '1'
       },
       payment_token: paymentToken,
       payment_nonce: Number(rawAuction.payment_nonce || 0),
@@ -122,6 +132,19 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
   const isCreator = address && auction.original_owner === address;
   const isWinner = address && auction.current_winner === address;
 
+  // Determine button display logic
+  const isDirectSale = useMemo(() => {
+    if (!auction.min_bid || !auction.max_bid) return false;
+    return (
+      new BigNumber(auction.min_bid).isEqualTo(auction.max_bid) &&
+      new BigNumber(auction.max_bid).gt(0)
+    );
+  }, [auction.min_bid, auction.max_bid]);
+
+  const hasBuyNow = useMemo(() => {
+    return auction.max_bid && new BigNumber(auction.max_bid).gt(0);
+  }, [auction.max_bid]);
+
   return (
     <div className='group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col h-full'>
       {/* Image Section */}
@@ -135,9 +158,18 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
         {/* Badges overlay */}
         <div className='absolute left-2 top-2 flex gap-1 flex-wrap'>
           {auction?.source && <Badge>{String(auction.source)}</Badge>}
-          {auction?.saleType && <Badge>{String(auction.saleType)}</Badge>}
-          {isCreator && <Badge className='!bg-blue-100 !text-blue-700 !border-blue-200'>Creator</Badge>}
-          {isWinner && <Badge className='!bg-green-100 !text-green-700 !border-green-200'>Winning</Badge>}
+          {!isDirectSale && <Badge>auction</Badge>}
+          {hasBuyNow && <Badge>buy now</Badge>}
+          {isCreator && (
+            <Badge className='!bg-blue-100 !text-blue-700 !border-blue-200'>
+              Creator
+            </Badge>
+          )}
+          {isWinner && (
+            <Badge className='!bg-green-100 !text-green-700 !border-green-200'>
+              Winning
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -153,55 +185,101 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
         </div>
 
         <div className='space-y-1 bg-gray-50 rounded-lg p-3'>
-          {auction?.min_bid && (
-            <div className='flex justify-between items-center text-xs text-gray-500'>
-              <span>Min bid</span>
-              <span>
-                <FormatAmount
-                  amount={auction?.min_bid}
-                  identifier={auction?.payment_token}
-                />
-              </span>
-            </div>
-          )}
+          {isDirectSale ? (
+            <>
+              <div className='flex justify-between items-center text-sm'>
+                <span className='text-gray-500'>Quantity</span>
+                <span className='font-bold text-gray-900'>
+                  {auction?.auctioned_tokens?.amount || '1'}
+                </span>
+              </div>
 
-          <div className='flex justify-between items-center text-sm'>
-            <span className='text-gray-500'>Current bid</span>
-            <span className='font-bold text-gray-900'>
-              <FormatAmount
-                amount={
-                  auction?.auction?.current_bid?.amount ||
-                  auction?.auction?.startPrice?.amount
-                }
-                identifier={auction?.payment_token}
-              />
-            </span>
-          </div>
-
-          {auction?.max_bid && (
-            <div className='flex justify-between items-center text-xs text-gray-500'>
-              <span>Direct Buy</span>
-              <span>
-                <FormatAmount
-                  amount={auction?.max_bid}
-                  identifier={auction?.payment_token}
-                />
-              </span>
-            </div>
+              <div className='flex justify-between items-center text-sm'>
+                <span className='text-gray-500'>Price</span>
+                <span className='font-bold text-gray-900'>
+                  <FormatAmount
+                    amount={auction?.max_bid}
+                    identifier={auction?.payment_token}
+                  />
+                </span>
+              </div>
+              <span className='invisible'>Placeholder</span>
+            </>
+          ) : (
+            <>
+              {' '}
+              {auction?.min_bid && (
+                <div className='flex justify-between items-center text-xs text-gray-500'>
+                  <span>Min bid</span>
+                  <span>
+                    <FormatAmount
+                      amount={auction?.min_bid}
+                      identifier={auction?.payment_token}
+                    />
+                  </span>
+                </div>
+              )}
+              <div className='flex justify-between items-center text-sm'>
+                <span className='text-gray-500'>Current bid</span>
+                <span className='font-bold text-gray-900'>
+                  <FormatAmount
+                    amount={
+                      auction?.auction?.current_bid?.amount ||
+                      auction?.auction?.startPrice?.amount
+                    }
+                    identifier={auction?.payment_token}
+                  />
+                </span>
+              </div>
+              {/* Reserve fixed space for Direct Buy to align all cards */}
+              <div className='flex justify-between items-center text-xs text-gray-500 min-h-[20px]'>
+                {auction?.max_bid ? (
+                  <>
+                    <span>Direct Buy</span>
+                    <span>
+                      <FormatAmount
+                        amount={auction?.max_bid}
+                        identifier={auction?.payment_token}
+                      />
+                    </span>
+                  </>
+                ) : (
+                  <span className='invisible'>Placeholder</span>
+                )}
+              </div>
+            </>
           )}
         </div>
 
-        <div className='mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-3'>
-          <div className='text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md'>
+        <div className='mt-auto pt-3 border-t border-gray-100 space-y-2'>
+          <div className='text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-center'>
             <Countdown endTime={auction?.auction?.endTime || 0} />
           </div>
 
-          <Link
-            to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
-            className='inline-flex items-center justify-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow'
-          >
-            Bid Now
-          </Link>
+          <div className='flex gap-1.5'>
+            {/* Show Bid Now if: not a direct sale (max_price != start_price) */}
+            {!isDirectSale && (
+              <Link
+                to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
+                className='flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow'
+              >
+                Bid Now
+              </Link>
+            )}
+            {/* Show Buy Now if: max_price > 0 */}
+            {hasBuyNow && (
+              <Link
+                to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
+                className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-lg transition-colors shadow-sm hover:shadow ${
+                  isDirectSale
+                    ? 'bg-gray-900 text-white hover:bg-gray-800'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Buy Now
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

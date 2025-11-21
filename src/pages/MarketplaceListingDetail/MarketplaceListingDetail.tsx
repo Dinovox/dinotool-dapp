@@ -280,6 +280,12 @@ export const MarketplaceListingDetail = () => {
 
 
 
+  const isDirectSale =
+    isAuction &&
+    listing.auction?.startPrice &&
+    listing.auction?.maxBid &&
+    listing.auction.startPrice.isEqualTo(listing.auction.maxBid);
+
   /* ---- Handlers (stub: à brancher à ton SDK/SC) ---- */
   const onBuyNow = () => {
     alert(
@@ -521,15 +527,19 @@ export const MarketplaceListingDetail = () => {
               {/* Price / Current bid */}
               <div className='rounded-xl border p-4'>
                 <div className='text-xs uppercase tracking-wide text-slate-500'>
-                  {isAuction ? 'Current bid' : 'Price'}
+                  {isAuction && !isDirectSale ? 'Current bid' : 'Price'}
                 </div>
                 <div className='mt-1 text-2xl font-semibold'>
                   <FormatAmount
-                    amount={listing.auction?.currentBid?.toFixed()}
+                    amount={
+                      isAuction && !isDirectSale
+                        ? listing.auction?.currentBid?.toFixed()
+                        : listing.auction?.startPrice?.toFixed()
+                    }
                     identifier={paymentToken}
                   />
                 </div>
-                {isAuction && listing.auction?.startPrice && (
+                {isAuction && !isDirectSale && listing.auction?.startPrice && (
                   <div className='mt-1 text-xs text-slate-500'>
                     Start price{' '}
                     <FormatAmount
@@ -568,53 +578,57 @@ export const MarketplaceListingDetail = () => {
                       )
                     ) : (
                       <>
-                        <input
-                          value={bidAmount}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (
-                              listing.auction?.maxBid &&
-                              listing.auction.maxBid.gt(0)
-                            ) {
-                              const maxVal = listing.auction.maxBid.shiftedBy(
-                                -(tokenInformations?.decimals || 0)
-                              );
-                              if (new BigNumber(val).gt(maxVal)) {
-                                setBidAmount(maxVal.toFixed());
-                                return;
+                        {!isDirectSale && (
+                          <>
+                            <input
+                              value={bidAmount}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (
+                                  listing.auction?.maxBid &&
+                                  listing.auction.maxBid.gt(0)
+                                ) {
+                                  const maxVal = listing.auction.maxBid.shiftedBy(
+                                    -(tokenInformations?.decimals || 0)
+                                  );
+                                  if (new BigNumber(val).gt(maxVal)) {
+                                    setBidAmount(maxVal.toFixed());
+                                    return;
+                                  }
+                                }
+                                setBidAmount(val);
+                              }}
+                              placeholder={`Bid in ${paymentToken}`}
+                              inputMode='decimal'
+                              className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                            />
+                            <ActionBid
+                              auctionId={listing.auction?.auctionId || id}
+                              nftType={listing.identifier}
+                              nftNonce={tokenNonce || '0'}
+                              paymentToken={
+                                paymentToken
                               }
-                            }
-                            setBidAmount(val);
-                          }}
-                          placeholder={`Bid in ${paymentToken}`}
-                          inputMode='decimal'
-                          className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
-                        />
-                        <ActionBid
-                          auctionId={listing.auction?.auctionId || id}
-                          nftType={listing.identifier}
-                          nftNonce={tokenNonce || '0'}
-                          paymentToken={
-                            paymentToken
-                          }
-                          amount={new BigNumber(bidAmount || '0')
-                            .shiftedBy(
-                              tokenInformations?.decimals || 0
-                            )
-                            .toFixed(0)}
-                          disabled={
-                            !bidAmount ||
-                            parseFloat(bidAmount) <= 0 ||
-                            (minRequiredBid
-                              ? new BigNumber(bidAmount)
-                                  .shiftedBy(
-                                    tokenInformations?.decimals || 0
-                                  )
-                                  .lt(minRequiredBid)
-                              : false) ||
-                            address === listing.auction?.currentWinner
-                          }
-                        />
+                              amount={new BigNumber(bidAmount || '0')
+                                .shiftedBy(
+                                  tokenInformations?.decimals || 0
+                                )
+                                .toFixed(0)}
+                              disabled={
+                                !bidAmount ||
+                                parseFloat(bidAmount) <= 0 ||
+                                (minRequiredBid
+                                  ? new BigNumber(bidAmount)
+                                      .shiftedBy(
+                                        tokenInformations?.decimals || 0
+                                      )
+                                      .lt(minRequiredBid)
+                                  : false) ||
+                                address === listing.auction?.currentWinner
+                              }
+                            />
+                          </>
+                        )}
                         {listing.auction?.maxBid &&
                           listing.auction.maxBid.gt(
                             0
@@ -653,7 +667,7 @@ export const MarketplaceListingDetail = () => {
                           You are the current winner!
                         </span>
                       ) : (
-                        minRequiredBid && (
+                        minRequiredBid && !isDirectSale && (
                           <>
                             Minimum bid:{' '}
                             <FormatAmount
