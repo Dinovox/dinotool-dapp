@@ -12,6 +12,7 @@ type DisplayNftByTokenProps = {
   className?: string;
   badgeLabel?: string;
   loadingPlaceholder?: React.ReactNode;
+  variant?: 'card' | 'media-only';
 };
 
 export const DisplayNftByToken: React.FC<DisplayNftByTokenProps> = ({
@@ -21,7 +22,8 @@ export const DisplayNftByToken: React.FC<DisplayNftByTokenProps> = ({
   type,
   className,
   badgeLabel,
-  loadingPlaceholder
+  loadingPlaceholder,
+  variant
 }) => {
   const esdtInfo: any = useGetNftInformations(tokenIdentifier, nonce, type);
 
@@ -51,6 +53,7 @@ export const DisplayNftByToken: React.FC<DisplayNftByTokenProps> = ({
       amount={amount}
       className={className}
       badgeLabel={badgeLabel}
+      variant={variant}
     />
   );
 };

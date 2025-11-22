@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Checkbox } from 'antd';
 import dayjs from 'dayjs';
 import {
@@ -9,7 +9,8 @@ import {
   Select,
   Divider,
   DatePicker,
-  CheckboxChangeEvent
+  CheckboxChangeEvent,
+  Steps
 } from 'antd';
 
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
@@ -34,6 +35,7 @@ const CreateLotteryModal: React.FC<{
 }> = ({ count, cost_graou, cost_egld }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
+  const [form] = Form.useForm();
 
   const [visible, setVisible] = useState(false);
   const [isFree, setIsFree] = useState(false);
@@ -66,6 +68,7 @@ const CreateLotteryModal: React.FC<{
   const [checked, setChecked] = useState(false);
   // test for manual input (not from dropdown)
   const [priceValid, setPriceValid] = useState(true);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const { address, account } = useGetAccountInfo();
   const test = new BigNumber(account?.balance).dividedBy(10 ** 18);
@@ -91,6 +94,7 @@ const CreateLotteryModal: React.FC<{
       setPrizeNonce(0);
       setPrizeAmount(new BigNumber(1));
       setPrizeDisplay('1');
+      form.setFieldsValue({ prizeAmount: '1' });
       setPrizeBalance(new BigNumber(1));
     } else if (e.target.value === 'Egld') {
       setPrizeType('Egld');
@@ -100,14 +104,17 @@ const CreateLotteryModal: React.FC<{
       setPrizeDecimals(18);
       setPrizeAmount(new BigNumber(0));
       setPrizeDisplay('');
+      form.setFieldsValue({ prizeAmount: '' });
       setPrizeBalance(new BigNumber(account?.balance));
     } else {
       setPrizeType(e.target.value);
       setPrizeIdentifier('');
       setPrizeTicker('');
       setPrizeNonce(0);
+      setPrizeDecimals(0);
       setPrizeAmount(new BigNumber(0));
       setPrizeDisplay('');
+      form.setFieldsValue({ prizeAmount: '' });
       setPrizeBalance(new BigNumber(0));
     }
   };
@@ -121,12 +128,15 @@ const CreateLotteryModal: React.FC<{
       setPriceDecimals(18);
       setPriceAmount(new BigNumber(0));
       setPriceDisplay('');
+      form.setFieldsValue({ priceAmount: '' });
     } else {
       setPriceType(e.target.value);
       setPriceTicker('');
       setPriceIdentifier('');
+      setPriceDecimals(0);
       setPriceAmount(new BigNumber(0));
       setPriceDisplay('');
+      form.setFieldsValue({ priceAmount: '' });
     }
     setPriceNonce(0);
   };
@@ -229,15 +239,16 @@ const CreateLotteryModal: React.FC<{
       return;
     }
 
-    if (
-      convertedValue.isGreaterThan(prizeBalance) &&
-      ['Sft', 'Esdt', 'Egld'].includes(prizeType)
-    ) {
-      convertedValue = new BigNumber(prizeBalance);
-      setPrizeDisplay(
-        prizeBalance.dividedBy(10 ** prizeDecimals).toFixed(prizeDecimals)
-      );
-    }
+    // REMOVED: Strict balance check that was preventing manual input
+    // if (
+    //   convertedValue.isGreaterThan(prizeBalance) &&
+    //   ['Sft', 'Esdt', 'Egld'].includes(prizeType)
+    // ) {
+    //   convertedValue = new BigNumber(prizeBalance);
+    //   setPrizeDisplay(
+    //     prizeBalance.dividedBy(10 ** prizeDecimals).toFixed(prizeDecimals)
+    //   );
+    // }
 
     setPrizeAmount(convertedValue); // Stocke la valeur en BigNumber
   };
@@ -399,8 +410,31 @@ const CreateLotteryModal: React.FC<{
       is_valid: false
     };
   }
+  const isStep1Valid = useMemo(() => {
+    if (!prizeType) return false;
+    if (['Esdt', 'Sft', 'Nft'].includes(prizeType) && !prizeIdentifier)
+      return false;
+    if (
+      ['Esdt', 'Sft', 'Egld'].includes(prizeType) &&
+      (!prizeAmount || prizeAmount.lte(0))
+    )
+      return false;
+    return true;
+  }, [prizeType, prizeIdentifier, prizeAmount]);
+
+  const isStep2Valid = useMemo(() => {
+    if (!priceType) return false;
+    if (['Esdt', 'Sft'].includes(priceType) && !priceIdentifier) return false;
+    if (
+      ['Esdt', 'Sft', 'Egld'].includes(priceType) &&
+      (!priceAmount || priceAmount.lte(0))
+    )
+      return false;
+    return priceValid;
+  }, [priceType, priceIdentifier, priceAmount, priceValid]);
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
+    <div className='flex justify-center'>
       <button
         onClick={showModal}
         disabled={
@@ -415,293 +449,119 @@ const CreateLotteryModal: React.FC<{
       </button>
 
       <Modal
-        title={t('lotteries:create_lottery')}
+        title={
+          <div className='text-xl font-bold text-gray-800 dark:text-white mb-4'>
+            {t('lotteries:create_lottery')}
+          </div>
+        }
         open={visible}
         onCancel={handleCancel}
         footer={null}
+        width={800}
+        className='custom-modal'
       >
-        <Form layout='vertical' onFinish={handleCreate}>
-          {t('lotteries:winning_prize')}
-          <div
-            style={{
-              border: '1px solid rgb(92 129 128)',
-              padding: '10px'
-            }}
-          >
-            <Form.Item
-              name={'tokenPrizeType'}
-              label={t('lotteries:token_type')}
-              tooltip={t('lotteries:token_prize_tooltip')}
-              rules={[
-                {
-                  required: false,
-                  message: 'Please select the token type!'
-                }
-              ]}
-            >
-              <Radio.Group
-                onChange={handlePrizeType}
-                disabled={acceptConditions}
-              >
-                <Radio value='Esdt'>ESDT</Radio>
-                <Radio value='Egld'>EGLD</Radio>
-                <Radio value='Sft'>SFT</Radio>
-                <Radio value='Nft'>NFT</Radio>
-              </Radio.Group>
-            </Form.Item>{' '}
-            {/* Selection du PRIZE */}
-            {['Esdt', 'Sft', 'Nft'].includes(prizeType) && (
-              <Form.Item
-                name={'prizeIdentifier' + prizeType}
-                label={t('lotteries:identifier')}
-                rules={[
-                  {
-                    required: false,
-                    message: 'Please input the price identifier!'
-                  }
-                ]}
-              >
-                {' '}
-                <Select
-                  className='select-token'
-                  disabled={acceptConditions}
-                  onDropdownVisibleChange={handleDropdownChange}
-                  onChange={(value, datas: any) => {
-                    disableKeyboard();
-                    setPrizeIdentifier(value);
-                    setPrizeTicker(
-                      datas?.datas?.collection
-                        ? datas?.datas?.collection
-                        : datas?.datas?.identifier
-                        ? datas?.datas?.identifier
-                        : ''
-                    );
-                    setPrizeNonce(
-                      datas?.datas?.nonce ? datas?.datas?.nonce : 0
-                    );
-                    setPrizeDecimals(
-                      datas?.datas?.decimals ? datas?.datas?.decimals : 0
-                    );
-                    setPrizeBalance(new BigNumber(datas?.datas?.balance));
-                    setPrizeAmount(new BigNumber(prizeType === 'Nft' ? 1 : 0));
-                    setPrizeDisplay(prizeType === 'Nft' ? '1' : '');
-                  }}
-                  showSearch={true}
-                  placeholder={t('lotteries:identifier_placeholder')}
-                  optionFilterProp='children'
-                  filterOption={(input, option) =>
-                    String(option?.children ?? '')
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  dropdownRender={(menu) => (
-                    <>
-                      {' '}
-                      {keyboardEnabled ? (
-                        <button onClick={disableKeyboard}>
-                          {t('lotteries:disable_keyboard')}
-                        </button>
-                      ) : (
-                        <button onClick={enableKeyboard}>
-                          {t('lotteries:enable_keyboard')}
-                        </button>
-                      )}
-                      {menu}
-                      <Divider style={{ margin: '8px 0' }} />
-                      <Input
-                        disabled={acceptConditions}
-                        value={prizeIdentifier}
-                        style={{ padding: '8px' }}
-                        onChange={(e) => {
-                          const value = (e.target as HTMLInputElement).value;
-                          setPrizeIdentifier(value);
-                          setPrizeNonce(0);
-                          setPrizeDecimals(0);
-                        }}
-                      />
-                    </>
-                  )}
-                >
-                  {' '}
-                  {prizeType === 'Esdt' &&
-                    user_esdt.map((token: any) => (
-                      <Select.Option
-                        onFocus={(e: any) => e.target.blur()}
-                        inputMode='none'
-                        readOnly={true}
-                        key={token.identifier}
-                        value={token.identifier}
-                        datas={token}
-                        disabled={[
-                          xgraou_identifier,
-                          graou_identifier
-                        ].includes(token.identifier)}
-                      >
-                        {token.identifier}
-                        {/* {JSON.stringify(token)} */}
-                      </Select.Option>
-                    ))}{' '}
-                  {prizeType === 'Sft' &&
-                    prize_options_sft.map((token: any) => (
-                      <Select.Option
-                        onFocus={(e: any) => e.target.blur()}
-                        inputMode='none'
-                        readOnly={true}
-                        key={token.identifier}
-                        value={token.identifier}
-                        datas={token}
-                      >
-                        {token.identifier}
-                      </Select.Option>
-                    ))}{' '}
-                  {prizeType === 'Nft' &&
-                    prize_options_nft.map((token: any) => (
-                      <Select.Option
-                        onFocus={(e: any) => e.target.blur()}
-                        inputMode='none'
-                        readOnly={true}
-                        key={token.identifier}
-                        value={token.identifier}
-                        datas={token}
-                      >
-                        {token.identifier}
-                      </Select.Option>
-                    ))}{' '}
-                </Select>
-              </Form.Item>
-            )}
-            {/* Photo du PRIZE */}
-            {prizeIdentifier && ['Nft', 'Sft'].includes(prizeType) && (
-              <NftDisplay nftInfo={prize_nft_information} amount={0} />
-            )}{' '}
-            {/* Montant du PRIZE */}{' '}
-            {['Esdt', 'Sft', 'Egld'].includes(prizeType) && (
-              <>
+        <Form
+          layout='vertical'
+          form={form}
+          onFinish={handleCreate}
+          className='space-y-6'
+        >
+          <Steps
+            current={currentStep}
+            className='mb-8'
+            items={[
+              {
+                title: t('lotteries:winning_prize'),
+                icon: <span className='text-xl'>🏆</span>
+              },
+              {
+                title: t('lotteries:ticket_price'),
+                icon: <span className='text-xl'>🎟️</span>
+              },
+              {
+                title: t('lotteries:settings'),
+                icon: <span className='text-xl'>⚙️</span>
+              }
+            ]}
+          />
+
+          {/* Winning Prize Section */}
+          {currentStep === 0 && (
+            <div className='bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/50'>
+              <h3 className='text-xl font-bold mb-6 text-gray-800 flex items-center gap-3'>
+                🏆 {t('lotteries:winning_prize')}
+              </h3>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <Form.Item
-                  name='prizeAmount'
-                  label={t('lotteries:quantity')}
-                  rules={[
-                    {
-                      required: false,
-                      message: 'Please input the price amount!'
-                    }
-                  ]}
-                >
-                  {' '}
-                  <Input
-                    type='number' // Utilisation de `text` pour éviter les restrictions des `number`
-                    inputMode='decimal' // Active le clavier numérique sur mobile
-                    onWheel={(e) => (e.target as HTMLInputElement).blur()} // Désactive le scroll
-                    value={prizeDisplay} // Valeur affichée
-                    onChange={handlePrizeAmountChange} // Gestion de la saisie
-                    disabled={prizeType === 'Nft' || acceptConditions}
-                  />
-                </Form.Item>
-                {prizeAmount.isGreaterThan(1) &&
-                  ['Sft'].includes(prizeType) && (
-                    <>{t('lotteries:only_one_winner_warning')}</>
-                  )}
-              </>
-            )}
-          </div>
-          {t('lotteries:ticket_price')}
-          <div
-            style={{
-              border: '1px solid rgb(92 129 128)',
-              padding: '10px'
-            }}
-          >
-            {prizeIdentifier && prizeAmount.isGreaterThan(0) && (
-              <>
-                {/* Selection type de PRICE */}
-                <Form.Item
-                  name='tokenPriceType'
-                  label={t('lotteries:token_type')}
-                  tooltip={t('lotteries:token_price_tooltip')}
-                  rules={[
-                    {
-                      required: false,
-                      message: 'Please select the token type!'
-                    }
-                  ]}
+                  name={'tokenPrizeType'}
+                  label={
+                    <span className='font-medium'>
+                      {t('lotteries:token_type')}
+                    </span>
+                  }
+                  tooltip={t('lotteries:token_prize_tooltip')}
+                  className='mb-2'
                 >
                   <Radio.Group
-                    onChange={handlePriceType}
+                    onChange={handlePrizeType}
                     disabled={acceptConditions}
-                    defaultValue={priceType}
-                    value={priceType}
+                    className='w-full flex'
+                    buttonStyle='solid'
                   >
-                    <Radio value='Esdt'>ESDT</Radio>
-                    <Radio value='Egld'>EGLD</Radio>
-                    <Radio value='Sft'>SFT</Radio>
-                    {/* <Checkbox
-                      value={isFree}
-                      checked={isFree}
-                      onChange={handleIsFree}
-                    >
-                      {t('lotteries:free')}
-                    </Checkbox> */}
-                    <Checkbox
-                      value={isLocked}
-                      checked={isLocked}
-                      onChange={handleIsLocked}
-                    >
-                      {t('lotteries:locked')}
-                    </Checkbox>
-                  </Radio.Group>{' '}
-                  {/* {isFree && (
-                    <div style={{ color: 'red', marginTop: '10px' }}>
-                      {t('lotteries:free_warning')}
-                    </div>
-                  )}{' '} */}
-                  {/* {isLocked && (
-                    <div className='lottery-info'>
-                      <Trans
-                        i18nKey='lotteries:locked_warning'
-                        components={{ br: <br /> }}
-                      />
-                    </div>
-                  )} */}
+                    <Radio.Button value='Esdt' className='flex-1 text-center'>
+                      ESDT
+                    </Radio.Button>
+                    <Radio.Button value='Egld' className='flex-1 text-center'>
+                      EGLD
+                    </Radio.Button>
+                    <Radio.Button value='Sft' className='flex-1 text-center'>
+                      SFT
+                    </Radio.Button>
+                    <Radio.Button value='Nft' className='flex-1 text-center'>
+                      NFT
+                    </Radio.Button>
+                  </Radio.Group>
                 </Form.Item>
-                {/* Selection du PRICE */}
-                {['Esdt', 'Sft'].includes(priceType) && (
+
+                {['Esdt', 'Sft', 'Nft'].includes(prizeType) && (
                   <Form.Item
-                    validateStatus={!priceValid ? 'error' : ''}
-                    name={'priceIdentifier' + priceType}
-                    label={t('lotteries:identifier')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please input the price identifier!'
-                      }
-                    ]}
+                    name={'prizeIdentifier' + prizeType}
+                    label={
+                      <span className='font-medium'>
+                        {t('lotteries:identifier')}
+                      </span>
+                    }
+                    className='mb-2'
                   >
-                    {' '}
                     <Select
-                      defaultValue={priceIdentifier}
-                      value={priceIdentifier}
-                      className='select-token'
+                      className='w-full'
                       disabled={acceptConditions}
                       onDropdownVisibleChange={handleDropdownChange}
                       onChange={(value, datas: any) => {
-                        setPriceValid(true);
                         disableKeyboard();
-                        setPriceIdentifier(value);
-                        setPriceTicker(
-                          priceType === 'Esdt'
-                            ? datas?.datas?.identifier
-                            : datas?.datas?.collection
+                        setPrizeIdentifier(value);
+                        setPrizeTicker(
+                          datas?.datas?.collection
                             ? datas?.datas?.collection
+                            : datas?.datas?.identifier
+                            ? datas?.datas?.identifier
                             : ''
                         );
-                        setPriceNonce(
-                          datas?.datas?.nonce > 0 ? datas?.datas?.nonce : 0
+                        setPrizeNonce(
+                          datas?.datas?.nonce ? datas?.datas?.nonce : 0
                         );
-                        setPriceDecimals(
+                        setPrizeDecimals(
                           datas?.datas?.decimals ? datas?.datas?.decimals : 0
                         );
-                        setPriceAmount(new BigNumber(0));
-                        setPriceDisplay('');
+                        setPrizeBalance(new BigNumber(datas?.datas?.balance));
+                        setPrizeAmount(
+                          new BigNumber(prizeType === 'Nft' ? 1 : 0)
+                        );
+                        setPrizeDisplay(prizeType === 'Nft' ? '1' : '');
+                        form.setFieldsValue({
+                          prizeAmount: prizeType === 'Nft' ? '1' : ''
+                        });
                       }}
                       showSearch={true}
                       placeholder={t('lotteries:identifier_placeholder')}
@@ -713,13 +573,18 @@ const CreateLotteryModal: React.FC<{
                       }
                       dropdownRender={(menu) => (
                         <>
-                          {' '}
                           {keyboardEnabled ? (
-                            <button onClick={disableKeyboard}>
+                            <button
+                              onClick={disableKeyboard}
+                              className='w-full p-2 text-sm text-blue-500 hover:bg-blue-50'
+                            >
                               {t('lotteries:disable_keyboard')}
                             </button>
                           ) : (
-                            <button onClick={enableKeyboard}>
+                            <button
+                              onClick={enableKeyboard}
+                              className='w-full p-2 text-sm text-blue-500 hover:bg-blue-50'
+                            >
                               {t('lotteries:enable_keyboard')}
                             </button>
                           )}
@@ -727,624 +592,803 @@ const CreateLotteryModal: React.FC<{
                           <Divider style={{ margin: '8px 0' }} />
                           <Input
                             disabled={acceptConditions}
-                            value={priceIdentifier}
-                            style={{ padding: '8px' }}
+                            value={prizeIdentifier}
+                            className='p-2'
+                            placeholder='Manual input...'
                             onChange={(e) => {
                               const value = (e.target as HTMLInputElement)
                                 .value;
-                              setPriceIdentifier(value);
-                              const splited = splitIdentifier(value);
-                              if (splited.is_valid) {
-                                setChecked(true);
-                                setPriceTicker(splited.ticker);
-                                setPriceNonce(splited.nonce);
-                                setPriceDecimals(0); // 🚧 A définir
-                                setPriceValid(true);
-                                if (['Esdt'].includes(priceType)) {
-                                  // alert(
-                                  //   '🚧 cannot read decimals from manual input'
-                                  // );
-                                } else {
-                                }
-                              } else {
-                                // 🛑 Si le format est incorrect
-                                setPriceValid(false);
-                                setPriceTicker('');
-                                setPriceNonce(0);
-                                setPriceDecimals(0);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                e.stopPropagation(); //on ne veux pas que enter remonte à la liste select
-                                const value = (e.target as HTMLInputElement)
-                                  .value;
-                                setPriceIdentifier(value);
-                                const splited = splitIdentifier(value);
-                                if (splited.is_valid) {
-
-                                  setChecked(true);
-                                  setPriceTicker(splited.ticker);
-                                  setPriceNonce(splited.nonce);
-                                  setPriceDecimals(0); // 🚧 A définir
-                                  setPriceValid(true);
-                                  if (['Esdt'].includes(priceType)) {
-                                    // alert(
-                                    //   '🚧 cannot read decimals from manual input'
-                                    // );
-                                  } else {
-                                  }
-                                  //force la fermeture du focus sur enter valide
-                                  if (
-                                    document.activeElement instanceof
-                                    HTMLElement
-                                  ) {
-                                    document.activeElement.blur();
-                                  }
-                                } else {
-                                  // 🛑 Si le format est incorrect
-                                  setPriceValid(false);
-                                  setPriceTicker('');
-                                  setPriceNonce(0);
-                                  setPriceDecimals(0);
-                                }
-                              }
+                              setPrizeIdentifier(value);
+                              setPrizeNonce(0);
+                              setPrizeDecimals(0);
+                              setPrizeAmount(new BigNumber(0));
+                              setPrizeDisplay('');
+                              form.setFieldsValue({ prizeAmount: '' });
                             }}
                           />
                         </>
                       )}
                     >
-                      {''}
-                      {price_options.map((token: any) => (
-                        <Select.Option
-                          onFocus={(e: any) => e.target.blur()}
-                          inputMode='none'
-                          readOnly={true}
-                          key={token.identifier}
-                          value={token.identifier}
-                          datas={token}
-                          disabled={
-                            [xgraou_identifier, graou_identifier].includes(
-                              token.identifier
-                            ) && !isLocked
-                          }
-                        >
-                          {token.identifier}
-                        </Select.Option>
-                      ))}{' '}
+                      {prizeType === 'Esdt' &&
+                        user_esdt.map((token: any) => (
+                          <Select.Option
+                            key={token.identifier}
+                            value={token.identifier}
+                            datas={token}
+                            disabled={[
+                              xgraou_identifier,
+                              graou_identifier
+                            ].includes(token.identifier)}
+                          >
+                            {token.identifier}
+                          </Select.Option>
+                        ))}
+                      {prizeType === 'Sft' &&
+                        prize_options_sft.map((token: any) => (
+                          <Select.Option
+                            key={token.identifier}
+                            value={token.identifier}
+                            datas={token}
+                          >
+                            {token.identifier}
+                          </Select.Option>
+                        ))}
+                      {prizeType === 'Nft' &&
+                        prize_options_nft.map((token: any) => (
+                          <Select.Option
+                            key={token.identifier}
+                            value={token.identifier}
+                            datas={token}
+                          >
+                            {token.identifier}
+                          </Select.Option>
+                        ))}
                     </Select>
                   </Form.Item>
                 )}
-                {/* {priceIdentifier} : {priceNonce} {parseInt('08', 16)} */}
-                {/* Photo du PRICE */}
-                {priceIdentifier && ['Nft', 'Sft'].includes(priceType) && (
-                  <NftDisplay nftInfo={price_nft_information} amount={0} />
-                )}{' '}
-                {/* Montant du PRICE */}
-                {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
+              </div>
+
+              {/* Photo du PRIZE */}
+              {prizeIdentifier && ['Nft', 'Sft'].includes(prizeType) && (
+                <div className='mt-4 flex justify-center'>
+                  <div className='w-32 h-32 rounded-lg overflow-hidden shadow-md'>
+                    <NftDisplay nftInfo={prize_nft_information} amount={0} />
+                  </div>
+                </div>
+              )}
+
+              {/* Montant du PRIZE */}
+              {['Esdt', 'Sft', 'Egld'].includes(prizeType) && (
+                <div className='mt-4'>
                   <Form.Item
-                    name='priceAmount'
-                    label={t('lotteries:quantity')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please input the price amount!'
-                      }
-                    ]}
+                    name='prizeAmount'
+                    label={
+                      <span className='font-medium'>
+                        {t('lotteries:quantity')}
+                      </span>
+                    }
+                    className='mb-2'
                   >
-                    {' '}
                     <Input
-                      type='number' // Utilisation de `text` pour éviter les restrictions des `number`
-                      inputMode='decimal' // Active le clavier numérique sur mobile
-                      onWheel={(e) => (e.target as HTMLInputElement).blur()} // Désactive le scroll
-                      value={priceDisplay} // Valeur affichée
-                      onChange={handlePriceAmountChange} // Gestion de la saisie
-                      disabled={acceptConditions}
-                    />
-                    {/* <Input
                       type='number'
-                      disabled={acceptConditions}
+                      inputMode='decimal'
                       onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                      value={priceAmount}
-                      onChange={(e) => {
-                        const value: any = (e.target as HTMLInputElement).value;
-                        if (value.split('.')[1]?.length > 18) {
-                          setPriceAmount(0);
-                        } else {
-                          setPriceAmount(value);
-                        }
-                      }}
-                    /> */}
-                  </Form.Item>
-                )}
-                {isFree && (
-                  <div className='lottery-info'>
-                    {t('lotteries:free_warning')}
-                  </div>
-                )}{' '}
-                {isLocked && (
-                  <div className='lottery-info'>
-                    <Trans
-                      i18nKey='lotteries:locked_warning'
-                      components={{ br: <br /> }}
+                      value={prizeDisplay}
+                      onChange={handlePrizeAmountChange}
+                      disabled={prizeType === 'Nft' || acceptConditions}
+                      className='w-full rounded-md border-gray-300'
+                      suffix={
+                        <span className='text-gray-500 text-xs'>
+                          {prizeTicker == 'EGLD-000000'
+                            ? 'EGLD'
+                            : prizeTicker || prizeType}
+                        </span>
+                      }
                     />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          {t('lotteries:settings')}
-          <div
-            style={{
-              border: '1px solid rgb(92 129 128)',
-              padding: '10px'
-            }}
-          >
-            {prizeIdentifier &&
-              prizeAmount.isGreaterThan(0) &&
-              priceIdentifier &&
-              priceAmount.isGreaterThan(0) &&
-              priceValid && (
+                  </Form.Item>
+                  {prizeAmount.isGreaterThan(1) &&
+                    ['Sft'].includes(prizeType) && (
+                      <div className='text-amber-500 text-sm mt-1'>
+                        ⚠️ {t('lotteries:only_one_winner_warning')}
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Ticket Price Section */}
+          {currentStep === 1 && (
+            <div className='bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/50'>
+              <h3 className='text-xl font-bold mb-6 text-gray-800 flex items-center gap-3'>
+                🎟️ {t('lotteries:ticket_price')}
+              </h3>
+
+              {prizeIdentifier && prizeAmount.isGreaterThan(0) && (
                 <>
-                  {' '}
                   <Form.Item
-                    name='startTime'
-                    label={t('lotteries:start')}
-                    tooltip={t('lotteries:leave_empty_start')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please select the start time!'
-                      }
-                    ]}
+                    name='tokenPriceType'
+                    label={
+                      <span className='font-medium'>
+                        {t('lotteries:token_type')}
+                      </span>
+                    }
+                    tooltip={t('lotteries:token_price_tooltip')}
+                    className='mb-4'
                   >
-                    <DatePicker
-                      showTime
-                      placeholder={t('lotteries:select_date')}
-                      onChange={handleStart}
-                      popupClassName='custom-datepicker'
-                      onFocus={(e) => e.target.blur()}
-                      inputMode='none'
-                      readOnly={true}
-                      minDate={dayjs()}
-                      maxDate={dayjs().add(30, 'days')}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name='endTime'
-                    label={t('lotteries:end')}
-                    tooltip={t('lotteries:leave_empty_end')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please select the end time!'
-                      }
-                    ]}
-                  >
-                    <DatePicker
-                      showTime
-                      onChange={handleEnd}
-                      popupClassName='custom-datepicker'
-                      onFocus={(e) => e.target.blur()}
-                      inputMode='none'
-                      readOnly={true}
-                      minDate={startTime > 0 ? dayjs.unix(startTime) : dayjs()}
-                      maxDate={
-                        isLocked
-                          ? startTime > 0
-                            ? dayjs.unix(startTime).add(30, 'day')
-                            : dayjs().add(30, 'day')
-                          : startTime > 0
-                          ? dayjs.unix(startTime).add(6 * 30, 'days')
-                          : dayjs().add(6, 'months')
-                      }
-                      // disabled={isLocked}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name='maxTickets'
-                    label={t('lotteries:total_tickets')}
-                    help={t('lotteries:minimum_and_maximum', {
-                      min: '4',
-                      max: isLocked ? '50' : '100'
-                    })}
-                    tooltip={t('lotteries:total_tickets_tooltip')}
-                    rules={[
-                      {
-                        required: false,
-                        message: 'Please input the maximum number of tickets!'
-                      }
-                    ]}
-                    initialValue={20}
-                  >
-                    {' '}
-                    <Input
-                      type='number'
-                      disabled={true}
-                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                      value={maxTickets}
-                      onChange={(e) => {
-                        const value: any = (e.target as HTMLInputElement).value;
-                        if (!/^\d*\.?\d*$/.test(value)) {
-                          return; // Ignore les caractères invalides
-                        } else if (value > 100) {
-                          setMaxTickets(100);
-                        } else if (value < 4) {
-                          setMaxTickets(4);
-                        } else {
-                          setMaxTickets(value);
-                        }
+                    <div className='flex flex-col gap-3'>
+                      <Radio.Group
+                        onChange={handlePriceType}
+                        disabled={acceptConditions}
+                        defaultValue={priceType}
+                        value={priceType}
+                        className='w-full flex'
+                        buttonStyle='solid'
+                      >
+                        <Radio.Button
+                          value='Esdt'
+                          className='flex-1 text-center'
+                        >
+                          ESDT
+                        </Radio.Button>
+                        <Radio.Button
+                          value='Egld'
+                          className='flex-1 text-center'
+                        >
+                          EGLD
+                        </Radio.Button>
+                        <Radio.Button
+                          value='Sft'
+                          className='flex-1 text-center'
+                        >
+                          SFT
+                        </Radio.Button>
+                      </Radio.Group>
 
-                        setMaxPerWallet((prevMaxPerWallet = 0) => {
-                          return prevMaxPerWallet > maxTickets / 4
-                            ? Math.floor(maxTickets / 4)
-                            : prevMaxPerWallet;
-                        });
-                      }}
-                    />
-                    <Input
-                      type='range'
-                      min={4}
-                      max={isLocked ? 50 : 100}
-                      value={maxTickets}
-                      defaultValue={maxTickets}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        setMaxTickets(value);
-
-                        setMaxPerWallet((prevMaxPerWallet = 0) => {
-                          return prevMaxPerWallet > maxTickets / 4
-                            ? Math.floor(maxTickets / 4)
-                            : prevMaxPerWallet;
-                        });
-                      }}
-                      disabled={acceptConditions}
-                    />
-                  </Form.Item>
-                  {maxTickets > 50 && (
-                    <>
-                      {' '}
-                      <div style={{ color: 'red', marginTop: '10px' }}>
-                        {t('lotteries:cannot_cancel')}
+                      <div className='flex gap-4'>
+                        <Checkbox
+                          value={isLocked}
+                          checked={isLocked}
+                          onChange={handleIsLocked}
+                          className='font-medium'
+                        >
+                          🔒 {t('lotteries:locked')}
+                        </Checkbox>
                       </div>
-                    </>
+                    </div>
+                  </Form.Item>
+
+                  {['Esdt', 'Sft'].includes(priceType) && (
+                    <Form.Item
+                      validateStatus={!priceValid ? 'error' : ''}
+                      name={'priceIdentifier' + priceType}
+                      label={
+                        <span className='font-medium'>
+                          {t('lotteries:identifier')}
+                        </span>
+                      }
+                      className='mb-4'
+                    >
+                      <Select
+                        defaultValue={priceIdentifier}
+                        value={priceIdentifier}
+                        className='w-full'
+                        disabled={acceptConditions}
+                        onDropdownVisibleChange={handleDropdownChange}
+                        onChange={(value, datas: any) => {
+                          setPriceValid(true);
+                          disableKeyboard();
+                          setPriceIdentifier(value);
+                          setPriceTicker(
+                            priceType === 'Esdt'
+                              ? datas?.datas?.identifier
+                              : datas?.datas?.collection
+                              ? datas?.datas?.collection
+                              : ''
+                          );
+                          setPriceNonce(
+                            datas?.datas?.nonce > 0 ? datas?.datas?.nonce : 0
+                          );
+                          setPriceDecimals(
+                            datas?.datas?.decimals ? datas?.datas?.decimals : 0
+                          );
+                          setPriceAmount(new BigNumber(0));
+                          setPriceDisplay('');
+                          form.setFieldsValue({ priceAmount: '' });
+                        }}
+                        showSearch={true}
+                        placeholder={t('lotteries:identifier_placeholder')}
+                        optionFilterProp='children'
+                        filterOption={(input, option) =>
+                          String(option?.children ?? '')
+                            .toLowerCase()
+                            .indexOf(input.toLowerCase()) >= 0
+                        }
+                        dropdownRender={(menu) => (
+                          <>
+                            {keyboardEnabled ? (
+                              <button
+                                onClick={disableKeyboard}
+                                className='w-full p-2 text-sm text-blue-500 hover:bg-blue-50'
+                              >
+                                {t('lotteries:disable_keyboard')}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={enableKeyboard}
+                                className='w-full p-2 text-sm text-blue-500 hover:bg-blue-50'
+                              >
+                                {t('lotteries:enable_keyboard')}
+                              </button>
+                            )}
+                            {menu}
+                            <Divider style={{ margin: '8px 0' }} />
+                            <Input
+                              disabled={acceptConditions}
+                              value={priceIdentifier}
+                              className='p-2'
+                              placeholder='Manual input...'
+                              onChange={(e) => {
+                                const value = (e.target as HTMLInputElement)
+                                  .value;
+                                setPriceIdentifier(value);
+                                const splited = splitIdentifier(value);
+                                if (splited.is_valid) {
+                                  setChecked(true);
+                                  setPriceTicker(splited.ticker);
+                                  setPriceNonce(splited.nonce);
+                                  setPriceDecimals(0);
+                                  setPriceValid(true);
+                                } else {
+                                  setPriceValid(false);
+                                  setPriceTicker('');
+                                  setPriceNonce(0);
+                                  setPriceDecimals(0);
+                                }
+                                setPriceAmount(new BigNumber(0));
+                                setPriceDisplay('');
+                                form.setFieldsValue({ priceAmount: '' });
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const value = (e.target as HTMLInputElement)
+                                    .value;
+                                  setPriceIdentifier(value);
+                                  const splited = splitIdentifier(value);
+                                  if (splited.is_valid) {
+                                    setChecked(true);
+                                    setPriceTicker(splited.ticker);
+                                    setPriceNonce(splited.nonce);
+                                    setPriceDecimals(0);
+                                    setPriceValid(true);
+                                    if (
+                                      document.activeElement instanceof
+                                      HTMLElement
+                                    ) {
+                                      document.activeElement.blur();
+                                    }
+                                  } else {
+                                    setPriceValid(false);
+                                    setPriceTicker('');
+                                    setPriceNonce(0);
+                                    setPriceDecimals(0);
+                                  }
+                                }
+                              }}
+                            />
+                          </>
+                        )}
+                      >
+                        {price_options.map((token: any) => (
+                          <Select.Option
+                            key={token.identifier}
+                            value={token.identifier}
+                            datas={token}
+                            disabled={
+                              [xgraou_identifier, graou_identifier].includes(
+                                token.identifier
+                              ) && !isLocked
+                            }
+                          >
+                            {token.identifier}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
                   )}
-                  <Form.Item
-                    name='maxPerWallet'
-                    label={t('lotteries:max_per_wallet')}
-                    tooltip={t('lotteries:leave_zero')}
-                    help={t('lotteries:max_per_wallet_help')}
-                    rules={[
-                      {
-                        required: false,
-                        message:
-                          'Please input the maximum number of tickets per wallet!'
-                      }
-                    ]}
-                    initialValue={0}
-                  >
-                    {' '}
-                    <Input
-                      type='number'
-                      disabled={true}
-                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                      value={maxPerWallet}
-                      onChange={(e) => {
-                        const value: any = (e.target as HTMLInputElement).value;
-                        if (!/^\d*\.?\d*$/.test(value)) {
-                          return; // Ignore les caractères invalides
-                        } else if (value > maxTickets / 4) {
-                          setMaxPerWallet(Math.floor(maxTickets / 4));
-                        } else if (value < 0) {
-                          setMaxPerWallet(0);
-                        } else {
-                          setMaxPerWallet(value);
-                        }
-                      }}
-                    />
-                    <Input
-                      type='range'
-                      min={0}
-                      max={Math.floor(maxTickets / 4)}
-                      value={maxPerWallet}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        setMaxPerWallet(value);
-                      }}
-                      disabled={acceptConditions}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    name='feePercentage'
-                    label={t('lotteries:fee_percentage')}
-                    tooltip={t('lotteries:fee_percentage_tooltip')}
-                    // help={t('lotteries:minimum_and_maximum', {
-                    //   min: '0.5%',
-                    //   max: '0.5%'
-                    // })}
-                    // rules={[
-                    //   {
-                    //     required: false,
-                    //     message: 'Please input the fee percentage!'
-                    //   }
-                    // ]}
-                  >
-                    {/* {' '}
-                    <Input
-                      type='number'
-                      value={feePercentage}
-                      disabled
-                      onChange={(e) => {
-                        const value: any = (e.target as HTMLInputElement).value;
-                        if (value > 10) {
-                          setFeePercentage(10);
-                        } else if (value < 0.5) {
-                          setFeePercentage(0.5);
-                        } else {
-                          setFeePercentage(value);
-                        }
-                      }}
-                    />
-                    <Input
-                      type='range'
-                      step={0.5}
-                      min={0.5}
-                      max={10}
-                      value={feePercentage}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        setFeePercentage(value);
-                      }}
-                      disabled={acceptConditions}
-                    /> */}{' '}
-                    {isLocked ? (
-                      <div>
-                        <p>
-                          {' '}
-                          <p>{t('lotteries:graou_create_fee')}</p>
-                        </p>
-                        {autoDraw && (
-                          <p>
-                            {t('lotteries:auto_draw_fee')}{' '}
-                            {auto_draw_fees.toFixed()} EGLD
-                          </p>
-                        )}
+
+                  {priceIdentifier && ['Nft', 'Sft'].includes(priceType) && (
+                    <div className='mt-4 flex justify-center'>
+                      <div className='w-32 h-32 rounded-lg overflow-hidden shadow-md'>
+                        <NftDisplay
+                          nftInfo={price_nft_information}
+                          amount={0}
+                        />
                       </div>
-                    ) : (
-                      <>
-                        <p>{t('lotteries:graou_create_fee')}</p>
-                        {autoDraw && (
-                          <p>
-                            {t('lotteries:auto_draw_fee')}{' '}
-                            {auto_draw_fees.toFixed()} EGLD
-                          </p>
-                        )}
-                        {}
-                        {/* Total:{' '}
-                        {formatAmount({
-                          input: totalPrice?.toFixed(),
-                          decimals: priceDecimals,
-                          digits: 2,
-                          showLastNonZeroDecimal: true,
-                          addCommas: true
-                        })}{' '} */}
-                        {priceType != 'Sft' && (
-                          <p>
-                            {t('lotteries:platform_fee')} ({feePercentage} %):{' '}
-                            {formatAmount({
-                              input: platformFee.isGreaterThan(0)
-                                ? platformFee.toFixed()
-                                : '0',
-                              decimals: priceDecimals || 0,
-                              digits: 2,
-                              showLastNonZeroDecimal: true,
-                              addCommas: true
-                            })}
-                          </p>
-                        )}{' '}
-                        {prize_nft_information.royalties &&
-                          priceType != 'Sft' && (
-                            <p>
-                              {t('lotteries:royalty_fee')} (
-                              {prize_nft_information.royalties} %):{' '}
+                    </div>
+                  )}
+
+                  {['Esdt', 'Sft', 'Egld'].includes(priceType) && (
+                    <Form.Item
+                      name='priceAmount'
+                      label={
+                        <span className='font-medium'>
+                          {t('lotteries:quantity')}
+                        </span>
+                      }
+                      className='mb-2'
+                    >
+                      <Input
+                        type='number'
+                        inputMode='decimal'
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                        value={priceDisplay}
+                        onChange={handlePriceAmountChange}
+                        disabled={acceptConditions}
+                        className='w-full rounded-md border-gray-300'
+                        suffix={
+                          <span className='text-gray-500 text-xs'>
+                            {priceTicker == 'EGLD-000000'
+                              ? 'EGLD'
+                              : priceTicker || priceType}
+                          </span>
+                        }
+                      />
+                    </Form.Item>
+                  )}
+
+                  {isFree && (
+                    <div className='text-amber-600 bg-amber-50 p-3 rounded-md text-sm mt-2'>
+                      {t('lotteries:free_warning')}
+                    </div>
+                  )}
+                  {isLocked && (
+                    <div className='text-blue-600 bg-blue-50 p-3 rounded-md text-sm mt-2'>
+                      <Trans
+                        i18nKey='lotteries:locked_warning'
+                        components={{ br: <br /> }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Settings Section */}
+          {currentStep === 2 && (
+            <>
+              <div className='bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-gray-200/50'>
+                <h3 className='text-xl font-bold mb-6 text-gray-800 flex items-center gap-3'>
+                  ⚙️ {t('lotteries:settings')}
+                </h3>
+
+                {prizeIdentifier &&
+                  prizeAmount.isGreaterThan(0) &&
+                  priceIdentifier &&
+                  priceAmount.isGreaterThan(0) &&
+                  priceValid && (
+                    <div className='space-y-4'>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        <Form.Item
+                          name='startTime'
+                          label={
+                            <span className='font-medium'>
+                              {t('lotteries:start')}
+                            </span>
+                          }
+                          tooltip={t('lotteries:leave_empty_start')}
+                          className='mb-0'
+                        >
+                          <DatePicker
+                            showTime
+                            placeholder={t('lotteries:select_date')}
+                            onChange={handleStart}
+                            popupClassName='custom-datepicker'
+                            onFocus={(e) => e.target.blur()}
+                            inputMode='none'
+                            readOnly={true}
+                            minDate={dayjs()}
+                            maxDate={dayjs().add(30, 'days')}
+                            className='w-full'
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          name='endTime'
+                          label={
+                            <span className='font-medium'>
+                              {t('lotteries:end')}
+                            </span>
+                          }
+                          tooltip={t('lotteries:leave_empty_end')}
+                          className='mb-0'
+                        >
+                          <DatePicker
+                            showTime
+                            onChange={handleEnd}
+                            popupClassName='custom-datepicker'
+                            onFocus={(e) => e.target.blur()}
+                            inputMode='none'
+                            readOnly={true}
+                            minDate={
+                              startTime > 0 ? dayjs.unix(startTime) : dayjs()
+                            }
+                            maxDate={
+                              isLocked
+                                ? startTime > 0
+                                  ? dayjs.unix(startTime).add(30, 'day')
+                                  : dayjs().add(30, 'day')
+                                : startTime > 0
+                                ? dayjs.unix(startTime).add(6 * 30, 'days')
+                                : dayjs().add(6, 'months')
+                            }
+                            className='w-full'
+                          />
+                        </Form.Item>
+                      </div>
+
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        <Form.Item
+                          name='maxTickets'
+                          label={
+                            <span className='font-medium'>
+                              {t('lotteries:total_tickets')}
+                            </span>
+                          }
+                          help={t('lotteries:minimum_and_maximum', {
+                            min: '4',
+                            max: isLocked ? '50' : '100'
+                          })}
+                          tooltip={t('lotteries:total_tickets_tooltip')}
+                          initialValue={20}
+                          className='mb-0'
+                        >
+                          <div className='flex flex-col gap-2'>
+                            <Input
+                              type='number'
+                              disabled={true}
+                              value={maxTickets}
+                              className='w-full text-center font-bold'
+                            />
+                            <Input
+                              type='range'
+                              min={4}
+                              max={isLocked ? 50 : 100}
+                              value={maxTickets}
+                              defaultValue={maxTickets}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value, 10);
+                                setMaxTickets(value);
+                                setMaxPerWallet((prev = 0) =>
+                                  prev > maxTickets / 4
+                                    ? Math.floor(maxTickets / 4)
+                                    : prev
+                                );
+                              }}
+                              disabled={acceptConditions}
+                              className='w-full'
+                            />
+                          </div>
+                        </Form.Item>
+
+                        <Form.Item
+                          name='maxPerWallet'
+                          label={
+                            <span className='font-medium'>
+                              {t('lotteries:max_per_wallet')}
+                            </span>
+                          }
+                          tooltip={t('lotteries:leave_zero')}
+                          help={t('lotteries:max_per_wallet_help')}
+                          initialValue={0}
+                          className='mb-0'
+                        >
+                          <div className='flex flex-col gap-2'>
+                            <Input
+                              type='number'
+                              disabled={true}
+                              value={maxPerWallet}
+                              className='w-full text-center font-bold'
+                            />
+                            <Input
+                              type='range'
+                              min={0}
+                              max={Math.floor(maxTickets / 4)}
+                              value={maxPerWallet}
+                              onChange={(e) =>
+                                setMaxPerWallet(parseInt(e.target.value, 10))
+                              }
+                              disabled={acceptConditions}
+                              className='w-full'
+                            />
+                          </div>
+                        </Form.Item>
+                      </div>
+
+                      {maxTickets > 50 && (
+                        <div className='text-red-500 text-sm font-medium'>
+                          ⚠️ {t('lotteries:cannot_cancel')}
+                        </div>
+                      )}
+
+                      <Form.Item
+                        name='feePercentage'
+                        label={
+                          <span className='font-medium'>
+                            {t('lotteries:fee_percentage')}
+                          </span>
+                        }
+                        tooltip={t('lotteries:fee_percentage_tooltip')}
+                        className='mb-0'
+                      >
+                        <div className='bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700'>
+                          <div className='flex justify-between items-center mb-1'>
+                            <span>{t('lotteries:graou_create_fee')}</span>
+                          </div>
+
+                          {autoDraw && (
+                            <div className='flex justify-between items-center mb-1 text-blue-600 font-medium'>
+                              <span>{t('lotteries:auto_draw_fee')}</span>
+                              <span className='font-mono'>
+                                {auto_draw_fees.toFixed()} EGLD
+                              </span>
+                            </div>
+                          )}
+
+                          {priceType != 'Sft' && (
+                            <div className='flex justify-between items-center mb-1'>
+                              <span>
+                                {t('lotteries:platform_fee')} ({feePercentage}%)
+                              </span>
+                              <span className='font-mono'>
+                                {formatAmount({
+                                  input: platformFee.isGreaterThan(0)
+                                    ? platformFee.toFixed()
+                                    : '0',
+                                  decimals: priceDecimals || 0,
+                                  digits: 2,
+                                  showLastNonZeroDecimal: true,
+                                  addCommas: true
+                                })}
+                              </span>
+                            </div>
+                          )}
+
+                          {prize_nft_information.royalties &&
+                            priceType != 'Sft' && (
+                              <div className='flex justify-between items-center mb-1'>
+                                <span>
+                                  {t('lotteries:royalty_fee')} (
+                                  {prize_nft_information.royalties}%)
+                                </span>
+                                <span className='font-mono'>
+                                  {formatAmount({
+                                    input: royalties.isGreaterThan(0)
+                                      ? royalties.toFixed()
+                                      : '0',
+                                    decimals: priceDecimals || 0,
+                                    digits: 2,
+                                    showLastNonZeroDecimal: true,
+                                    addCommas: true
+                                  })}
+                                </span>
+                              </div>
+                            )}
+
+                          <div className='border-t border-gray-200 my-2 pt-2 flex justify-between items-center font-bold text-base text-gray-900'>
+                            <span>{t('lotteries:vendor_amount')}</span>
+                            <span className='text-green-600'>
                               {formatAmount({
-                                input: royalties.isGreaterThan(0)
-                                  ? royalties.toFixed()
+                                input: finalAmount.isGreaterThan(0)
+                                  ? finalAmount.toFixed()
                                   : '0',
                                 decimals: priceDecimals || 0,
                                 digits: 2,
                                 showLastNonZeroDecimal: true,
                                 addCommas: true
                               })}{' '}
-                            </p>
-                          )}{' '}
-                        {/* <br /> totalPrice:
-                        {totalPrice.toFixed()}
-                        <br />
-                        platformFee:
-                        {platformFee.toFixed()}
-                        <br />
-                        royalties: {royalties.toFixed()}
-                        <br />
-                        finalAmount: {finalAmount.toFixed()}
-                        <br /> */}
-                        {t('lotteries:vendor_amount')}:{' '}
-                        {formatAmount({
-                          input: finalAmount.isGreaterThan(0)
-                            ? finalAmount.toFixed()
-                            : '0',
-                          decimals: priceDecimals || 0,
-                          digits: 2,
-                          showLastNonZeroDecimal: true,
-                          addCommas: true
-                        })}{' '}
-                        {priceIdentifier == 'EGLD-000000'
-                          ? 'EGLD'
-                          : priceIdentifier}{' '}
-                      </>
-                    )}
-                  </Form.Item>
-                </>
-              )}
-          </div>
-
-          {prizeIdentifier &&
-            prizeAmount.isGreaterThan(0) &&
-            priceIdentifier &&
-            priceAmount.isGreaterThan(0) &&
-            priceValid && (
-              <>
-                <Form.Item
-                  name='acceptConditions'
-                  valuePropName='checked'
-                  rules={[]}
-                >
-                  <Checkbox
-                    disabled={!cost_graou || payWith == 'EGLD'}
-                    onChange={() => (
-                      setAcceptConditions(!acceptConditions),
-                      setPayWith(payWith == 'GRAOU' ? '' : 'GRAOU')
-                    )}
-                  >
-                    {' '}
-                    {!cost_graou ? (
-                      <Trans
-                        i18nKey='lotteries:you_need_x_graou'
-                        values={{
-                          x: new BigNumber(lottery_cost.graou)
-                            .div(1e18)
-                            .toFixed(2)
-                        }}
-                        components={{
-                          bold: <b />,
-                          link1: (
-                            <a
-                              style={{ color: 'blue' }}
-                              href='https://xoxno.com/collection/DINOVOX-cb2297'
-                              target='_blank'
-                              rel='noopener noreferrer'
-                            />
-                          ),
-                          link2: (
-                            <a
-                              style={{ color: 'blue' }}
-                              href='https://www.dinovox.com/fr/staking'
-                              target='_blank'
-                              rel='noopener noreferrer'
-                            />
-                          )
-                        }}
-                      />
-                    ) : (
-                      t('lotteries:pay_x_start', {
-                        x: new BigNumber(lottery_cost.graou)
-                          .div(1e18)
-                          .toFixed(2),
-                        token: 'XGRAOU'
-                      })
-                    )}
-                  </Checkbox>
-                  <Checkbox
-                    disabled={payWith == 'GRAOU'}
-                    onChange={() => (
-                      setAcceptConditions(!acceptConditions),
-                      setPayWith(payWith == 'EGLD' ? '' : 'EGLD')
-                    )}
-                  >
-                    {' '}
-                    {!cost_egld ? (
-                      <Trans
-                        i18nKey='lotteries:you_need_x_egld'
-                        values={{
-                          x: new BigNumber(lottery_cost.egld)
-                            .div(1e18)
-                            .toFixed(2)
-                        }}
-                        components={{
-                          bold: <b />,
-                          link1: (
-                            <a
-                              style={{ color: 'blue' }}
-                              href='https://xoxno.com/collection/DINOVOX-cb2297'
-                              target='_blank'
-                              rel='noopener noreferrer'
-                            />
-                          ),
-                          link2: (
-                            <a
-                              style={{ color: 'blue' }}
-                              href='https://www.dinovox.com/fr/staking'
-                              target='_blank'
-                              rel='noopener noreferrer'
-                            />
-                          )
-                        }}
-                      />
-                    ) : (
-                      t('lotteries:pay_x_start', {
-                        x: new BigNumber(lottery_cost.egld)
-                          .div(1e18)
-                          .toFixed(2),
-                        token: 'EGLD'
-                      })
-                    )}
-                  </Checkbox>
-                  <Checkbox
-                    disabled={isLocked || endTime > 0}
-                    value={autoDraw}
-                    checked={autoDraw}
-                    onChange={() => setAutoDraw(!autoDraw)}
-                  >
-                    {' '}
-                    <span>{t('lotteries:auto_draw')}</span>
-                    <span className='tooltip-inline'>
-                      (ℹ)
-                      <span className='tooltiptext-inline'>
-                        {t('lotteries:auto_draw_tooltip')}
-                      </span>
-                    </span>{' '}
-                  </Checkbox>
-
-                  {autoDraw && endTime > 0 && (
-                    <div style={{ color: 'orange', marginTop: '8px' }}>
-                      {t('lotteries:auto_draw_warning')}
+                              {priceIdentifier == 'EGLD-000000'
+                                ? 'EGLD'
+                                : priceIdentifier}
+                            </span>
+                          </div>
+                        </div>
+                      </Form.Item>
                     </div>
                   )}
-                </Form.Item>
-                <Form.Item>
-                  {/* {prizeTicker} */}
-                  <ActionCreate
-                    prize_type={prizeType}
-                    prize_identifier={prizeTicker}
-                    prize_nonce={prizeNonce}
-                    prize_decimals={prizeDecimals}
-                    prize_amount={prizeAmount}
-                    //
-                    price_identifier={priceTicker}
-                    price_nonce={priceNonce}
-                    price_decimals={priceDecimals}
-                    price_amount={priceAmount}
-                    //
-                    max_tickets={maxTickets}
-                    max_per_wallet={maxPerWallet}
-                    start_time={startTime}
-                    end_time={endTime}
-                    //
-                    price_type={priceType}
-                    is_free={isFree}
-                    is_locked={isLocked}
-                    auto_draw={autoDraw}
-                    //
-                    fee_percentage={Math.ceil(feePercentage * 100)}
-                    acceptConditions={acceptConditions}
-                    pay_with={payWith}
-                    disabled={!acceptConditions || (!cost_graou && !cost_egld)}
-                  />{' '}
-                </Form.Item>
-              </>
+              </div>
+
+              {/* Confirmation Section */}
+              {prizeIdentifier &&
+                prizeAmount.isGreaterThan(0) &&
+                priceIdentifier &&
+                priceAmount.isGreaterThan(0) &&
+                priceValid && (
+                  <div className='bg-blue-50 p-6 rounded-2xl border border-blue-100'>
+                    <Form.Item
+                      name='acceptConditions'
+                      valuePropName='checked'
+                      className='mb-4'
+                    >
+                      <div className='flex flex-col gap-3'>
+                        <Checkbox
+                          disabled={!cost_graou || payWith == 'EGLD'}
+                          onChange={() => (
+                            setAcceptConditions(!acceptConditions),
+                            setPayWith(payWith == 'GRAOU' ? '' : 'GRAOU')
+                          )}
+                          className='text-sm'
+                        >
+                          {!cost_graou ? (
+                            <Trans
+                              i18nKey='lotteries:you_need_x_graou'
+                              values={{
+                                x: new BigNumber(lottery_cost.graou)
+                                  .div(1e18)
+                                  .toFixed(2)
+                              }}
+                              components={{
+                                bold: <b />,
+                                link1: (
+                                  <a
+                                    className='text-blue-600 hover:underline'
+                                    href='https://xoxno.com/collection/DINOVOX-cb2297'
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                  />
+                                ),
+                                link2: (
+                                  <a
+                                    className='text-blue-600 hover:underline'
+                                    href='https://www.dinovox.com/fr/staking'
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                  />
+                                )
+                              }}
+                            />
+                          ) : (
+                            t('lotteries:pay_x_start', {
+                              x: new BigNumber(lottery_cost.graou)
+                                .div(1e18)
+                                .toFixed(2),
+                              token: 'XGRAOU'
+                            })
+                          )}
+                        </Checkbox>
+
+                        <Checkbox
+                          disabled={payWith == 'GRAOU'}
+                          onChange={() => (
+                            setAcceptConditions(!acceptConditions),
+                            setPayWith(payWith == 'EGLD' ? '' : 'EGLD')
+                          )}
+                          className='text-sm'
+                        >
+                          {!cost_egld ? (
+                            <Trans
+                              i18nKey='lotteries:you_need_x_egld'
+                              values={{
+                                x: new BigNumber(lottery_cost.egld)
+                                  .div(1e18)
+                                  .toFixed(2)
+                              }}
+                              components={{
+                                bold: <b />,
+                                link1: (
+                                  <a
+                                    className='text-blue-600 hover:underline'
+                                    href='https://xoxno.com/collection/DINOVOX-cb2297'
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                  />
+                                ),
+                                link2: (
+                                  <a
+                                    className='text-blue-600 hover:underline'
+                                    href='https://www.dinovox.com/fr/staking'
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                  />
+                                )
+                              }}
+                            />
+                          ) : (
+                            t('lotteries:pay_x_start', {
+                              x: new BigNumber(lottery_cost.egld)
+                                .div(1e18)
+                                .toFixed(2),
+                              token: 'EGLD'
+                            })
+                          )}
+                        </Checkbox>
+
+                        <div className='flex items-center gap-2'>
+                          <Checkbox
+                            disabled={isLocked || endTime > 0}
+                            value={autoDraw}
+                            checked={autoDraw}
+                            onChange={() => setAutoDraw(!autoDraw)}
+                            className='font-medium'
+                          >
+                            {t('lotteries:auto_draw')}
+                          </Checkbox>
+                          <span
+                            className='text-gray-400 text-xs cursor-help'
+                            title={t('lotteries:auto_draw_tooltip')}
+                          >
+                            (ℹ)
+                          </span>
+                        </div>
+
+                        {autoDraw && endTime > 0 && (
+                          <div className='text-amber-500 text-xs ml-6'>
+                            ⚠️ {t('lotteries:auto_draw_warning')}
+                          </div>
+                        )}
+                      </div>
+                    </Form.Item>
+
+                    <div className='flex justify-end'>
+                      <ActionCreate
+                        prize_type={prizeType}
+                        prize_identifier={prizeTicker}
+                        prize_nonce={prizeNonce}
+                        prize_decimals={prizeDecimals}
+                        prize_amount={prizeAmount}
+                        price_identifier={priceTicker}
+                        price_nonce={priceNonce}
+                        price_decimals={priceDecimals}
+                        price_amount={priceAmount}
+                        max_tickets={maxTickets}
+                        max_per_wallet={maxPerWallet}
+                        start_time={startTime}
+                        end_time={endTime}
+                        price_type={priceType}
+                        is_free={isFree}
+                        is_locked={isLocked}
+                        auto_draw={autoDraw}
+                        fee_percentage={Math.ceil(feePercentage * 100)}
+                        acceptConditions={acceptConditions}
+                        pay_with={payWith}
+                        disabled={
+                          !acceptConditions || (!cost_graou && !cost_egld)
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+            </>
+          )}
+
+          <div className='flex justify-between mt-8 pt-4 border-t border-gray-100 dark:border-zinc-800'>
+            {currentStep > 0 && (
+              <button
+                type='button'
+                onClick={() => setCurrentStep((prev) => prev - 1)}
+                className='px-6 py-2.5 rounded-xl border border-gray-300 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium transition-all'
+              >
+                Back
+              </button>
             )}
-        </Form>{' '}
+            {currentStep < 2 && (
+              <button
+                type='button'
+                disabled={currentStep === 0 ? !isStep1Valid : !isStep2Valid}
+                onClick={() => setCurrentStep((prev) => prev + 1)}
+                className={`px-6 py-2.5 rounded-xl font-medium transition-all ml-auto flex items-center gap-2 ${
+                  (currentStep === 0 ? !isStep1Valid : !isStep2Valid)
+                    ? 'bg-gray-200 dark:bg-zinc-700 text-gray-400 dark:text-zinc-500 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+                }`}
+              >
+                Next ➜
+              </button>
+            )}
+          </div>
+        </Form>
       </Modal>
     </div>
   );

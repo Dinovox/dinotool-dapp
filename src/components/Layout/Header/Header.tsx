@@ -120,46 +120,71 @@ export const Header = () => {
             {isLoggedIn ? (
               <div className='relative' ref={dropdownRef}>
                 <button
-                  className='flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition hover:bg-yellow-100 px-2 py-1'
                   onClick={() => setOpen((v) => !v)}
+                  className='flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:border-yellow-400 hover:bg-yellow-50/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
                   aria-label={t('global:profile')}
-                  style={{
-                    background: open ? '#f5ed43' : 'transparent',
-                    borderRadius: '9999px'
-                  }}
                 >
-                  <FaUserCircle
-                    style={{
-                      fontSize: '2.1rem',
-                      color: open ? '#453922' : '#bfae6a',
-                      transition: 'color 0.2s'
-                    }}
-                  />
-                  <span className='hidden sm:inline text-base font-semibold text-gray-700'>
+                  {/* Avatar circle with user icon */}
+                  <div className='w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-sm'>
+                    <FaUserCircle className='text-yellow-900 text-lg' />
+                  </div>
+
+                  {/* Profile text - hidden on mobile */}
+                  <span className='hidden sm:block text-sm font-medium text-gray-700'>
                     {t('global:profile')}
                   </span>
-                </button>
-                {open && (
-                  <div
-                    className='absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-100 z-50 animate-fade-in'
-                    style={{
-                      minWidth: '160px'
-                    }}
+
+                  {/* Chevron indicator */}
+                  <svg
+                    className={`hidden sm:block w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                      open ? 'rotate-180' : ''
+                    }`}
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
                   >
-                    <button
-                      className='w-full flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-yellow-50 transition rounded-t-xl'
-                      onClick={handleProfile}
-                    >
-                      <FaUser className='text-yellow-500' />
-                      <span>{t('global:profile')}</span>
-                    </button>
-                    <button
-                      className='w-full flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-yellow-50 transition rounded-b-xl'
-                      onClick={handleLogout}
-                    >
-                      <FaSignOutAlt className='text-red-500' />
-                      <span>{t('global:close')}</span>
-                    </button>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M19 9l-7 7-7-7'
+                    />
+                  </svg>
+                </button>
+
+                {/* Dropdown menu */}
+                {open && (
+                  <div className='absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50'>
+                    {/* User info section */}
+                    <div className='px-4 py-3 border-b border-gray-100 bg-gray-50'>
+                      <p className='text-xs text-gray-500 mb-1'>Connected as</p>
+                      <p className='text-sm font-medium text-gray-900 truncate'>
+                        {address.slice(0, 8)}...{address.slice(-6)}
+                      </p>
+                    </div>
+
+                    {/* Menu items */}
+                    <div className='py-1'>
+                      <button
+                        onClick={handleProfile}
+                        className='w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors duration-150'
+                      >
+                        <FaUser className='text-gray-400 text-sm' />
+                        <span className='text-sm font-medium'>
+                          {t('global:profile')}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={handleLogout}
+                        className='w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-150'
+                      >
+                        <FaSignOutAlt className='text-red-500 text-sm' />
+                        <span className='text-sm font-medium'>
+                          {t('global:close')}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

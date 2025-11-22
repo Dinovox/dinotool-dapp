@@ -387,7 +387,7 @@ export const MarketplaceListings = () => {
                 onClick={() => {
                   setQuery('');
                   setSort('best');
-                  setSources(['dinovox', 'xoxno']);
+                  setSources(['dinovox']);
                   setSaleTypes(['fixed', 'auction']);
                   setStatus(['active']);
                   setCollections([]);

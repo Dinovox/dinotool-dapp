@@ -82,37 +82,6 @@ import { marketplaceContractAddress } from 'config';
 /** ---------- MOCKS ---------- **/
 // MOCK_COLLECTIONS removed
 
-const MOCK_LISTINGS: Listing[] = Array.from({ length: 16 }).map((_, i) => ({
-  id: `dinovox:${i + 1}`,
-  source: i % 3 === 0 ? 'xoxno' : 'dinovox',
-  saleType: i % 2 === 0 ? 'fixed' : 'auction',
-  identifier: `DINOVOX-${1000 + i}`,
-  collectionSlug: 'dinovox',
-  name: `Dino #${1000 + i}`,
-  image: 'https://placehold.co/512/png',
-  seller: 'erd1...abcd',
-  price:
-    i % 2 === 0
-      ? { ticker: 'EGLD', amount: (0.4 + i * 0.01).toFixed(2), decimals: 18 }
-      : undefined,
-  auction:
-    i % 2 === 1
-      ? {
-          startPrice: { ticker: 'EGLD', amount: '0.20', decimals: 18 },
-          currentBid: {
-            ticker: 'EGLD',
-            amount: (0.2 + (i % 5) * 0.05).toFixed(2),
-            decimals: 18
-          },
-          startTime: Date.now() - 60 * 60 * 1000,
-          endTime: Date.now() + (i + 1) * 30 * 60 * 1000,
-          bidsCount: (i % 5) + 1
-        }
-      : undefined,
-  status: 'active',
-  createdAt: Date.now() - i * 3600 * 1000
-}));
-
 /** ---------- Utils tri/filtre ---------- **/
 function applyListingFilters(
   list: Listing[],
@@ -300,30 +269,7 @@ export const Marketplace = () => {
     }));
   }, [accountCollections]);
 
-  const filteredListings = useMemo(() => {
-    let list = applyListingFilters(MOCK_LISTINGS, filters);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (l) =>
-          l.name.toLowerCase().includes(q) ||
-          l.collectionSlug.toLowerCase().includes(q) ||
-          l.identifier.toLowerCase().includes(q)
-      );
-    }
-    return sortListings(list, sort);
-  }, [filters, sort, search]);
-
-  const liveAuctions = useMemo(
-    () => filteredListings.filter((l) => l.saleType === 'auction').slice(0, 8),
-    [filteredListings]
-  );
-  const newest = useMemo(
-    () => sortListings(filteredListings, 'listings:newest').slice(0, 12),
-    [filteredListings]
-  );
-
-  const listings = useGetAuctionsPaginated({ page: 1, limit: 8 });
+  const listings = useGetAuctionsPaginated({ page: 1, limit: 12 });
 
   // ...
 
@@ -383,7 +329,7 @@ export const Marketplace = () => {
               Trending collections
             </h2>
             <p className='text-sm text-slate-500'>
-              Unified view across local & Xoxno
+              Some of the collections listed on DinoVox
             </p>
           </div>
           <Link
@@ -403,11 +349,17 @@ export const Marketplace = () => {
                 />
               )}
               <CardHeader className='flex items-center gap-4'>
-                <img
+                <DisplayNftByToken
+                  tokenIdentifier={c.slug}
+                  nonce={'1'}
+                  className='h-14 w-14 rounded-xl object-cover'
+                  variant='media-only'
+                />
+                {/* <img
                   src={c.logo}
                   alt={c.name}
                   className='h-14 w-14 rounded-xl object-cover'
-                />
+                /> */}
                 <div className='space-y-1'>
                   <div className='text-base font-medium text-slate-900'>
                     {c.name}

@@ -1,4 +1,5 @@
 import { PageWrapper } from 'wrappers';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 import { useLocation } from 'react-router-dom';
@@ -151,189 +152,330 @@ export const Profile = () => {
   if (loading || !profile) {
     return (
       <PageWrapper>
-        {isLoggedIn ? (
-          <div className='flex flex-col items-center justify-center min-h-[300px]'>
-            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4'></div>
-            <span className='text-gray-500'>
-              {t('profile:loading_profile')}
-            </span>
-          </div>
-        ) : (
-          <div className='flex items-center justify-center min-h-[70vh] px-4'>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25 }}
-              className='w-full max-w-md rounded-2xl bg-white/60 backdrop-blur p-6 shadow-sm ring-1 ring-black/5'
-            >
-              <div className='mb-4 text-center'>
-                <h1 className='text-lg font-semibold text-gray-900'>
-                  {tr(
-                    t,
-                    'profile:connect_title',
-                    'Connect to manage your profile'
-                  )}
-                </h1>
-                <p className='mt-1 text-sm text-gray-600'>
-                  {tr(
-                    t,
-                    'profile:connect_sub',
-                    'Sign in with your wallet to update your info, link Discord, and access your Dinovox tools.'
-                  )}
+        <div className='container mx-auto px-4 py-6'>
+          <Breadcrumb
+            items={[
+              { label: 'Home', path: '/' },
+              { label: t('global:profile') }
+            ]}
+            className='mb-8'
+          />
+
+          {isLoggedIn ? (
+            <div className='flex flex-col items-center justify-center min-h-[400px]'>
+              <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mb-4'></div>
+              <span className='text-gray-500 font-medium'>
+                {t('profile:loading_profile')}
+              </span>
+            </div>
+          ) : (
+            <div className='flex items-center justify-center min-h-[60vh]'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className='w-full max-w-md rounded-3xl bg-white p-8 shadow-xl shadow-yellow-100/50 border border-yellow-100'
+              >
+                <div className='mb-8 text-center'>
+                  <div className='w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-yellow-500'>
+                    <User size={32} />
+                  </div>
+                  <h1 className='text-2xl font-bold text-gray-900 mb-2'>
+                    {tr(t, 'profile:connect_title', 'Connect Profile')}
+                  </h1>
+                  <p className='text-gray-500 leading-relaxed'>
+                    {tr(
+                      t,
+                      'profile:connect_sub',
+                      'Sign in with your wallet to access your profile, manage settings, and link your social accounts.'
+                    )}
+                  </p>
+                </div>
+
+                <div className='space-y-3 mb-8'>
+                  {[
+                    { icon: User, text: 'Edit your profile details' },
+                    {
+                      icon: MessageCircle,
+                      text: 'Link Discord for roles & perks'
+                    },
+                    { icon: Gift, text: 'Claim rewards & exclusive drops' }
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className='flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100'
+                    >
+                      <div className='p-2 bg-white rounded-lg shadow-sm text-yellow-500'>
+                        <item.icon size={16} />
+                      </div>
+                      <span className='text-sm font-medium text-gray-700'>
+                        {item.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className='flex justify-center mb-6'>
+                  <ConnectButton />
+                </div>
+
+                <p className='text-center text-xs text-gray-400 flex items-center justify-center gap-1.5'>
+                  <ShieldCheck size={14} />
+                  <span>Secure connection via MultiversX</span>
                 </p>
-              </div>
-
-              {/* concise benefits */}
-              <ul className='mb-5 grid grid-cols-1 gap-2 text-sm text-gray-700'>
-                <li className='flex items-center gap-2 rounded-lg bg-white/70 p-2 ring-1 ring-black/5'>
-                  <User className='h-4 w-4' />
-                  {tr(t, 'profile:benefit_profile', 'Edit your profile')}
-                </li>
-                <li className='flex items-center gap-2 rounded-lg bg-white/70 p-2 ring-1 ring-black/5'>
-                  <MessageCircle className='h-4 w-4' />
-                  {tr(
-                    t,
-                    'profile:benefit_discord',
-                    'Link Discord for roles & perks'
-                  )}
-                </li>
-                <li className='flex items-center gap-2 rounded-lg bg-white/70 p-2 ring-1 ring-black/5'>
-                  <Gift className='h-4 w-4' />
-                  {tr(t, 'profile:benefit_rewards', 'Claim rewards & drops')}
-                </li>
-              </ul>
-
-              <div className='flex justify-center'>
-                <ConnectButton />
-              </div>
-
-              <p className='mt-5 text-center text-xs text-gray-400'>
-                <ShieldCheck className='mr-1 inline-block h-3.5 w-3.5 align-[-2px]' />
-                {tr(
-                  t,
-                  'profile:connect_hint',
-                  'You stay in control: we only request a wallet signature—no passwords, no custody.'
-                )}
-              </p>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          )}
+        </div>
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper>
-      <div className='w-full flex justify-center items-center py-8'>
-        <div className='bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full flex flex-col items-center gap-6 border border-yellow-100'>
-          {/* Avatar */}
-          <div className='relative'>
-            <FaUserCircle
-              className='text-yellow-400'
-              style={{ fontSize: 80 }}
-            />
-            <span className='absolute bottom-0 right-0 bg-green-400 border-2 border-white rounded-full w-5 h-5'></span>
-          </div>
-          {/* Username */}
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-gray-800 mb-1'>
-              {profile?.twitter?.username ||
-                profile?.discord?.username ||
-                'Utilisateur'}
+    <div className='container mx-auto px-4 py-6 max-w-7xl'>
+      <Breadcrumb
+        items={[{ label: 'Home', path: '/' }, { label: t('global:profile') }]}
+        className='mb-8'
+      />
+
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
+        {/* Left Column - Identity Card */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className='lg:col-span-1'
+        >
+          <div className='bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 overflow-hidden sticky top-24'>
+            <div className='h-32 bg-gradient-to-br from-yellow-400 to-yellow-300 relative'>
+              <div className='absolute -bottom-12 left-1/2 -translate-x-1/2'>
+                <div className='relative'>
+                  <div className='w-24 h-24 rounded-full bg-white p-1 shadow-lg'>
+                    <div className='w-full h-full rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden'>
+                      <FaUserCircle className='text-gray-400 text-6xl' />
+                    </div>
+                  </div>
+                  <div className='absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full'></div>
+                </div>
+              </div>
             </div>
-            <div className='text-sm text-gray-400'>
-              {profile?.twitter
-                ? 'Connecté via Twitter'
-                : profile?.discord
-                ? 'Connecté via Discord'
-                : 'Connecté via Wallet'}
-            </div>
-          </div>
-          {/* Adresse */}
-          <div className='w-full flex flex-col items-center gap-1'>
-            <span className='text-xs text-gray-400'>
-              {' '}
-              {t('profile:multiversx_address')}
-            </span>
-            <div className='flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200'>
-              <ShortenedAddress address={address} />
-            </div>
-          </div>
-          {/* Soldes */}
-          <div className='w-full flex flex-col gap-2 mt-2'>
-            <div className='flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200'>
-              <span className='font-medium text-gray-700'>
-                {' '}
-                {t('profile:balance_token', {
-                  token: 'EGLD'
-                })}
-              </span>
-              <span className='font-mono text-yellow-600 font-bold'>
-                {egldBalance.toFixed(4)} EGLD
-              </span>
-            </div>
-            <div className='flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg border border-gray-200'>
-              <span className='font-medium text-gray-700'>
-                {t('profile:balance_token', {
-                  token: graou_identifier
-                })}
-              </span>
-              <span className='font-mono text-yellow-600 font-bold'>
-                {graouBalance.toFixed(2)} GRAOU
-              </span>
-            </div>
-          </div>
-          {/* Réseaux sociaux */}
-          <div className='flex flex-col gap-2 w-full mt-4'>
-            <div className='flex items-center gap-3 justify-center'>
-              {/* Discord */}
-              {profile?.discord ? (
-                <button
-                  onClick={handleDisconnectDiscord}
-                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752c4] transition'
-                >
-                  <FaDiscord className='text-xl' />
-                  {t('profile:disconnect_network', {
-                    network: 'Discord'
-                  })}{' '}
-                </button>
-              ) : (
-                <button
-                  onClick={handleConnectDiscord}
-                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752c4] transition'
-                >
-                  <FaDiscord className='text-xl' />
-                  {t('profile:connect_network', {
-                    network: 'Discord'
-                  })}{' '}
-                </button>
-              )}
-              {/* Twitter */}
-              {profile?.twitter ? (
-                <button
-                  onClick={handleDisconnectTwitter}
-                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DA1F2] text-white font-semibold hover:bg-[#0d8ddb] transition'
-                >
-                  <FaTwitter className='text-xl' />
-                  {t('profile:disconnect_network', {
-                    network: 'Twitter'
-                  })}{' '}
-                </button>
-              ) : (
-                <button
-                  onClick={handleConnectTwitter}
-                  className='flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DA1F2] text-white font-semibold hover:bg-[#0d8ddb] transition'
-                >
-                  <FaTwitter className='text-xl' />
-                  {t('profile:connect_network', {
-                    network: 'Twitter'
-                  })}
-                </button>
-              )}
+
+            <div className='pt-16 pb-8 px-6 text-center'>
+              <h2 className='text-xl font-bold text-gray-900 mb-1'>
+                {profile?.twitter?.username ||
+                  profile?.discord?.username ||
+                  'Explorer'}
+              </h2>
+              <p className='text-sm text-gray-500 mb-6'>
+                {profile?.twitter
+                  ? '@' + profile.twitter.username
+                  : 'Dinovox Member'}
+              </p>
+
+              <div className='bg-gray-50 rounded-xl p-3 border border-gray-100 mb-6'>
+                <p className='text-xs text-gray-400 uppercase font-semibold tracking-wider mb-2'>
+                  Wallet Address
+                </p>
+                <div className='flex items-center justify-center gap-2'>
+                  <ShortenedAddress address={address} />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(address);
+                      message.success('Address copied!');
+                    }}
+                    className='p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-gray-600'
+                  >
+                    <FaCopy size={12} />
+                  </button>
+                </div>
+              </div>
+
+              <div className='grid grid-cols-2 gap-3'>
+                <div className='bg-yellow-50 rounded-xl p-3 border border-yellow-100'>
+                  <p className='text-xs text-yellow-600 font-medium mb-1'>
+                    EGLD Balance
+                  </p>
+                  <p className='text-lg font-bold text-gray-900'>
+                    {egldBalance.toFixed(2)}
+                  </p>
+                </div>
+                <div className='bg-green-50 rounded-xl p-3 border border-green-100'>
+                  <p className='text-xs text-green-600 font-medium mb-1'>
+                    GRAOU Balance
+                  </p>
+                  <p className='text-lg font-bold text-gray-900'>
+                    {graouBalance.toFixed(0)}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Right Column - Settings & Connections */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className='lg:col-span-2 space-y-6'
+        >
+          {/* Social Connections */}
+          <div className='bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 p-8'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-2 bg-blue-50 rounded-xl text-blue-500'>
+                <MessageCircle size={20} />
+              </div>
+              <div>
+                <h3 className='text-lg font-bold text-gray-900'>
+                  Social Connections
+                </h3>
+                <p className='text-sm text-gray-500'>
+                  Link your accounts to unlock community features
+                </p>
+              </div>
+            </div>
+
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              {/* Discord Card */}
+              <div
+                className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+                  profile?.discord
+                    ? 'bg-[#5865F2]/5 border-[#5865F2]/20'
+                    : 'bg-white border-gray-200 hover:border-[#5865F2]/50 hover:shadow-md'
+                }`}
+              >
+                <div className='p-5'>
+                  <div className='flex justify-between items-start mb-4'>
+                    <FaDiscord
+                      className={`text-3xl ${
+                        profile?.discord ? 'text-[#5865F2]' : 'text-gray-300'
+                      }`}
+                    />
+                    {profile?.discord && (
+                      <span className='px-2 py-1 bg-[#5865F2]/10 text-[#5865F2] text-xs font-bold rounded-lg'>
+                        CONNECTED
+                      </span>
+                    )}
+                  </div>
+
+                  {profile?.discord ? (
+                    <>
+                      <p className='font-bold text-gray-900 mb-1'>
+                        {profile.discord.username}
+                      </p>
+                      <p className='text-xs text-gray-500 mb-4'>
+                        ID: {profile.discord.discordId}
+                      </p>
+                      <button
+                        onClick={handleDisconnectDiscord}
+                        className='w-full py-2 px-4 bg-white border border-gray-200 text-red-500 text-sm font-medium rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors'
+                      >
+                        Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className='font-bold text-gray-900 mb-1'>Discord</p>
+                      <p className='text-xs text-gray-500 mb-4'>
+                        Connect to join our server
+                      </p>
+                      <button
+                        onClick={handleConnectDiscord}
+                        className='w-full py-2 px-4 bg-[#5865F2] text-white text-sm font-medium rounded-xl hover:bg-[#4752c4] transition-colors shadow-lg shadow-[#5865F2]/20'
+                      >
+                        Connect Discord
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Twitter Card */}
+              <div
+                className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+                  profile?.twitter
+                    ? 'bg-[#1DA1F2]/5 border-[#1DA1F2]/20'
+                    : 'bg-white border-gray-200 hover:border-[#1DA1F2]/50 hover:shadow-md'
+                }`}
+              >
+                <div className='p-5'>
+                  <div className='flex justify-between items-start mb-4'>
+                    <FaTwitter
+                      className={`text-3xl ${
+                        profile?.twitter ? 'text-[#1DA1F2]' : 'text-gray-300'
+                      }`}
+                    />
+                    {profile?.twitter && (
+                      <span className='px-2 py-1 bg-[#1DA1F2]/10 text-[#1DA1F2] text-xs font-bold rounded-lg'>
+                        CONNECTED
+                      </span>
+                    )}
+                  </div>
+
+                  {profile?.twitter ? (
+                    <>
+                      <p className='font-bold text-gray-900 mb-1'>
+                        @{profile.twitter.username}
+                      </p>
+                      <p className='text-xs text-gray-500 mb-4'>
+                        ID: {profile.twitter.twitterId}
+                      </p>
+                      <button
+                        onClick={handleDisconnectTwitter}
+                        className='w-full py-2 px-4 bg-white border border-gray-200 text-red-500 text-sm font-medium rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors'
+                      >
+                        Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className='font-bold text-gray-900 mb-1'>Twitter</p>
+                      <p className='text-xs text-gray-500 mb-4'>
+                        Link your X account
+                      </p>
+                      <button
+                        onClick={handleConnectTwitter}
+                        className='w-full py-2 px-4 bg-[#1DA1F2] text-white text-sm font-medium rounded-xl hover:bg-[#0d8ddb] transition-colors shadow-lg shadow-[#1DA1F2]/20'
+                      >
+                        Connect Twitter
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Info / Stats Placeholder */}
+          <div className='bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-lg p-8 text-white relative overflow-hidden'>
+            <div className='absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -mr-16 -mt-16'></div>
+            <div className='relative z-10'>
+              <h3 className='text-lg font-bold mb-2'>Member Statistics</h3>
+              <div className='grid grid-cols-3 gap-6 mt-6'>
+                <div>
+                  <p className='text-gray-400 text-xs uppercase tracking-wider mb-1'>
+                    Joined
+                  </p>
+                  <p className='font-mono font-bold text-xl'>...</p>
+                </div>
+                <div>
+                  <p className='text-gray-400 text-xs uppercase tracking-wider mb-1'>
+                    Rank
+                  </p>
+                  <p className='font-mono font-bold text-xl text-yellow-400'>
+                    ...
+                  </p>
+                </div>
+                <div>
+                  <p className='text-gray-400 text-xs uppercase tracking-wider mb-1'>
+                    NFTs
+                  </p>
+                  <p className='font-mono font-bold text-xl'>-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </PageWrapper>
+    </div>
   );
 };

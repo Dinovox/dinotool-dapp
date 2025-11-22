@@ -36,6 +36,7 @@ import { duration } from 'moment';
 import { useGetUserLockedNft } from 'pages/Dashboard/widgets/LockedNftAbi/hooks/useGetUserLockedNft';
 import { t } from 'i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 type Step = 'selection' | 'duration' | 'confirmation' | 'success';
 
@@ -208,7 +209,6 @@ export const Locker = () => {
   useEffect(() => {
     if (!transactionSessionId) return;
 
-
     // const tx = pendingTransactions[transactionSessionId]?.transactions[0];
     const tx = pendingTransactions[0];
     // txManager.setCallbacks
@@ -240,6 +240,13 @@ export const Locker = () => {
       <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50'>
         <div className='container mx-auto px-4 py-8'>
           <div className='max-w-6xl mx-auto'>
+            <Breadcrumb
+              items={[
+                { label: 'Home', path: '/' },
+                { label: t('locker:title') }
+              ]}
+              className='mb-8'
+            />
             {/* En-tête */}
             <div className='text-center mb-8'>
               <div className='flex items-center justify-center space-x-3 mb-4'>

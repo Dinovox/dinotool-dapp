@@ -9,6 +9,7 @@ import NftDisplay from 'pages/LotteryDetail/NftDisplay';
 import { Trans, useTranslation } from 'react-i18next';
 import { t } from 'i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
+import { Breadcrumb } from 'components/ui/Breadcrumb';
 export const Vouchers = () => {
   const loading = useLoadTranslations('vouchers');
   const { t } = useTranslation();
@@ -59,6 +60,12 @@ export const Vouchers = () => {
   return (
     <PageWrapper>
       <div className='dinocard-wrapper rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full'>
+        <div className='container w-full px-4 pt-4'>
+          <Breadcrumb
+            items={[{ label: 'Home', path: '/' }, { label: 'Vouchers' }]}
+            className='mb-4'
+          />
+        </div>
         <div className='mintGazTitle dinoTitle w-[340px]'>Vouchers</div>
 
         <div className='container w-full'>

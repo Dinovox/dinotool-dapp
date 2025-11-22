@@ -23,6 +23,10 @@ import BigNumber from 'bignumber.js';
 import { bigNumToHex } from 'helpers/bigNumToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
+import {
+  waitForTransactionEvent,
+  LOTTERY_EVENTS
+} from 'helpers/transactionEventHelper';
 
 enum PriceType {
   Egld,
@@ -86,14 +90,21 @@ export const ActionCreate = ({
 
   // 🎯 Vérifier si on a un txHash après l'envoi de la transaction
   useEffect(() => {
-    if (transactionSessionId && transactions[transactionSessionId]) {
-      const tx = transactions[transactionSessionId]?.transactions[0]?.hash;
-      if (tx) {
-        setTxHash(tx);
-        checkTransactionStatus(tx);
+    if (transactionSessionId && hasPendingTransactions && !txHash) {
+      let foundHash = null;
+
+      if (Array.isArray(transactions) && transactions.length > 0) {
+        foundHash = transactions[0].hash;
+      } else if (transactions[transactionSessionId]) {
+        foundHash = transactions[transactionSessionId].transactions?.[0]?.hash;
+      }
+
+      if (foundHash) {
+        setTxHash(foundHash);
+        checkTransactionStatus(foundHash);
       }
     }
-  }, [transactionSessionId, hasPendingTransactions]);
+  }, [transactionSessionId, hasPendingTransactions, transactions, txHash]);
 
   const sendFundTransaction = async () => {
     const graou_identifier =
@@ -219,45 +230,26 @@ export const ActionCreate = ({
   };
 
   const checkTransactionStatus = async (hash: string) => {
-    const apiUrl = `${network.apiAddress}/transactions/${hash}`;
+    try {
+      console.log('🔍 Checking transaction status for:', hash);
+      const events = await waitForTransactionEvent(hash, LOTTERY_EVENTS);
 
-    for (let i = 0; i < 10; i++) {
-      try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error('Transaction not found');
+      console.log('✅ Transaction events found:', events);
 
-        const txData = await response.json();
-        if (txData.status === 'success' && txData.logs) {
-          for (const event of txData.logs.events) {
-            const encoded_topic = Buffer.from(
-              'lotteryCreated',
-              'utf8'
-            ).toString('base64');
+      const lotteryEvent = events.find(
+        (e) => e.identifier === 'lotteryCreated'
+      );
 
-            if (
-              event.identifier === 'create' &&
-              event.topics[0] === encoded_topic
-            ) {
-              const lotteryIdBase64 = event.topics[2];
-              // const lotteryId = BigInt(
-              //   Buffer.from(lotteryIdBase64, 'base64').toString('hex')
-              // );
-              const lotteryId = BigInt(
-                '0x' + Buffer.from(lotteryIdBase64, 'base64').toString('hex')
-              );
-              navigate(`/lotteries/${lotteryId}`);
-              return;
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching transaction:', error);
+      if (lotteryEvent) {
+        const lotteryId = lotteryEvent.lottery_id;
+        console.log('🎉 Lottery created with ID:', lotteryId);
+        navigate(`/lotteries/${lotteryId}`);
+      } else {
+        console.warn('⚠️ No lotteryCreated event found in transaction logs');
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+    } catch (error) {
+      console.error('❌ Error checking transaction status:', error);
     }
-
-    console.warn('⚠️ LotteryCreated event not found');
   };
 
   return (
