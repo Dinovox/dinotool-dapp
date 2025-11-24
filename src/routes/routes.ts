@@ -17,7 +17,6 @@ import {
   Marketplace,
   MarketplaceCollections,
   MarketplaceCollectionById,
-  MarketplaceCollectionDetail,
   MarketplaceListings,
   MarketplaceListingDetail,
   MarketplaceSell

@@ -3,7 +3,7 @@ import { decodeBigNumber } from '@multiversx/sdk-core/out';
 import { ActionWithdraw } from 'contracts/dinauction/actions/Withdraw';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import bignumber from 'bignumber.js';
 import { useNft } from 'helpers/contexts/NftContext';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
@@ -248,6 +248,15 @@ export const Marketplace = () => {
     saleTypes: ['fixed', 'auction']
   });
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    if (search.trim()) {
+      navigate(
+        `/marketplace/collections?search=${encodeURIComponent(search.trim())}`
+      );
+    }
+  };
 
   // Fetch collections for Trending section
   const { collections: accountCollections } = useGetAccountCollections(
@@ -301,9 +310,10 @@ export const Marketplace = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder='Search collections or listings...'
           />
-          <Button onClick={() => null}>Search</Button>
+          <Button onClick={handleSearch}>Search</Button>
         </div>
 
         <div className='flex items-center gap-2'>

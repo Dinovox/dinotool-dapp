@@ -94,7 +94,7 @@ const CreateLotteryModal: React.FC<{
       setPrizeNonce(0);
       setPrizeAmount(new BigNumber(1));
       setPrizeDisplay('1');
-      form.setFieldsValue({ prizeAmount: '1' });
+      form.setFieldsValue({ prizeAmount: '1', prizeIdentifier: '' });
       setPrizeBalance(new BigNumber(1));
     } else if (e.target.value === 'Egld') {
       setPrizeType('Egld');
@@ -104,7 +104,7 @@ const CreateLotteryModal: React.FC<{
       setPrizeDecimals(18);
       setPrizeAmount(new BigNumber(0));
       setPrizeDisplay('');
-      form.setFieldsValue({ prizeAmount: '' });
+      form.setFieldsValue({ prizeAmount: '', prizeIdentifier: 'EGLD-000000' });
       setPrizeBalance(new BigNumber(account?.balance));
     } else {
       setPrizeType(e.target.value);
@@ -114,7 +114,7 @@ const CreateLotteryModal: React.FC<{
       setPrizeDecimals(0);
       setPrizeAmount(new BigNumber(0));
       setPrizeDisplay('');
-      form.setFieldsValue({ prizeAmount: '' });
+      form.setFieldsValue({ prizeAmount: '', prizeIdentifier: '' });
       setPrizeBalance(new BigNumber(0));
     }
   };
@@ -128,7 +128,7 @@ const CreateLotteryModal: React.FC<{
       setPriceDecimals(18);
       setPriceAmount(new BigNumber(0));
       setPriceDisplay('');
-      form.setFieldsValue({ priceAmount: '' });
+      form.setFieldsValue({ priceAmount: '', priceIdentifier: 'EGLD-000000' });
     } else {
       setPriceType(e.target.value);
       setPriceTicker('');
@@ -136,7 +136,7 @@ const CreateLotteryModal: React.FC<{
       setPriceDecimals(0);
       setPriceAmount(new BigNumber(0));
       setPriceDisplay('');
-      form.setFieldsValue({ priceAmount: '' });
+      form.setFieldsValue({ priceAmount: '', priceIdentifier: '' });
     }
     setPriceNonce(0);
   };
@@ -335,8 +335,13 @@ const CreateLotteryModal: React.FC<{
   function handleIsLocked(e: CheckboxChangeEvent): void {
     const checked = e.target.checked;
     setAutoDraw(checked);
-    // setIsFree(false);
+    setIsFree(checked);
     setIsLocked(checked);
+    if (checked) {
+      setPriceAmount(new BigNumber(0));
+      setPriceDisplay('');
+      form.setFieldsValue({ priceAmount: '' });
+    }
     if (!priceIdentifier) {
       // setPriceType(checked ? 'Esdt' : '');
       // setPriceIdentifier(checked ? graou_identifier : '');
@@ -353,10 +358,12 @@ const CreateLotteryModal: React.FC<{
   const isValidNumber = (value: any) =>
     BigNumber.isBigNumber(value) && value.isFinite();
 
-  const totalPrice = new BigNumber(priceAmount.multipliedBy(maxTickets) || 0);
+  const totalPrice = isFree
+    ? new BigNumber(0)
+    : new BigNumber(priceAmount.multipliedBy(maxTickets) || 0);
 
   const platformFee =
-    priceType === 'Nft' || priceType === 'Sft'
+    priceType === 'Nft' || priceType === 'Sft' || isFree
       ? new BigNumber(0)
       : totalPrice
           .multipliedBy(new BigNumber(feePercentage || 0))
@@ -369,7 +376,7 @@ const CreateLotteryModal: React.FC<{
   //     : totalPrice.multipliedBy(feePercentage).dividedBy(100).decimalPlaces(0);
 
   const royalties =
-    priceType === 'Nft' || priceType === 'Sft'
+    priceType === 'Nft' || priceType === 'Sft' || isFree
       ? new BigNumber(0)
       : totalPrice
           .minus(platformFee)
@@ -526,7 +533,7 @@ const CreateLotteryModal: React.FC<{
 
                 {['Esdt', 'Sft', 'Nft'].includes(prizeType) && (
                   <Form.Item
-                    name={'prizeIdentifier' + prizeType}
+                    name='prizeIdentifier'
                     label={
                       <span className='font-medium'>
                         {t('lotteries:identifier')}
@@ -761,7 +768,7 @@ const CreateLotteryModal: React.FC<{
                   {['Esdt', 'Sft'].includes(priceType) && (
                     <Form.Item
                       validateStatus={!priceValid ? 'error' : ''}
-                      name={'priceIdentifier' + priceType}
+                      name='priceIdentifier'
                       label={
                         <span className='font-medium'>
                           {t('lotteries:identifier')}
@@ -1137,7 +1144,7 @@ const CreateLotteryModal: React.FC<{
                             </div>
                           )}
 
-                          {priceType != 'Sft' && (
+                          {priceType != 'Sft' && !isFree && (
                             <div className='flex justify-between items-center mb-1'>
                               <span>
                                 {t('lotteries:platform_fee')} ({feePercentage}%)
@@ -1157,7 +1164,8 @@ const CreateLotteryModal: React.FC<{
                           )}
 
                           {prize_nft_information.royalties &&
-                            priceType != 'Sft' && (
+                            priceType != 'Sft' &&
+                            !isFree && (
                               <div className='flex justify-between items-center mb-1'>
                                 <span>
                                   {t('lotteries:royalty_fee')} (
@@ -1180,18 +1188,17 @@ const CreateLotteryModal: React.FC<{
                           <div className='border-t border-gray-200 my-2 pt-2 flex justify-between items-center font-bold text-base text-gray-900'>
                             <span>{t('lotteries:vendor_amount')}</span>
                             <span className='text-green-600'>
-                              {formatAmount({
-                                input: finalAmount.isGreaterThan(0)
-                                  ? finalAmount.toFixed()
-                                  : '0',
-                                decimals: priceDecimals || 0,
-                                digits: 2,
-                                showLastNonZeroDecimal: true,
-                                addCommas: true
-                              })}{' '}
-                              {priceIdentifier == 'EGLD-000000'
-                                ? 'EGLD'
-                                : priceIdentifier}
+                              <FormatAmount
+                                amount={
+                                  isFree
+                                    ? '0'
+                                    : finalAmount.isGreaterThan(0)
+                                    ? finalAmount.toFixed()
+                                    : '0'
+                                }
+                                identifier={priceIdentifier}
+                                showLastNonZeroDecimal={true}
+                              />
                             </span>
                           </div>
                         </div>

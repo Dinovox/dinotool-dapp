@@ -15,8 +15,9 @@ export const useGetEsdtInformations = (
     if (!identifier || priceType == 'Sft') {
       return;
     }
-    if(identifier == 'EGLD')
-    {identifier = 'EGLD-000000'}
+    if (identifier == 'EGLD') {
+      identifier = 'EGLD-000000';
+    }
 
     //using storage to reduce calls
     const expire_test = Number(
@@ -59,12 +60,14 @@ interface FormatAmountProps {
   amount: string | number | BigNumber | null | undefined;
   identifier: string; // Token identifier (e.g., 'EGLD', 'USDC-c76f1f')
   displayDecimals?: number; // Optional: number of decimals to display, defaults to 2 or actual significant decimals
+  showLastNonZeroDecimal?: boolean;
 }
 
 export const FormatAmount: React.FC<FormatAmountProps> = ({
   amount,
   identifier,
-  displayDecimals
+  displayDecimals,
+  showLastNonZeroDecimal
 }) => {
   // Fetch token information using the hook
   const esdtInfo = useGetEsdtInformations(identifier);
@@ -85,6 +88,9 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
   let formattedValue: string;
   if (displayDecimals !== undefined) {
     formattedValue = value.toFixed(displayDecimals, BigNumber.ROUND_DOWN);
+    if (showLastNonZeroDecimal) {
+      formattedValue = new BigNumber(formattedValue).toString();
+    }
   } else {
     // Default to a reasonable number of decimals, e.g., 2, but keep more if significant
     formattedValue = value.toFormat(2, BigNumber.ROUND_DOWN, {

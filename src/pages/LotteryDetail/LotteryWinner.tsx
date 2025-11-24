@@ -18,7 +18,7 @@ const LotteryWinner = ({ lottery }: any) => {
 
   useEffect(() => {
     if (lottery.winner_id > 0) {
-      setCurrentWinner(lottery.winner.address);
+      setCurrentWinner(lottery.winner?.address || lottery.vm_winner);
       setShowConfetti(true);
     }
   }, [currentWinner, lottery]);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_URL } from 'config';
-
+// https://devnet-api.multiversx.com/#/accounts/AccountController_getAccountNftCollections
 export type AccountCollection = {
   collection: string;
   type: string;
@@ -24,7 +24,12 @@ export type AccountCollection = {
   };
 };
 
-export const useGetAccountCollections = (address: string) => {
+export const useGetAccountCollections = (
+  address: string,
+  size: number = 12,
+  from: number = 0,
+  search: string = ''
+) => {
   const [collections, setCollections] = useState<AccountCollection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +46,11 @@ export const useGetAccountCollections = (address: string) => {
         // 1. Fetch account collections
         const { data: accountCollections } = await axios.get<
           AccountCollection[]
-        >(`${API_URL}/accounts/${address}/collections?from=0&size=50`);
+        >(
+          `${API_URL}/accounts/${address}/collections?from=${from}&size=${size}${
+            search ? `&search=${search}` : ''
+          }`
+        );
 
         if (accountCollections.length === 0) {
           setCollections([]);
@@ -81,7 +90,7 @@ export const useGetAccountCollections = (address: string) => {
     };
 
     fetchCollections();
-  }, [address]);
+  }, [address, size, from, search]);
 
   return { collections, loading, error };
 };
