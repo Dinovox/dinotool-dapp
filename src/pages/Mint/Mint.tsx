@@ -13,6 +13,7 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
+import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 const sold_graout = '/assets/img/sold_graout.jpg';
 
 export const Mint = () => {
@@ -50,7 +51,9 @@ export const Mint = () => {
   }, []);
 
   const mintable = useGetMintable();
-  const { hasBuyed, esdtAmount } = useGetUserHasBuyed();
+  const { hasBuyed, esdtAmount } = useGetUserHasBuyed(
+    mintable?.token_identifier
+  );
 
   const { balance, address } = useGetAccount();
 
@@ -108,33 +111,20 @@ export const Mint = () => {
                         </>
                       ) : (
                         <>
-                          {Number(
-                            new BigNumber(esdtAmount).dividedBy(10 ** 18)
-                          ).toLocaleString(undefined, {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2
-                          })}
-                          {'  '}
+                          <FormatAmount
+                            amount={esdtAmount}
+                            identifier={mintable?.payment_token}
+                          />
                         </>
-                      )}{' '}
-                      <span className='identifier'>
-                        {' '}
-                        {mintable.payment_token}
-                      </span>
+                      )}
                     </div>
                   )}
                   <div className='info-item'>
                     <span className='text-label'>{t('mint:price')}: </span>
-                    {Number(
-                      new BigNumber(mintable?.payment_price).dividedBy(10 ** 18)
-                    ).toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 8
-                    })}{' '}
-                    <span className='identifier'>
-                      {' '}
-                      {mintable.payment_token}
-                    </span>
+                    <FormatAmount
+                      amount={mintable?.payment_price}
+                      identifier={mintable?.payment_token}
+                    />
                   </div>
                   <div className='info-item'>
                     <span className='text-label'>{t('mint:mint_left')}: </span>{' '}
@@ -207,7 +197,11 @@ export const Mint = () => {
                         <>
                           <ActionBuy
                             price={mintable?.payment_price}
-                            balance={new BigNumber(balance ? balance : 0)}
+                            balance={
+                              mintable.payment_token == 'EGLD'
+                                ? new BigNumber(balance ? balance : 0)
+                                : esdtAmount
+                            }
                             hasBuyed={hasBuyed}
                             payment_token={mintable.payment_token}
                           />

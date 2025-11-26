@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
 import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import dinauctionAbi from '../dinauction.abi.json';
@@ -8,6 +8,7 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
   const [auction, setAuction] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchTimeRef = useRef<number>(0);
 
   const transactions: Record<string, any> = useGetPendingTransactions();
   const hasPendingTransactions = Object.keys(transactions).length > 0;
@@ -16,12 +17,17 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
 
   const fetchAuction = useCallback(async () => {
     if (!auctionId) {
-        setAuction(null);
-        return;
+      setAuction(null);
+      return;
     }
-    if(hasPendingTransactions ){
-        return;
+
+    // Skip fetch if there are pending transactions AND we fetched recently (within 10s)
+    // This prevents refetching during active transactions but allows recovery if stuck
+    const now = Date.now();
+    if (hasPendingTransactions && now - lastFetchTimeRef.current < 10000) {
+      return;
     }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -46,6 +52,7 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
       // controller.query usually returns an array of results.
       // Since it returns one item, we take the first one.
       setAuction(response[0]);
+      lastFetchTimeRef.current = Date.now();
     } catch (err) {
       console.error('Unable to call getFullAuctionData', err);
       setError('Unable to load auction data');

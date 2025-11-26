@@ -18,7 +18,7 @@ import { BigNumber } from 'bignumber.js';
 import axios from 'axios';
 import { graou_identifier } from 'config';
 
-export const useGetUserHasBuyed = () => {
+export const useGetUserHasBuyed = (tokenIdentifier: string) => {
   const [hasBuyed, setHasBuyed] = useState(false);
   const [esdtAmount, setEsdtAmount] = useState(new BigNumber(0));
 
@@ -61,9 +61,10 @@ export const useGetUserHasBuyed = () => {
           '/accounts/' +
           address +
           '/tokens/' +
-          graou_identifier
+          tokenIdentifier
       );
 
+      console.log(balance);
       if (balance?.data?.balance) {
         setEsdtAmount(new BigNumber(balance?.data?.balance));
       } else {

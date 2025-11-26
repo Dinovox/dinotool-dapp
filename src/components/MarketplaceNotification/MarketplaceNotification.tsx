@@ -4,7 +4,6 @@ import { useMarketplaceEvents } from 'hooks/useMarketplaceEvents';
 import { DecodedEvent } from 'helpers/transactionEventHelper';
 import { X } from 'lucide-react';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
-import { formatAmount } from 'lib';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 
 interface NotificationItemProps {

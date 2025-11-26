@@ -6,6 +6,7 @@ import { DisplayNft } from 'helpers/DisplayNft';
 import type { UserNft } from 'helpers/useGetUserNft';
 import { ActionBid } from 'contracts/dinauction/actions/Bid';
 import { ActionWithdraw } from 'contracts/dinauction/actions/Withdraw';
+import { ActionEndAuction } from 'contracts/dinauction/actions/EndAuction';
 import BigNumber from 'bignumber.js';
 import {
   useGetEsdtInformations,
@@ -56,6 +57,7 @@ type Listing = {
   status: 'active' | 'sold' | 'cancelled' | 'ended';
   createdAt: number;
   description?: string;
+  isCached?: boolean;
 };
 
 /* ---------------- Utils ---------------- */
@@ -134,7 +136,35 @@ export const MarketplaceListingDetail = () => {
 
   // 4. Normalize Data
   const listing: Listing | null = useMemo(() => {
-    if (!rawAuction) return null;
+    if (!rawAuction) {
+      // Try to get from cache if not found in contract
+      const cached = localStorage.getItem(`listing_cache_${id}`);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          // Rehydrate BigNumbers
+          if (parsed.auction) {
+            parsed.auction.startPrice = new BigNumber(
+              parsed.auction.startPrice
+            );
+            parsed.auction.currentBid = new BigNumber(
+              parsed.auction.currentBid
+            );
+            parsed.auction.maxBid = new BigNumber(parsed.auction.maxBid);
+            parsed.auction.minBidDiff = new BigNumber(
+              parsed.auction.minBidDiff
+            );
+          }
+          // Mark as ended/cached
+          parsed.status = 'ended';
+          parsed.isCached = true;
+          return parsed;
+        } catch (e) {
+          console.error('Failed to parse cached listing', e);
+        }
+      }
+      return null;
+    }
 
     const minBid = rawAuction.min_bid?.toString() || '0';
     const currentBidAmount = rawAuction.current_bid?.toString();
@@ -161,7 +191,7 @@ export const MarketplaceListingDetail = () => {
     const collection =
       nftInfo?.collection || tokenIdentifier?.split('-')[0] || 'Unknown';
 
-    return {
+    const listingData: Listing = {
       id: id,
       source: 'dinovox', // Contract is always dinovox for now
       saleType: 'auction', // Assuming only auctions for now based on hook
@@ -197,6 +227,8 @@ export const MarketplaceListingDetail = () => {
       attributes,
       description
     };
+
+    return listingData;
   }, [
     rawAuction,
     nftInfo,
@@ -207,6 +239,13 @@ export const MarketplaceListingDetail = () => {
     tokenInformations
   ]);
 
+  // Cache listing when available
+  useEffect(() => {
+    if (listing && !listing.isCached) {
+      localStorage.setItem(`listing_cache_${id}`, JSON.stringify(listing));
+    }
+  }, [listing, id]);
+
   const loading =
     loadingAuction || (!listing && tokenIdentifier && !nftInfo?.identifier);
 
@@ -215,17 +254,10 @@ export const MarketplaceListingDetail = () => {
   // Construct active NFT object for DisplayNft
   const activeNft = useMemo(() => {
     if (!listing) return null;
-    // Create a fake UserNft that points to the currently selected image
-    // This ensures DisplayNft renders the selected image/video
-    // const currentUrl = listing.images[activeImageIndex] || listing.images[0];
     return {
       ...nftInfo
-      // name: listing.name,
-      // identifier: listing.identifier,
-      // collection: listing.collection,
-      // media: [{ url: currentUrl, fileType: 'image/png' }] // Default to image, DisplayNft will check extension for video
     } as UserNft;
-  }, [listing, nftInfo, activeImageIndex]);
+  }, [listing, nftInfo]);
 
   const minRequiredBid = useMemo(() => {
     if (!listing?.auction) return null;
@@ -242,17 +274,25 @@ export const MarketplaceListingDetail = () => {
   }, [listing]);
 
   useEffect(() => {
-    if (minRequiredBid && listing?.auction) {
-      const decimals = tokenInformations?.decimals || 0;
-      // Use toFixed() to avoid scientific notation for small numbers if possible, but BigNumber.toFixed() returns string.
-      // We need to shift back to human readable.
-      const formatted = minRequiredBid.shiftedBy(-decimals).toFixed();
-      if (bidAmount === '') {
+    if (minRequiredBid && listing?.auction && tokenInformations?.decimals) {
+      const decimals = tokenInformations.decimals;
+      // Convert from smallest unit to human-readable format
+      const humanReadable = minRequiredBid.shiftedBy(-decimals);
+      // Format with appropriate decimal places (max 8 for display)
+      const formatted = humanReadable
+        .decimalPlaces(Math.min(decimals, 8))
+        .toString();
+
+      // Only set if empty OR if current value looks like unformatted BigNumber (very long number)
+      if (
+        bidAmount === '' ||
+        (bidAmount.length > 15 && !bidAmount.includes('.'))
+      ) {
         setBidAmount(formatted);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [minRequiredBid, listing]);
+  }, [minRequiredBid, listing, tokenInformations]);
 
   if (loading) {
     return (
@@ -330,6 +370,35 @@ export const MarketplaceListingDetail = () => {
         </div>
       </div>
       <div className='text-sm text-slate-500'>{listing.identifier}</div>
+
+      {/* Cached/Ended Banner */}
+      {listing.isCached && (
+        <div
+          className={`rounded-lg p-4 ${
+            address === listing.auction?.currentWinner
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-amber-50 text-amber-800 border border-amber-200'
+          }`}
+        >
+          <div className='flex items-center gap-3'>
+            <div className='text-2xl'>
+              {address === listing.auction?.currentWinner ? '🎉' : '⚠️'}
+            </div>
+            <div>
+              <h3 className='font-semibold'>
+                {address === listing.auction?.currentWinner
+                  ? 'Congratulations! You won this auction.'
+                  : 'This auction has ended.'}
+              </h3>
+              <p className='text-sm opacity-90'>
+                {address === listing.auction?.currentWinner
+                  ? 'The item has been sent to your wallet. It may take a few minutes to appear.'
+                  : 'This listing is no longer available on the marketplace.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main layout */}
       <div className='grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'>
@@ -573,9 +642,22 @@ export const MarketplaceListingDetail = () => {
               ) : (
                 <>
                   {listing.status !== 'active' ? (
-                    <div className='text-sm text-slate-500'>
-                      This listing is not active.
-                    </div>
+                    <>
+                      {listing?.isCached === false &&
+                      address &&
+                      listing.auction?.currentBid.gt(0) &&
+                      timeLeft === '0h 0m 0s' ? (
+                        <ActionEndAuction
+                          auction_id={
+                            new BigNumber(listing.auction?.auctionId || id)
+                          }
+                        />
+                      ) : (
+                        <div className='text-sm text-slate-500'>
+                          This listing is not active.
+                        </div>
+                      )}
+                    </>
                   ) : isAuction ? (
                     <div className='space-y-3'>
                       <div className='flex items-center gap-2'>
@@ -605,6 +687,7 @@ export const MarketplaceListingDetail = () => {
                                 inputMode='decimal'
                                 className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                               />
+
                               <ActionBid
                                 auctionId={listing.auction?.auctionId || id}
                                 nftType={listing.identifier}

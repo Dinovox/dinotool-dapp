@@ -114,6 +114,12 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
                   ? 'One mint per wallet'
                   : 'Mint'}
               </button>
+              <a
+                target='_blank'
+                href={`https://xexchange.com/trade?firstToken=EGLD&secondToken=${payment_token}`}
+              >
+                <button className='dinoButton'>Buy {payment_token}</button>
+              </a>
             </>
           ) : (
             <>
