@@ -37,7 +37,7 @@ export const lottery_cost = {
   egld: '100000000000000000'
 };
 
-// export const dinoclaim_api = 'http://localhost:3000';
+//export const dinoclaim_api = 'http://localhost:3000';
 export const dinoclaim_api = 'https://devnet-claim.dinovox.com';
 export const dino_claim_url = 'https://devnet-app.dinovox.com/claim';
 export const pox_api = 'https://api.poxp.xyz';

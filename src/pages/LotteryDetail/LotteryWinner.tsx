@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import './LotteryWinnerAnimation.css'; // Utiliser le même fichier CSS mis à jour
 import useLoadTranslations from 'hooks/useLoadTranslations';
@@ -24,7 +24,7 @@ const LotteryWinner = ({ lottery }: any) => {
   }, [currentWinner, lottery]);
 
   // Variantes pour l'animation du gagnant
-  const winnerVariants = {
+  const winnerVariants: Variants = {
     hidden: {
       opacity: 0,
       y: 50,
@@ -50,7 +50,7 @@ const LotteryWinner = ({ lottery }: any) => {
   };
 
   // Variantes pour les confettis (emojis)
-  const confettiVariants = {
+  const confettiVariants: Variants = {
     hidden: { opacity: 0, y: 0, scale: 0 },
     visible: {
       opacity: [1, 1, 0],

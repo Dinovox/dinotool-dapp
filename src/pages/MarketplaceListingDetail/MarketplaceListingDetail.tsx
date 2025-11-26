@@ -559,139 +559,140 @@ export const MarketplaceListingDetail = () => {
               </div>
 
               {/* Actions */}
-              {listing.status !== 'active' ? (
-                <div className='text-sm text-slate-500'>
-                  This listing is not active.
-                </div>
-              ) : isAuction ? (
-                <div className='space-y-3'>
-                  <div className='flex items-center gap-2'>
-                    {address === listing.seller ? (
-                      listing.auction?.currentBid &&
-                      listing.auction.currentBid.gt(0) ? (
-                        <div className='w-full rounded-md bg-amber-50 p-3 text-sm text-amber-800'>
-                          Auction has bids. You cannot withdraw.
-                        </div>
-                      ) : (
-                        <ActionWithdraw
-                          auction_id={
-                            new BigNumber(listing.auction?.auctionId || id)
-                          }
-                        />
-                      )
-                    ) : (
-                      <>
-                        {!isDirectSale && (
-                          <>
-                            <input
-                              value={bidAmount}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (
-                                  listing.auction?.maxBid &&
-                                  listing.auction.maxBid.gt(0)
-                                ) {
-                                  const maxVal =
-                                    listing.auction.maxBid.shiftedBy(
-                                      -(tokenInformations?.decimals || 0)
-                                    );
-                                  if (new BigNumber(val).gt(maxVal)) {
-                                    setBidAmount(maxVal.toFixed());
-                                    return;
-                                  }
-                                }
-                                setBidAmount(val);
-                              }}
-                              placeholder={`Bid in ${paymentToken}`}
-                              inputMode='decimal'
-                              className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
-                            />
-                            <ActionBid
-                              auctionId={listing.auction?.auctionId || id}
-                              nftType={listing.identifier}
-                              nftNonce={tokenNonce || '0'}
-                              paymentToken={paymentToken}
-                              amount={new BigNumber(bidAmount || '0')
-                                .shiftedBy(tokenInformations?.decimals || 0)
-                                .toFixed(0)}
-                              disabled={
-                                !bidAmount ||
-                                parseFloat(bidAmount) <= 0 ||
-                                (minRequiredBid
-                                  ? new BigNumber(bidAmount)
-                                      .shiftedBy(
-                                        tokenInformations?.decimals || 0
-                                      )
-                                      .lt(minRequiredBid)
-                                  : false) ||
-                                address === listing.auction?.currentWinner
-                              }
-                            />
-                          </>
-                        )}
-                        {listing.auction?.maxBid &&
-                          listing.auction.maxBid.gt(0) && (
-                            <ActionBid
-                              auctionId={listing.auction?.auctionId || id}
-                              nftType={listing.identifier}
-                              nftNonce={tokenNonce || '0'}
-                              paymentToken={paymentToken}
-                              amount={listing.auction.maxBid.toFixed(0)}
-                              directBuy
-                              label={
-                                <>
-                                  Buy now for{' '}
-                                  <FormatAmount
-                                    amount={listing.auction.maxBid.toFixed()}
-                                    identifier={paymentToken}
-                                  />
-                                </>
-                              }
-                            />
-                          )}
-                      </>
-                    )}
+              {address === listing.seller ? (
+                listing.auction?.currentBid &&
+                listing.auction.currentBid.gt(0) ? (
+                  <div className='w-full rounded-md bg-amber-50 p-3 text-sm text-amber-800'>
+                    Auction has bids. You cannot withdraw.
                   </div>
-                  <div className='text-xs text-slate-500'>
-                    {address === listing.seller ? null : address === // Owner view: no helper text needed for withdraw/disabled state
-                      listing.auction?.currentWinner ? (
-                      <span className='text-green-600 font-medium'>
-                        You are the current winner!
-                      </span>
-                    ) : (
-                      minRequiredBid &&
-                      !isDirectSale && (
-                        <>
-                          Minimum bid:{' '}
-                          <FormatAmount
-                            amount={minRequiredBid.toFixed(0)}
-                            identifier={paymentToken}
-                          />
-                        </>
-                      )
-                    )}
-                  </div>
-                </div>
+                ) : (
+                  <ActionWithdraw
+                    auction_id={new BigNumber(listing.auction?.auctionId || id)}
+                  />
+                )
               ) : (
-                <div className='space-y-3'>
-                  <div className='flex items-center gap-2'>
-                    <input
-                      value={qty}
-                      onChange={(e) => setQty(e.target.value)}
-                      className='h-10 w-20 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
-                      inputMode='numeric'
-                    />
-                    <button
-                      onClick={onBuyNow}
-                      className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800'
-                    >
-                      Buy now
-                    </button>
-                  </div>
-                  <div className='text-xs text-slate-500'>
-                    1/1 item • quantity kept for future ERC1155-like support.
-                  </div>
-                </div>
+                <>
+                  {listing.status !== 'active' ? (
+                    <div className='text-sm text-slate-500'>
+                      This listing is not active.
+                    </div>
+                  ) : isAuction ? (
+                    <div className='space-y-3'>
+                      <div className='flex items-center gap-2'>
+                        <>
+                          {!isDirectSale && (
+                            <>
+                              <input
+                                value={bidAmount}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (
+                                    listing.auction?.maxBid &&
+                                    listing.auction.maxBid.gt(0)
+                                  ) {
+                                    const maxVal =
+                                      listing.auction.maxBid.shiftedBy(
+                                        -(tokenInformations?.decimals || 0)
+                                      );
+                                    if (new BigNumber(val).gt(maxVal)) {
+                                      setBidAmount(maxVal.toFixed());
+                                      return;
+                                    }
+                                  }
+                                  setBidAmount(val);
+                                }}
+                                placeholder={`Bid in ${paymentToken}`}
+                                inputMode='decimal'
+                                className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                              />
+                              <ActionBid
+                                auctionId={listing.auction?.auctionId || id}
+                                nftType={listing.identifier}
+                                nftNonce={tokenNonce || '0'}
+                                paymentToken={paymentToken}
+                                amount={new BigNumber(bidAmount || '0')
+                                  .shiftedBy(tokenInformations?.decimals || 0)
+                                  .toFixed(0)}
+                                disabled={
+                                  !bidAmount ||
+                                  parseFloat(bidAmount) <= 0 ||
+                                  (minRequiredBid
+                                    ? new BigNumber(bidAmount)
+                                        .shiftedBy(
+                                          tokenInformations?.decimals || 0
+                                        )
+                                        .lt(minRequiredBid)
+                                    : false) ||
+                                  address === listing.auction?.currentWinner
+                                }
+                              />
+                            </>
+                          )}
+                          {listing.auction?.maxBid &&
+                            listing.auction.maxBid.gt(0) && (
+                              <ActionBid
+                                auctionId={listing.auction?.auctionId || id}
+                                nftType={listing.identifier}
+                                nftNonce={tokenNonce || '0'}
+                                paymentToken={paymentToken}
+                                amount={listing.auction.maxBid.toFixed(0)}
+                                directBuy
+                                label={
+                                  <>
+                                    Buy now for{' '}
+                                    <FormatAmount
+                                      amount={listing.auction.maxBid.toFixed()}
+                                      identifier={paymentToken}
+                                    />
+                                  </>
+                                }
+                              />
+                            )}{' '}
+                        </>
+                      </div>
+                      <div className='text-xs text-slate-500'>
+                        {address === listing.seller ? null : address === // Owner view: no helper text needed for withdraw/disabled state
+                          listing.auction?.currentWinner ? (
+                          <span className='text-green-600 font-medium'>
+                            You are the current winner!
+                          </span>
+                        ) : (
+                          minRequiredBid &&
+                          !isDirectSale && (
+                            <>
+                              Minimum bid:{' '}
+                              <FormatAmount
+                                amount={minRequiredBid.toFixed(0)}
+                                identifier={paymentToken}
+                              />
+                            </>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='space-y-3'>
+                      <div className='flex items-center gap-2'>
+                        <input
+                          value={qty}
+                          onChange={(e) => setQty(e.target.value)}
+                          className='h-10 w-20 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                          inputMode='numeric'
+                        />
+                        <button
+                          onClick={onBuyNow}
+                          className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800'
+                        >
+                          Buy now
+                        </button>
+                      </div>
+                      <div className='text-xs text-slate-500'>
+                        1/1 item • quantity kept for future ERC1155-like
+                        support.
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Meta */}

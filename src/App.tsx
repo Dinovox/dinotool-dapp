@@ -10,6 +10,7 @@ import { Layout } from './components';
 import { useRoutesWithTranslation } from 'routes';
 import { PageNotFound, Unlock } from 'pages';
 import { NftProvider } from './helpers/contexts/NftContext';
+import { MarketplaceNotification } from 'components/MarketplaceNotification/MarketplaceNotification';
 
 export const App = () => {
   const routes = useRoutesWithTranslation();
@@ -21,6 +22,7 @@ export const App = () => {
     <AxiosInterceptors>
       <BatchTransactionsContextProvider>
         <Layout>
+          <MarketplaceNotification />
           <Routes location={background || location}>
             {routes.map((route) => (
               <Route
