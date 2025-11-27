@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import formatTime from 'helpers/formatTime';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import { PageTemplate } from 'components/PageTemplate';
+import DisplayNftByToken from 'helpers/DisplayNftByToken';
 const sold_graout = '/assets/img/sold_graout.jpg';
 
 export const Mint = () => {
@@ -82,157 +84,226 @@ export const Mint = () => {
   // console.log(nft_information);
   return (
     <PageWrapper>
-      <div className='flex flex-col w-full max-w-7xl mx-auto'>
-        <div className='px-6 pt-6'>
-          <Breadcrumb
-            items={[{ label: 'Home', path: '/' }, { label: 'Mint' }]}
-          />
-        </div>
-        <div className='dinocard-wrapper  rounded-xl bg-white flex-col-reverse sm:flex-row items-center h-full w-full mt-4'>
-          <div className='mintGazTitle dinoTitle' style={{ width: '340px' }}>
-            DINOGAZETTE
-          </div>{' '}
-          <div className='dinocard'>
-            {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
-              <>
-                <div className='sub-dinocard box-item'>
+      <PageTemplate
+        title='DINOGAZETTE'
+        breadcrumbItems={[{ label: 'Home', path: '/' }, { label: 'Mint' }]}
+        maxWidth='1400px'
+      >
+        {/* Main Content */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+          {/* Left Column - NFT Image & Actions */}
+          <div className='flex flex-col gap-6'>
+            {/* NFT Image Card */}
+            <div className='rounded-3xl bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-8 shadow-2xl border border-purple-400/20'>
+              {/* <div className='bg-gradient-to-r from-yellow-400 to-yellow-500 px-6 py-4'>
+                <h2 className='text-xl font-bold text-gray-900'>
+                  {mintable.amount.isGreaterThan(0) ? 'Mint Now' : 'Sold Out'}
+                </h2>
+              </div> */}
+              {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
+                <div className='mint-image'>
+                  {mintable.amount.isGreaterThan(0) ? (
+                    <>
+                      <DisplayNftByToken
+                        tokenIdentifier={mintable.token_identifier}
+                        nonce={mintable.nonce}
+                      />
+                    </>
+                  ) : (
+                    <img
+                      src={sold_graout}
+                      className='w-full rounded-2xl shadow-2xl border-4 border-white/20'
+                      alt='Sold Out'
+                    />
+                  )}
+
+                  <div className='p-6'>
+                    {mintable.amount.isGreaterThan(0) ? (
+                      <>
+                        {timeStart > 0 ? (
+                          <div className='text-center text-lg text-white'>
+                            Mint opens soon...
+                          </div>
+                        ) : (
+                          <>
+                            {timeEnd > 0 ? (
+                              <ActionBuy
+                                price={mintable?.payment_price}
+                                balance={
+                                  mintable.payment_token == 'EGLD'
+                                    ? new BigNumber(balance ? balance : 0)
+                                    : esdtAmount
+                                }
+                                hasBuyed={hasBuyed}
+                                payment_token={mintable.payment_token}
+                              />
+                            ) : (
+                              <div className='text-center text-xl font-bold text-white'>
+                                Sale ended
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {mintable &&
+                          mintable.token_identifier &&
+                          new BigNumber(mintable.amount.isEqual).isZero() && (
+                            <div className='text-center text-2xl font-bold text-white'>
+                              SOLD OUT
+                            </div>
+                          )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className='text-white text-center py-12 text-lg font-medium animate-pulse'>
+                  {displayText}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column - Info */}
+          <div className='flex flex-col gap-6'>
+            {/* Info Card */}
+            <div className='rounded-3xl bg-white shadow-xl border border-gray-100 overflow-hidden'>
+              <div className='bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4'>
+                <h2 className='text-xl font-bold text-white'>Mint Details</h2>
+              </div>
+
+              {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
+                <div className='p-6 space-y-3'>
+                  {/* Timer Section */}
+                  {timeEnd > 0 && timeStart <= 0 && (
+                    <div className='flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100'>
+                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                        Ends in
+                      </span>
+                      <span className='text-2xl font-bold text-red-600'>
+                        {formatTime(timeEnd)}
+                      </span>
+                    </div>
+                  )}
+
+                  {timeStart > 0 && (
+                    <div className='flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100'>
+                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                        Opens in
+                      </span>
+                      <span className='text-2xl font-bold text-purple-600'>
+                        {formatTime(timeStart)}
+                      </span>
+                    </div>
+                  )}
+
                   {address && (
-                    <div className='info-item'>
-                      <span className='text-label'>Wallet:</span>{' '}
-                      {mintable && mintable.payment_token == 'EGLD' ? (
-                        <>
-                          {Number(
-                            new BigNumber(balance).dividedBy(10 ** 18)
-                          ).toLocaleString(undefined, {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2
-                          })}
-                          {'  '}
-                        </>
-                      ) : (
-                        <>
+                    <div className='flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100'>
+                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                        Your Balance
+                      </span>
+                      <span className='text-lg font-bold text-purple-700'>
+                        {mintable && mintable.payment_token == 'EGLD' ? (
+                          <>
+                            {Number(
+                              new BigNumber(balance).dividedBy(10 ** 18)
+                            ).toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2
+                            })}{' '}
+                            <span className='text-sm text-gray-600'>
+                              {mintable.payment_token}
+                            </span>
+                          </>
+                        ) : (
                           <FormatAmount
                             amount={esdtAmount}
                             identifier={mintable?.payment_token}
                           />
-                        </>
-                      )}
+                        )}
+                      </span>
                     </div>
                   )}
-                  <div className='info-item'>
-                    <span className='text-label'>{t('mint:price')}: </span>
-                    <FormatAmount
-                      amount={mintable?.payment_price}
-                      identifier={mintable?.payment_token}
-                    />
+
+                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
+                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                      {t('mint:price')}
+                    </span>
+                    <span className='text-lg font-bold text-gray-900'>
+                      <FormatAmount
+                        amount={mintable?.payment_price}
+                        identifier={mintable?.payment_token}
+                      />
+                    </span>
                   </div>
-                  <div className='info-item'>
-                    <span className='text-label'>{t('mint:mint_left')}: </span>{' '}
-                    {Number(mintable?.amount).toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    })}{' '}
-                  </div>
-                  {nft_information.supply && (
-                    <div className='info-item'>
-                      <span className='text-label'>{t('mint:supply')}: </span>{' '}
-                      {Number(
-                        new BigNumber(nft_information.supply).toFixed()
-                      ).toLocaleString(undefined, {
+
+                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
+                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                      {t('mint:mint_left')}
+                    </span>
+                    <span className='text-lg font-bold text-gray-900'>
+                      {Number(mintable?.amount).toLocaleString(undefined, {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 0
                       })}
+                    </span>
+                  </div>
+
+                  {nft_information.supply && (
+                    <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
+                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                        {t('mint:supply')}
+                      </span>
+                      <span className='text-lg font-bold text-gray-900'>
+                        {Number(
+                          new BigNumber(nft_information.supply).toFixed()
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0
+                        })}
+                      </span>
                     </div>
                   )}
 
-                  <div className='info-item'>
-                    <span className='text-label'>SFT: </span>{' '}
-                    {mintable?.token_identifier}-
-                    {toHex(mintable?.nonce.toFixed())}
+                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
+                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                      SFT
+                    </span>
+                    <span className='text-sm font-mono text-gray-600 break-all'>
+                      {mintable?.token_identifier}-
+                      {toHex(mintable?.nonce.toFixed())}
+                    </span>
                   </div>
 
-                  <div className='info-item'>
-                    <span className='text-label'>{t('mint:start')}: </span>{' '}
-                    {blockToTime(mintable?.start_time)}{' '}
+                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
+                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                      {t('mint:start')}
+                    </span>
+                    <span className='text-sm text-gray-600'>
+                      {blockToTime(mintable?.start_time)}
+                    </span>
                   </div>
 
-                  <div className='info-item'>
-                    <span className='text-label'>{t('mint:end')}: </span>{' '}
-                    {blockToTime(mintable?.end_time)}{' '}
+                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
+                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+                      {t('mint:end')}
+                    </span>
+                    <span className='text-sm text-gray-600'>
+                      {blockToTime(mintable?.end_time)}
+                    </span>
                   </div>
                 </div>
-                <div className='sub-dinocard'>
-                  <div className='mint-image' style={{ margin: 'auto' }}>
-                    {mintable.amount.isGreaterThan(0) ? (
-                      <>
-                        {nft_information?.media?.length > 0 &&
-                          nft_information?.media[0]?.url && (
-                            <img
-                              src={nft_information?.media[0]?.url}
-                              alt='SFT'
-                            />
-                          )}
-                      </>
-                    ) : (
-                      <img src={sold_graout} className='mint-image' />
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className='sub-dinocard'>{displayText}</div>
-            )}
-          </div>
-          <div
-            style={{ width: '100%', justifyContent: 'center', display: 'grid' }}
-          >
-            <div className='text-label' style={{ margin: 'auto' }}>
-              {mintable.amount.isGreaterThan(0) ? (
-                <>
-                  {timeStart > 0 ? (
-                    <div>Open in : {formatTime(timeStart)}</div>
-                  ) : (
-                    <>
-                      {timeEnd > 0 ? (
-                        <>
-                          <ActionBuy
-                            price={mintable?.payment_price}
-                            balance={
-                              mintable.payment_token == 'EGLD'
-                                ? new BigNumber(balance ? balance : 0)
-                                : esdtAmount
-                            }
-                            hasBuyed={hasBuyed}
-                            payment_token={mintable.payment_token}
-                          />
-                          <div>End in : {formatTime(timeEnd)}</div>
-                        </>
-                      ) : (
-                        <>Sale ended</>
-                      )}
-                    </>
-                  )}
-                </>
               ) : (
-                <>
-                  {mintable &&
-                    mintable.token_identifier &&
-                    new BigNumber(mintable.amount.isEqual).isZero() && (
-                      <> SOLD GRAOUT</>
-                    )}
-                </>
+                <div className='p-6 text-center text-gray-500'>
+                  Loading mint information...
+                </div>
               )}
-              <div></div>
             </div>
-            {/* <MxLink
-              className='dinoButton  rounded-lg px-3 py-2 text-center hover:no-underline my-0 bg-blue-600 '
-              to={RouteNamesEnum.unlock}
-            >
-              Connect
-            </MxLink> */}
-          </div>{' '}
+          </div>
         </div>
-      </div>
+      </PageTemplate>
     </PageWrapper>
   );
 };

@@ -1,84 +1,179 @@
+/* Modern Mint Page Styles */
+
 .mint-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 500px;
   margin: 50px auto;
-  background-color: #7de9f2;
-  border: 2px solid #f7ea43;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.mint-container:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 .mint-title {
   text-align: center;
-  color: rgb(255 119 75);
-  font-size: 24px;
-  margin-bottom: 20px;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  letter-spacing: 1px;
 }
 
 .mint-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
-  font-size: 20px;
-  font-weight: 400;
-  font-family: Manrope;
-  line-height: 36px;
-  /* color: rgb(255 119 75); */
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Inter', 'Manrope', sans-serif;
+  line-height: 1.5;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
 }
 
 .price-input {
-  width: 60px;
-  padding: 5px;
+  width: 80px;
+  padding: 8px 12px;
   font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #fff;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .text-label {
-  color: rgb(0, 0, 0);
-  margin-right: 10px;
-  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
 }
 
 .token-label {
-  margin-left: 10px;
-  color: #f7ea43;
+  margin-left: 8px;
+  color: #ffd700;
+  font-weight: 700;
 }
 
 .mint-image {
   text-align: center;
-  margin: 20px 0;
+  margin: 24px 0;
+  position: relative;
 }
 
 .mint-image img {
-  width: 200px;
-  border: 2px solid #f7ea43;
-  border-radius: 10px;
+  width: 100%;
+  max-width: 280px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.mint-image img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
 }
 
 .mint-button {
-  background-color: #f7ea43;
-  color: #7de9f2;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #1a1a2e;
   font-size: 18px;
-  padding: 10px 15px;
+  font-weight: 700;
+  padding: 14px 28px;
   border: none;
-  border-radius: 5px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   text-align: center;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.mint-button:hover {
-  background-color: #ffdb31;
+.mint-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.mint-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.mint-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .identifier {
-  margin-left: 10px;
-  color: #847f73;
+  margin-left: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+}
+
+.dinoTitle {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  gap: 10px;
+
+  width: 306.92px;
+  height: 64.43px;
+
+  /* Yellow */
+  background: #f5ed43;
+  transform: rotate(-2deg);
+
+  /* Inside auto layout */
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  z-index: 0;
+  margin: 30px auto;
+  font-family: BitCell;
+  font-size: 50px;
+  font-weight: 400;
 }

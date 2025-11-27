@@ -90,16 +90,15 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
   return (
     <>
       {!isLoggedIn ? (
-        <>
-          {' '}
+        <div className='w-full'>
           <ConnectButton />
-        </>
+        </div>
       ) : (
         <>
           {!hasPendingTransactions ? (
-            <>
+            <div className='flex flex-col gap-3 w-full'>
               <button
-                className='dinoButton'
+                className='dinoButton w-full'
                 onClick={sendFundTransaction}
                 disabled={
                   hasBuyed ||
@@ -117,16 +116,17 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
               <a
                 target='_blank'
                 href={`https://xexchange.com/trade?firstToken=EGLD&secondToken=${payment_token}`}
+                className='w-full'
               >
-                <button className='dinoButton'>Buy {payment_token}</button>
+                <button className='dinoButton w-full reverse'>
+                  Buy {payment_token}
+                </button>
               </a>
-            </>
+            </div>
           ) : (
-            <>
-              <button className='dinoButton' disabled>
-                Processing
-              </button>
-            </>
+            <button className='dinoButton w-full' disabled>
+              Processing
+            </button>
           )}
         </>
       )}
