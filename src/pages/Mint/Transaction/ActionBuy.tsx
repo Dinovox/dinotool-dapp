@@ -102,17 +102,24 @@ export const ActionBuy = ({ price, hasBuyed, payment_token, balance }: any) => {
                 onClick={sendFundTransaction}
                 disabled={
                   hasBuyed ||
-                  balance.isLessThan(new BigNumber(price).plus(fees))
+                  (payment_token == 'EGLD' &&
+                    balance.isLessThan(new BigNumber(price).plus(fees))) ||
+                  (payment_token != 'EGLD' &&
+                    balance.isLessThan(new BigNumber(price)))
                     ? true
                     : false
                 }
               >
-                {balance.isLessThan(new BigNumber(price).plus(fees))
-                  ? 'balance too low'
+                {(payment_token == 'EGLD' &&
+                  balance.isLessThan(new BigNumber(price).plus(fees))) ||
+                (payment_token != 'EGLD' &&
+                  balance.isLessThan(new BigNumber(price)))
+                  ? 'Balance too low'
                   : hasBuyed
                   ? 'One mint per wallet'
                   : 'Mint'}
               </button>
+              <p></p>
               <a
                 target='_blank'
                 href={`https://xexchange.com/trade?firstToken=EGLD&secondToken=${payment_token}`}

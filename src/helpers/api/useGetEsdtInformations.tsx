@@ -61,13 +61,15 @@ interface FormatAmountProps {
   identifier: string; // Token identifier (e.g., 'EGLD', 'USDC-c76f1f')
   displayDecimals?: number; // Optional: number of decimals to display, defaults to 2 or actual significant decimals
   showLastNonZeroDecimal?: boolean;
+  withPrice?: boolean;
 }
 
 export const FormatAmount: React.FC<FormatAmountProps> = ({
   amount,
   identifier,
   displayDecimals,
-  showLastNonZeroDecimal
+  showLastNonZeroDecimal,
+  withPrice
 }) => {
   // Fetch token information using the hook
   const esdtInfo = useGetEsdtInformations(identifier);
@@ -78,7 +80,7 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
   const decimals = identifier === 'EGLD' ? 18 : esdtInfo?.decimals || 18;
 
   if (amount === null || amount === undefined || isNaN(Number(amount))) {
-    return `0 ${ticker}`;
+    return <>{`0 ${ticker}`}</>;
   }
 
   const bnAmount = new BigNumber(amount);
@@ -99,20 +101,46 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
       groupSize: 3,
       suffix: ''
     });
-    // If the value has more significant decimals than 2, show them up to the original 'decimals'
-    if (value.decimalPlaces() > 2 && value.decimalPlaces() <= decimals) {
-      formattedValue = value.toFormat(
-        value.decimalPlaces(),
-        BigNumber.ROUND_DOWN,
-        {
-          decimalSeparator: '.',
-          groupSeparator: ',',
-          groupSize: 3,
-          suffix: ''
-        }
-      );
+    // If the value has more significant decimals than 2, show them up to the original 'decimals' but cap at 8
+    if (value.decimalPlaces() > 2) {
+      const decimalsToShow = Math.min(value.decimalPlaces(), 8);
+      formattedValue = value.toFormat(decimalsToShow, BigNumber.ROUND_DOWN, {
+        decimalSeparator: '.',
+        groupSeparator: ',',
+        groupSize: 3,
+        suffix: ''
+      });
     }
   }
 
-  return `${formattedValue} ${ticker}`;
+  if (withPrice && esdtInfo?.price) {
+    const price = new BigNumber(esdtInfo.price);
+    const fiatValue = value.multipliedBy(price);
+
+    return (
+      <div className='flex flex-col'>
+        <span>{`${formattedValue} ${ticker}`}</span>
+        <span className='text-sm opacity-70 font-normal'>
+          ≈ ${fiatValue.toFormat(2)}
+        </span>
+      </div>
+    );
+  }
+
+  //test
+  // if (withPrice) {
+  //   const price = new BigNumber(91135.9351458653);
+  //   const fiatValue = value.multipliedBy(price);
+
+  //   return (
+  //     <div className='flex flex-col'>
+  //       <span>{`${formattedValue} ${ticker}`}</span>
+  //       <span className='text-sm opacity-70 font-normal'>
+  //         ≈ ${fiatValue.toFormat(2)}
+  //       </span>
+  //     </div>
+  //   );
+  // }
+
+  return <>{`${formattedValue} ${ticker}`}</>;
 };

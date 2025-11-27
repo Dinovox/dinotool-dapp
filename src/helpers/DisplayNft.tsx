@@ -24,7 +24,7 @@ type DisplayNftProps = {
   /**
    * Mode d'affichage: 'card' (défaut) ou 'media-only' (juste l'image/vidéo).
    */
-  variant?: 'card' | 'media-only';
+  variant?: 'card' | 'media-only' | 'name-only';
 };
 
 const resolveIpfs = (uri: string): string => {
@@ -120,6 +120,9 @@ export const DisplayNft: React.FC<DisplayNftProps> = ({
         {MediaContent}
       </div>
     );
+  }
+  if (variant === 'name-only') {
+    return <>{nft.name || 'Unnamed NFT'}</>;
   }
 
   return (

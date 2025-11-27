@@ -52,7 +52,7 @@ export const useGetUserHasBuyed = (tokenIdentifier: string) => {
   };
 
   const getEsdtAmount = async () => {
-    if (!address || hasPendingTransactions) {
+    if (!address || hasPendingTransactions || !tokenIdentifier) {
       return;
     }
     try {
@@ -64,9 +64,8 @@ export const useGetUserHasBuyed = (tokenIdentifier: string) => {
           tokenIdentifier
       );
 
-      console.log(balance);
-      if (balance?.data?.balance) {
-        setEsdtAmount(new BigNumber(balance?.data?.balance));
+      if (balance?.data?.[0]?.balance) {
+        setEsdtAmount(new BigNumber(balance?.data?.[0].balance));
       } else {
         setEsdtAmount(new BigNumber(0));
       }

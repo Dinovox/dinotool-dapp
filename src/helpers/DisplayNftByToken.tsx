@@ -12,7 +12,7 @@ type DisplayNftByTokenProps = {
   className?: string;
   badgeLabel?: string;
   loadingPlaceholder?: React.ReactNode;
-  variant?: 'card' | 'media-only';
+  variant?: 'card' | 'media-only' | 'name-only';
 };
 
 export const DisplayNftByToken: React.FC<DisplayNftByTokenProps> = ({

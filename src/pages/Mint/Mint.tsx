@@ -35,7 +35,7 @@ export const Mint = () => {
 
   const [displayText, setDisplayText] = useState('');
   const fullText =
-    'Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖';
+    'Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 ';
   useEffect(() => {
     const characters = Array.from(fullText); //array for emoji..
     let index = 0;
@@ -53,9 +53,7 @@ export const Mint = () => {
   }, []);
 
   const mintable = useGetMintable();
-  const { hasBuyed, esdtAmount } = useGetUserHasBuyed(
-    mintable?.token_identifier
-  );
+  const { hasBuyed, esdtAmount } = useGetUserHasBuyed(mintable?.payment_token);
 
   const { balance, address } = useGetAccount();
 
@@ -89,217 +87,181 @@ export const Mint = () => {
         breadcrumbItems={[{ label: 'Home', path: '/' }, { label: 'Mint' }]}
         maxWidth='1400px'
       >
-        {/* Main Content */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-          {/* Left Column - NFT Image & Actions */}
-          <div className='flex flex-col gap-6'>
-            {/* NFT Image Card */}
-            <div className='rounded-3xl bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-8 shadow-2xl border border-purple-400/20'>
-              {/* <div className='bg-gradient-to-r from-yellow-400 to-yellow-500 px-6 py-4'>
-                <h2 className='text-xl font-bold text-gray-900'>
-                  {mintable.amount.isGreaterThan(0) ? 'Mint Now' : 'Sold Out'}
-                </h2>
-              </div> */}
-              {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
-                <div className='mint-image'>
-                  {mintable.amount.isGreaterThan(0) ? (
-                    <>
-                      <DisplayNftByToken
-                        tokenIdentifier={mintable.token_identifier}
-                        nonce={mintable.nonce}
-                      />
-                    </>
-                  ) : (
-                    <img
-                      src={sold_graout}
-                      className='w-full rounded-2xl shadow-2xl border-4 border-white/20'
-                      alt='Sold Out'
+        {/* Main Content: Vintage Gazette Layout */}
+        <div className='gazette-wrapper'>
+          <div className='gazette-card'>
+            {/* LEFT PANEL: Visual / Artwork */}
+            <div className='gazette-visual-col'>
+              <div className='gazette-image-frame'>
+                {mintable && mintable.token_identifier ? (
+                  timeStart > 0 ? (
+                    <div className='gazette-prompter'>{displayText}</div>
+                  ) : mintable.amount.isGreaterThan(0) ? (
+                    <DisplayNftByToken
+                      tokenIdentifier={mintable.token_identifier}
+                      nonce={mintable.nonce}
                     />
-                  )}
-
-                  <div className='p-6'>
-                    {mintable.amount.isGreaterThan(0) ? (
-                      <>
-                        {timeStart > 0 ? (
-                          <div className='text-center text-lg text-white'>
-                            Mint opens soon...
-                          </div>
-                        ) : (
-                          <>
-                            {timeEnd > 0 ? (
-                              <ActionBuy
-                                price={mintable?.payment_price}
-                                balance={
-                                  mintable.payment_token == 'EGLD'
-                                    ? new BigNumber(balance ? balance : 0)
-                                    : esdtAmount
-                                }
-                                hasBuyed={hasBuyed}
-                                payment_token={mintable.payment_token}
-                              />
-                            ) : (
-                              <div className='text-center text-xl font-bold text-white'>
-                                Sale ended
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {mintable &&
-                          mintable.token_identifier &&
-                          new BigNumber(mintable.amount.isEqual).isZero() && (
-                            <div className='text-center text-2xl font-bold text-white'>
-                              SOLD OUT
-                            </div>
-                          )}
-                      </>
-                    )}
+                  ) : (
+                    <div className='relative'>
+                      <img src={sold_graout} alt='Sold Out' />
+                      <div className='stamp-overlay'>SOLD OUT</div>
+                    </div>
+                  )
+                ) : (
+                  <div className='p-12 text-center text-gray-400'>
+                    Loading Plate...
                   </div>
-                </div>
-              ) : (
-                <div className='text-white text-center py-12 text-lg font-medium animate-pulse'>
-                  {displayText}
-                </div>
-              )}
+                )}
+              </div>
+              <div className='gazette-caption'>
+                <DisplayNftByToken
+                  tokenIdentifier={mintable?.token_identifier}
+                  nonce={mintable?.nonce}
+                  variant='name-only'
+                />{' '}
+              </div>
             </div>
-          </div>
 
-          {/* Right Column - Info */}
-          <div className='flex flex-col gap-6'>
-            {/* Info Card */}
-            <div className='rounded-3xl bg-white shadow-xl border border-gray-100 overflow-hidden'>
-              <div className='bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4'>
-                <h2 className='text-xl font-bold text-white'>Mint Details</h2>
+            {/* RIGHT PANEL: The Article / Info */}
+            <div className='gazette-info-col'>
+              <div className='gazette-header'>
+                <h2 className='gazette-headline'>
+                  {timeStart > 0
+                    ? 'COMING SOON'
+                    : timeEnd > 0
+                    ? 'MINTING NOW'
+                    : 'EDITION CLOSED'}
+                </h2>
+                <div className='gazette-subhead'>
+                  Vol. {mintable?.nonce?.toFixed() || '1'} —{' '}
+                  <DisplayNftByToken
+                    tokenIdentifier={mintable?.token_identifier}
+                    nonce={mintable?.nonce}
+                    variant='name-only'
+                  />
+                </div>
               </div>
 
-              {mintable && mintable.token_identifier && timeStart <= 60 * 30 ? (
-                <div className='p-6 space-y-3'>
-                  {/* Timer Section */}
-                  {timeEnd > 0 && timeStart <= 0 && (
-                    <div className='flex justify-between items-center p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100'>
-                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                        Ends in
-                      </span>
-                      <span className='text-2xl font-bold text-red-600'>
-                        {formatTime(timeEnd)}
-                      </span>
-                    </div>
-                  )}
-
-                  {timeStart > 0 && (
-                    <div className='flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100'>
-                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                        Opens in
-                      </span>
-                      <span className='text-2xl font-bold text-purple-600'>
-                        {formatTime(timeStart)}
-                      </span>
-                    </div>
-                  )}
-
-                  {address && (
-                    <div className='flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100'>
-                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                        Your Balance
-                      </span>
-                      <span className='text-lg font-bold text-purple-700'>
-                        {mintable && mintable.payment_token == 'EGLD' ? (
-                          <>
-                            {Number(
-                              new BigNumber(balance).dividedBy(10 ** 18)
-                            ).toLocaleString(undefined, {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 2
-                            })}{' '}
-                            <span className='text-sm text-gray-600'>
-                              {mintable.payment_token}
-                            </span>
-                          </>
-                        ) : (
-                          <FormatAmount
-                            amount={esdtAmount}
-                            identifier={mintable?.payment_token}
-                          />
-                        )}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
-                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                      {t('mint:price')}
-                    </span>
-                    <span className='text-lg font-bold text-gray-900'>
-                      <FormatAmount
-                        amount={mintable?.payment_price}
-                        identifier={mintable?.payment_token}
-                      />
-                    </span>
+              {/* Info Grid */}
+              <div className='gazette-info-grid'>
+                {/* Timer */}
+                <div className='gazette-info-box'>
+                  <div className='gazette-box-label'>
+                    <span>⏳</span> {timeStart > 0 ? 'Opens In' : 'Ends In'}
                   </div>
-
-                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
-                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                      {t('mint:mint_left')}
-                    </span>
-                    <span className='text-lg font-bold text-gray-900'>
-                      {Number(mintable?.amount).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                      })}
-                    </span>
+                  <div className='gazette-box-value large'>
+                    {timeStart > 0
+                      ? formatTime(timeStart)
+                      : timeEnd > 0
+                      ? formatTime(timeEnd)
+                      : 'CLOSED'}
                   </div>
+                </div>
 
-                  {nft_information.supply && (
-                    <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
-                      <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                        {t('mint:supply')}
-                      </span>
-                      <span className='text-lg font-bold text-gray-900'>
-                        {Number(
+                {/* Price */}
+                <div className='gazette-info-box'>
+                  <div className='gazette-box-label'>
+                    <span>🏷️</span> Price
+                  </div>
+                  <div className='gazette-box-value'>
+                    <FormatAmount
+                      amount={mintable?.payment_price}
+                      identifier={mintable?.payment_token}
+                      withPrice
+                    />
+                  </div>
+                </div>
+
+                {/* Supply */}
+                <div className='gazette-info-box'>
+                  <div className='gazette-box-label'>
+                    <span>📦</span> Remaining
+                  </div>
+                  <div className='gazette-box-value'>
+                    {Number(mintable?.amount).toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className='gazette-info-box'>
+                  <div className='gazette-box-label'>
+                    <span>📦</span> Total Supply
+                  </div>
+                  <div className='gazette-box-value'>
+                    {nft_information.supply
+                      ? Number(
                           new BigNumber(nft_information.supply).toFixed()
-                        ).toLocaleString(undefined, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0
-                        })}
-                      </span>
+                        ).toLocaleString()
+                      : '-'}
+                  </div>
+                </div>
+
+                {/* Balance */}
+                {address && (
+                  <div className='gazette-info-box'>
+                    <div className='gazette-box-label'>
+                      <span>💰</span> Your Balance
                     </div>
-                  )}
-
-                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
-                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                      SFT
-                    </span>
-                    <span className='text-sm font-mono text-gray-600 break-all'>
-                      {mintable?.token_identifier}-
-                      {toHex(mintable?.nonce.toFixed())}
-                    </span>
+                    <div className='gazette-box-value'>
+                      {mintable && mintable.payment_token == 'EGLD' ? (
+                        <>
+                          {Number(
+                            new BigNumber(balance).dividedBy(10 ** 18)
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2
+                          })}{' '}
+                          <span className='text-sm'>
+                            {mintable.payment_token}
+                          </span>
+                        </>
+                      ) : (
+                        <FormatAmount
+                          amount={esdtAmount}
+                          identifier={mintable?.payment_token}
+                          withPrice
+                        />
+                      )}
+                    </div>
                   </div>
+                )}
 
-                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
-                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                      {t('mint:start')}
-                    </span>
-                    <span className='text-sm text-gray-600'>
-                      {blockToTime(mintable?.start_time)}
-                    </span>
+                {/* Dates */}
+                <div className='gazette-info-box'>
+                  <div className='gazette-box-label'>
+                    <span>🗓️</span> Start Date
                   </div>
-
-                  <div className='flex justify-between items-center p-4 bg-gray-50 rounded-xl'>
-                    <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
-                      {t('mint:end')}
-                    </span>
-                    <span className='text-sm text-gray-600'>
-                      {blockToTime(mintable?.end_time)}
-                    </span>
+                  <div
+                    className='gazette-box-value'
+                    style={{ fontSize: '16px' }}
+                  >
+                    {blockToTime(mintable?.start_time)}
                   </div>
                 </div>
-              ) : (
-                <div className='p-6 text-center text-gray-500'>
-                  Loading mint information...
-                </div>
-              )}
+              </div>
+
+              {/* Actions */}
+              <div className='gazette-actions'>
+                {mintable &&
+                mintable.amount.isGreaterThan(0) &&
+                timeStart <= 0 &&
+                timeEnd > 0 ? (
+                  <ActionBuy
+                    price={mintable?.payment_price}
+                    balance={
+                      mintable.payment_token == 'EGLD'
+                        ? new BigNumber(balance ? balance : 0)
+                        : esdtAmount
+                    }
+                    hasBuyed={hasBuyed}
+                    payment_token={mintable.payment_token}
+                  />
+                ) : (
+                  <button disabled className='mint-button'>
+                    {timeStart > 0 ? 'PLEASE WAIT' : 'SOLD OUT'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

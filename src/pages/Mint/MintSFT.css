@@ -1,179 +1,330 @@
-/* Modern Mint Page Styles */
+/* ============================================
+   LA GAZETTE DU DINO - VINTAGE MINT PAGE
+   Aged paper, ink, and retro press aesthetic
+   ============================================ */
 
-.mint-container {
+:root {
+  /* Vintage Palette */
+  --paper-bg: #f4e4bc; /* Aged paper */
+  --paper-texture: #e8d5a5; /* Slightly darker for texture/borders */
+  --ink-primary: #2c241b; /* Dark brown ink */
+  --ink-secondary: #5d4037; /* Lighter brown */
+  --ink-accent: #8d6e63; /* Sepia accent */
+
+  --stamp-red: #c0392b; /* Urgent stamp color */
+  --stamp-blue: #2980b9; /* Official stamp color */
+  --stamp-green: #27ae60; /* Success stamp color */
+
+  /* Layout */
+  --card-radius: 2px; /* Sharp, cut paper edges */
+  --border-width: 2px;
+
+  /* Typography */
+  --font-headline: 'Courier Prime', 'Courier New', monospace;
+  --font-body: 'Times New Roman', serif;
+  --font-label: 'Arial', sans-serif; /* For small utilitarian labels */
+}
+
+/* ============================================
+   MAIN CONTAINER & CARD
+   ============================================ */
+
+.gazette-wrapper {
   width: 100%;
-  max-width: 500px;
-  margin: 50px auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.mint-container:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.15);
-}
-
-.mint-title {
-  text-align: center;
-  color: #ffffff;
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 24px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  letter-spacing: 1px;
-}
-
-.mint-info {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: center;
+  padding: 40px 20px;
 }
 
-.info-item {
+.gazette-card {
+  width: 100%;
+  max-width: 1600px; /* Wide layout */
+  background-color: var(--paper-bg);
+  /* Subtle paper texture simulation */
+  background-image: linear-gradient(var(--paper-bg) 50%, transparent 50%),
+    linear-gradient(90deg, var(--paper-bg) 50%, transparent 50%);
+  background-size: 4px 4px;
+
+  border: 4px solid var(--ink-primary);
+  box-shadow:
+    10px 10px 0px rgba(44, 36, 27, 0.2),
+    /* Hard shadow */ 0 0 40px rgba(0, 0, 0, 0.1); /* Soft ambient */
+
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 500;
-  font-family: 'Inter', 'Manrope', sans-serif;
-  line-height: 1.5;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.2s ease;
-}
-
-.info-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(4px);
-}
-
-.price-input {
-  width: 80px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  transition: all 0.2s ease;
-}
-
-.price-input:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.text-label {
-  color: rgba(255, 255, 255, 0.9);
-  margin-right: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.token-label {
-  margin-left: 8px;
-  color: #ffd700;
-  font-weight: 700;
-}
-
-.mint-image {
-  text-align: center;
-  margin: 24px 0;
+  flex-direction: row; /* Side by side */
+  overflow: hidden;
   position: relative;
 }
 
-.mint-image img {
-  width: 100%;
-  max-width: 280px;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+/* Decorative corner accents (Polynesian motif simulation) */
+.gazette-card::before,
+.gazette-card::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--ink-primary);
+  z-index: 10;
+}
+.gazette-card::before {
+  top: 10px;
+  left: 10px;
+  border-right: none;
+  border-bottom: none;
+}
+.gazette-card::after {
+  bottom: 10px;
+  right: 10px;
+  border-left: none;
+  border-top: none;
 }
 
-.mint-image img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+/* ============================================
+   LEFT PANEL: ARTWORK (40%)
+   ============================================ */
+
+.gazette-visual-col {
+  flex: 0 0 40%;
+  border-right: 3px double var(--ink-primary);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.2); /* Slightly lighter area */
+}
+
+.gazette-image-frame {
+  width: 100%;
+  max-width: 400px; /* Smaller max width to fit visual better */
+  aspect-ratio: 1 / 1; /* Maintain square shape */
+  padding: 15px;
+  border: 2px solid var(--ink-primary);
+  background: #fff;
+  box-shadow: 5px 5px 0px var(--ink-secondary);
+  transform: rotate(-1deg); /* Slight imperfection */
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Contain the prompter */
+}
+
+.gazette-prompter {
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden; /* Disable scroll as requested */
+  padding: 20px;
+  text-align: center;
+  font-family: 'Courier Prime', monospace;
+  font-size: 18px;
+  color: var(--ink-secondary);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  word-break: break-word; /* Ensure text wraps */
+}
+
+.gazette-prompter::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.gazette-image-frame:hover {
+  transform: rotate(0deg) scale(1.01);
+}
+
+.gazette-image-frame img {
+  width: 100%;
+  height: auto;
+  filter: sepia(20%) contrast(110%); /* Vintage photo feel */
+  display: block;
+  border: 1px solid #ddd;
+}
+
+.gazette-caption {
+  margin-top: 15px;
+  font-family: 'Brush Script MT', cursive; /* Handwritten style */
+  font-size: 24px;
+  color: var(--ink-secondary);
+  text-align: center;
+  transform: rotate(-2deg);
+}
+
+/* ============================================
+   RIGHT PANEL: INFO (60%)
+   ============================================ */
+
+.gazette-info-col {
+  flex: 1;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+.gazette-header {
+  border-bottom: 4px double var(--ink-primary);
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  text-align: center;
+}
+
+.gazette-headline {
+  font-family: var(--font-headline);
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--ink-primary);
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  margin: 0;
+  line-height: 1;
+}
+
+.gazette-subhead {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-secondary);
+  margin-top: 10px;
+}
+
+/* INFO GRID */
+.gazette-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns wide */
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.gazette-info-box {
+  border: 1px solid var(--ink-primary);
+  padding: 12px; /* Reduced padding */
+  background: rgba(255, 255, 255, 0.4);
+  position: relative;
+  transition: transform 0.2s;
+  overflow: hidden; /* Prevent spillover */
+}
+
+.gazette-info-box:hover {
+  transform: translateY(-2px);
+  background: #fff;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+.gazette-box-label {
+  font-family: var(--font-label);
+  font-size: 10px; /* Slightly smaller */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-secondary);
+  margin-bottom: 6px;
+  border-bottom: 1px dashed var(--ink-secondary);
+  padding-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.gazette-box-value {
+  font-family: var(--font-headline);
+  font-size: 16px; /* Reduced from 20px */
+  font-weight: 700;
+  color: var(--ink-primary);
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.gazette-box-value.large {
+  font-size: 22px; /* Reduced from 28px */
+  color: var(--stamp-red);
+}
+
+/* ============================================
+   ACTIONS & BUTTONS
+   ============================================ */
+
+.gazette-actions {
+  margin-top: auto; /* Push to bottom */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 2px dashed var(--ink-primary);
 }
 
 .mint-button {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  color: #1a1a2e;
-  font-size: 18px;
-  font-weight: 700;
-  padding: 14px 28px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  background-color: var(--ink-primary);
+  color: var(--paper-bg);
+  font-family: var(--font-headline);
+  font-size: 24px;
+  font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 20px 60px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  /* Rough edges simulation via clip-path or box-shadow */
+  box-shadow: 5px 5px 0px var(--ink-accent);
+  transition: all 0.2s;
+  letter-spacing: 2px;
 }
 
 .mint-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0px var(--ink-accent);
+  background-color: #000;
 }
 
 .mint-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--ink-accent);
 }
 
 .mint-button:disabled {
-  opacity: 0.5;
+  background-color: #999;
+  color: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-.identifier {
-  margin-left: 8px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  font-family: 'Courier New', monospace;
+/* Stamp Effect Overlay for Sold Out */
+.stamp-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border: 4px solid var(--stamp-red);
+  color: var(--stamp-red);
+  font-family: 'Impact', sans-serif;
+  font-size: 48px;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
-.dinoTitle {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  gap: 10px;
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 
-  width: 306.92px;
-  height: 64.43px;
+@media (max-width: 1200px) {
+  .gazette-info-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 cols on smaller screens */
+  }
+}
 
-  /* Yellow */
-  background: #f5ed43;
-  transform: rotate(-2deg);
-
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-  z-index: 0;
-  margin: 30px auto;
-  font-family: BitCell;
-  font-size: 50px;
-  font-weight: 400;
+@media (max-width: 900px) {
+  .gazette-card {
+    flex-direction: column;
+  }
+  .gazette-visual-col {
+    border-right: none;
+    border-bottom: 3px double var(--ink-primary);
+  }
+  .gazette-info-col {
+    padding: 30px;
+  }
 }

@@ -5,14 +5,13 @@ import { useGetNetworkConfig } from 'lib';
 import mintgaz_json from 'contracts/mintgaz.abi.json';
 
 import { BigNumber } from 'bignumber.js';
-import { graou_identifier } from 'config';
 
 export const useGetMintable = () => {
   const [mintable, setMintable] = useState<any>({
     token_identifier: '',
     amount: new BigNumber(0),
     nonce: new BigNumber(0),
-    payment_token: graou_identifier,
+    payment_token: '',
     payment_price: new BigNumber(0),
     start_time: new Date(),
     end_time: new Date(),
