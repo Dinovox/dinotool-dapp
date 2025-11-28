@@ -3,5 +3,21 @@
   "mint_left": "Mint left",
   "supply": "Supply",
   "start": "Start",
-  "end": "End"
+  "end": "End",
+  "coming_soon": "COMING SOON",
+  "minting_now": "MINTING NOW",
+  "edition_closed": "EDITION CLOSED",
+  "vol": "Vol.",
+  "opens_in": "Opens In",
+  "ends_in": "Ends In",
+  "closed": "CLOSED",
+  "remaining": "Remaining",
+  "total_supply": "Total Supply",
+  "your_balance": "Your Balance",
+  "start_date": "Start Date",
+  "end_date": "End Date",
+  "please_wait": "PLEASE WAIT",
+  "sold_out": "SOLD OUT",
+  "loading_plate": "Loading Plate...",
+  "printing_text": "Printing... 🦖... ROAR!🦖 Printing... 🦖... ROAR!🦖 Printing... 🦖... ROAR!🦖 Printing... 🦖... ROAR!🦖 "
 }

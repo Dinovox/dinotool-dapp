@@ -51,12 +51,13 @@ function Countdown({ endTime }: { endTime: number }) {
   }, []);
   const left = Math.max(0, endTime - now);
   const s = Math.floor(left / 1000);
-  const h = Math.floor(s / 3600);
+  const d = Math.floor(s / (3600 * 24));
+  const h = Math.floor((s % (3600 * 24)) / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
   return (
     <span>
-      {h}h {m}m {sec}s
+      {d}d {h}h {m}m {sec}s
     </span>
   );
 }

@@ -13,7 +13,7 @@ import { useGetDinoStakers } from './Transaction/helpers/useGetDinoStakers';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import { FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
-import { Breadcrumb } from 'components/ui/Breadcrumb';
+import { PageTemplate } from 'components/PageTemplate';
 
 // --- Helper: normalizeAmountInput ---
 function normalizeAmountInput(input: string | number): string {
@@ -366,16 +366,14 @@ export const Drop = () => {
   // --- Render ---
   return (
     <PageWrapper>
-      <div className='flex flex-col w-full max-w-7xl mx-auto'>
-        <div className='px-6 pt-6'>
-          <Breadcrumb
-            items={[{ label: 'Home', path: '/' }, { label: 'Drop' }]}
-          />
-        </div>
+      <PageTemplate
+        title='DROP'
+        breadcrumbItems={[{ label: 'Home', path: '/' }, { label: 'Drop' }]}
+        maxWidth='1400px'
+      >
         <div className='w-full flex justify-center items-center py-8'>
           <div className='bg-white rounded-2xl shadow-xl p-8 max-w-xl w-full flex flex-col items-center gap-6 border border-yellow-100'>
             <div className='w-full text-center mb-2'>
-              <div className='mintGazTitle dinoTitle'>DROP</div>
               <div className='mx-auto' style={{ margin: '10px' }}>
                 <span>{t('drop:title')}</span>
               </div>
@@ -664,7 +662,7 @@ export const Drop = () => {
             </div>
           </div>
         </div>
-      </div>
+      </PageTemplate>
     </PageWrapper>
   );
 };

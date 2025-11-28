@@ -164,7 +164,7 @@ export const MarketplaceCollections = () => {
   const [ownedOnly, setOwnedOnly] = useState(false);
   const [friendsOnly, setFriendsOnly] = useState(false);
   const [page, setPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 12;
 
   const handleSearch = () => {
     setQuery(inputValue);
@@ -308,7 +308,7 @@ export const MarketplaceCollections = () => {
             Friends of Dinovox
           </label>
 
-          <div className='flex items-center gap-2'>
+          {/* <div className='flex items-center gap-2'>
             <label className='text-xs font-medium text-slate-600'>Sort</label>
             <select
               value={sort}
@@ -323,7 +323,7 @@ export const MarketplaceCollections = () => {
               <option value='itemsDesc'>Items ↓</option>
               <option value='listingsDesc'>Listings ↓</option>
             </select>
-          </div>
+          </div> */}
         </div>
       </div>
 

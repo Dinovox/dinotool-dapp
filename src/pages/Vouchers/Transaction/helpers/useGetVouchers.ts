@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetLoginInfo } from 'lib';
-import { internal_api } from 'config';
+import { dinoclaim_api } from 'config';
 
 export const useGetVouchers = () => {
   const [vouchers, setVouchers] = useState([]);
@@ -18,10 +18,7 @@ export const useGetVouchers = () => {
           }
         };
 
-        const { data } = await axios.get(
-          `${internal_api}/dinovox/vouchers`,
-          config
-        );
+        const { data } = await axios.get(`${dinoclaim_api}/vouchers`, config);
 
         setVouchers(data?.vouchers || []);
       } catch (err) {

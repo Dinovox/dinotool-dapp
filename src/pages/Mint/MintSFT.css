@@ -34,6 +34,7 @@
   display: flex;
   justify-content: center;
   padding: 40px 20px;
+  min-height: 100vh; /* Ensure full viewport height */
 }
 
 .gazette-card {
@@ -52,7 +53,7 @@
 
   display: flex;
   flex-direction: row; /* Side by side */
-  overflow: hidden;
+  /* overflow: hidden; */ /* REMOVED - was preventing scroll */
   position: relative;
 }
 
@@ -94,10 +95,17 @@
   background-color: rgba(255, 255, 255, 0.2); /* Slightly lighter area */
 }
 
+.gazette-visual-col.full-width {
+  flex: 0 0 100%;
+  border-right: none;
+  padding: 40px;
+}
+
 .gazette-image-frame {
   width: 100%;
+  min-width: 400px;
   max-width: 400px; /* Smaller max width to fit visual better */
-  aspect-ratio: 1 / 1; /* Maintain square shape */
+  /* aspect-ratio: 1 / 1; Maintain square shape */
   padding: 15px;
   border: 2px solid var(--ink-primary);
   background: #fff;
@@ -109,6 +117,14 @@
   align-items: center;
   justify-content: center;
   overflow: hidden; /* Contain the prompter */
+}
+
+.gazette-image-frame.full-width {
+  max-width: 100%;
+  min-width: auto;
+  aspect-ratio: auto;
+  transform: rotate(0deg);
+  min-height: auto;
 }
 
 .gazette-prompter {
@@ -317,14 +333,48 @@
 }
 
 @media (max-width: 900px) {
+  .gazette-wrapper {
+    padding: 20px 10px;
+    min-height: 100vh; /* Full viewport height */
+    display: flex;
+    align-items: center; /* Center the card vertically */
+  }
+
   .gazette-card {
     flex-direction: column;
+    max-height: 90vh; /* Limit card height to 90% of viewport */
+    overflow-y: auto; /* Enable scroll inside the card */
   }
+
   .gazette-visual-col {
     border-right: none;
     border-bottom: 3px double var(--ink-primary);
+    padding: 20px;
+    flex: 0 0 auto; /* Don't grow, natural height */
   }
+
+  .gazette-image-frame {
+    min-width: auto;
+    max-width: 100%;
+  }
+
   .gazette-info-col {
-    padding: 30px;
+    padding: 20px;
+    flex: 1 1 auto; /* Allow to grow and shrink */
+    overflow-y: auto; /* Enable scroll if content is too tall */
+  }
+
+  .gazette-headline {
+    font-size: 32px;
+  }
+
+  .gazette-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .mint-button {
+    font-size: 18px;
+    padding: 15px 40px;
   }
 }

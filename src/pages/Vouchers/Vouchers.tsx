@@ -16,10 +16,12 @@ export const Vouchers = () => {
 
   const vouchers = useGetVouchers();
   const { address } = useGetAccount();
-  const userNftBalance = useGetUserNFT(address, '', 'VOUCHERS-e6045e');
+  // const userNftBalance = useGetUserNFT(address, '', 'VOUCHERS-e6045e');
+  const userNftBalance = useGetUserNFT(address, '', 'DINOCARDS-ddaf7a');
 
   const filteredNftBalance = userNftBalance.filter((nft: any) =>
     [
+      'DINOCARDS-ddaf7a-1c',
       'SFT-221ca7-06',
       'VOUCHERS-e6045e-04',
       'VOUCHERS-e6045e-05',

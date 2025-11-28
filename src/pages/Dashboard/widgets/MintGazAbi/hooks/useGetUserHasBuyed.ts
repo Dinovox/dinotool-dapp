@@ -36,6 +36,7 @@ export const useGetUserHasBuyed = (tokenIdentifier: string) => {
 
   const getHasBuyed = async () => {
     if (!address || hasPendingTransactions) {
+      console.log('no address or pending transactions');
       return;
     }
 
@@ -56,7 +57,7 @@ export const useGetUserHasBuyed = (tokenIdentifier: string) => {
       return;
     }
     try {
-      const balance = await axios.get(
+      const fetch = await axios.get(
         network.apiAddress +
           '/accounts/' +
           address +
@@ -64,8 +65,10 @@ export const useGetUserHasBuyed = (tokenIdentifier: string) => {
           tokenIdentifier
       );
 
-      if (balance?.data?.[0]?.balance) {
-        setEsdtAmount(new BigNumber(balance?.data?.[0].balance));
+      console.log('has buyed balance', fetch.data);
+      console.log('has buyed balance', fetch.data.balance);
+      if (fetch.data?.balance) {
+        setEsdtAmount(new BigNumber(fetch.data?.balance));
       } else {
         setEsdtAmount(new BigNumber(0));
       }
@@ -79,7 +82,7 @@ export const useGetUserHasBuyed = (tokenIdentifier: string) => {
   useEffect(() => {
     getHasBuyed();
     getEsdtAmount();
-  }, [address, hasPendingTransactions]);
+  }, [address, hasPendingTransactions, tokenIdentifier]);
 
   return { hasBuyed, esdtAmount };
 };

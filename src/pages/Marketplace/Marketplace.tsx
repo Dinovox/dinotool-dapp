@@ -9,6 +9,7 @@ import { useNft } from 'helpers/contexts/NftContext';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import { Auction } from './Auction';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
+import { PageTemplate } from 'components/PageTemplate';
 type MarketSource = 'dinovox' | 'xoxno';
 type SaleType = 'fixed' | 'auction';
 
@@ -283,140 +284,135 @@ export const Marketplace = () => {
   // ...
 
   return (
-    <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
-      <Breadcrumb
-        items={[{ label: 'Home', path: '/' }, { label: 'Marketplace' }]}
-      />
-
-      {/* Header + CTA Sell */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <div className='h-6 w-6 rounded-md bg-slate-200' />
-          <h1 className='text-2xl font-semibold text-slate-900'>Marketplace</h1>
-        </div>
-
-        {/* CTA SELL */}
-        <Link
-          to='/marketplace/sell'
-          className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
-        >
-          Sell an item
-        </Link>
-      </div>
-
-      {/* Toolbar */}
-      <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
-        <div className='flex items-center gap-2 w-full md:max-w-md'>
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder='Search collections or listings...'
-          />
-          <Button onClick={handleSearch}>Search</Button>
-        </div>
-
-        <div className='flex items-center gap-2'>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className='h-9 rounded-md border border-gray-300 bg-white px-3 text-sm'
+    <div className='mx-auto px-4 py-6 space-y-6'>
+      <PageTemplate
+        title='MARKETPLACE'
+        breadcrumbItems={[
+          { label: 'Home', path: '/' },
+          { label: 'Marketplace' }
+        ]}
+        maxWidth='1400px'
+      >
+        {/* Header + CTA Sell */}
+        <div className='flex items-center justify-end mb-6'>
+          {/* CTA SELL */}
+          <Link
+            to='/marketplace/sell'
+            className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
           >
-            <option value='listings:best'>Best first</option>
-            <option value='listings:endingSoon'>Ending soon</option>
-            <option value='listings:newest'>Newest</option>
-            <option value='listings:priceAsc'>Price ↑</option>
-            <option value='listings:priceDesc'>Price ↓</option>
-          </select>
+            Sell an item
+          </Link>
         </div>
-      </div>
 
-      {/* Collections */}
-      <section className='space-y-3'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <h2 className='text-lg font-semibold text-slate-900'>
-              Trending collections
-            </h2>
-            <p className='text-sm text-slate-500'>
-              Some of the collections listed on DinoVox
-            </p>
+        {/* Toolbar */}
+        <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6'>
+          <div className='flex items-center gap-2 w-full md:max-w-md'>
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder='Search collections or listings...'
+            />
+            <Button onClick={handleSearch}>Search</Button>
           </div>
-          <Link
-            to='/marketplace/collections'
-            className='text-sm underline text-slate-700 hover:text-slate-900'
-          >
-            View all
-          </Link>
-        </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {collections.map((c) => (
-            <Card key={c.slug}>
-              {c.banner && (
-                <div
-                  className='h-24 w-full bg-cover'
-                  style={{ backgroundImage: `url(${c.banner})` }}
-                />
-              )}
-              <CardHeader className='flex items-center gap-4'>
-                <DisplayNftByToken
-                  tokenIdentifier={c.slug}
-                  nonce={'1'}
-                  className='h-14 w-14 rounded-xl object-cover'
-                  variant='media-only'
-                />
-                {/* <img
-                  src={c.logo}
-                  alt={c.name}
-                  className='h-14 w-14 rounded-xl object-cover'
-                /> */}
-                <div className='space-y-1'>
-                  <div className='text-base font-medium text-slate-900'>
-                    {c.name}
-                  </div>
-                  <div className='text-sm text-slate-500'>
-                    {c.itemsCount} items • Floor {formatToken(c.floor)}
-                  </div>
-                </div>
-                <div className='ml-auto flex gap-1'>
-                  {c.sources.map((s) => (
-                    <Badge key={s}>{s}</Badge>
-                  ))}
-                </div>
-              </CardHeader>
-              <CardFooter>
-                <Link
-                  className='text-sm underline text-slate-700 hover:text-slate-900'
-                  to={`/marketplace/collections/${c.slug}`}
-                >
-                  View collection
-                </Link>
-                <div className='text-sm text-slate-500'>
-                  {c.listingsActive} listings
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </section>
 
-      {/* Live auctions */}
-      <section className='space-y-3'>
-        <div className='flex items-center justify-between'>
-          <h2 className='text-lg font-semibold text-slate-900'>Listings</h2>
-          <Link
-            to='/marketplace/listings'
-            className='text-sm underline text-slate-700 hover:text-slate-900'
-          >
-            View more
-          </Link>
+          {/* <div className='flex items-center gap-2'>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              className='h-9 rounded-md border border-gray-300 bg-white px-3 text-sm'
+            >
+              <option value='listings:best'>Best first</option>
+              <option value='listings:endingSoon'>Ending soon</option>
+              <option value='listings:newest'>Newest</option>
+              <option value='listings:priceAsc'>Price ↑</option>
+              <option value='listings:priceDesc'>Price ↓</option>
+            </select>
+          </div> */}
         </div>
-        <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
-          {listings?.auctions.map((l) => (
-            <Auction key={l.auction_id} auction={l} />
-          ))}
-        </div>
-      </section>
+
+        {/* Collections */}
+        <section className='space-y-3 mb-8'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h2 className='text-lg font-semibold text-slate-900'>
+                Trending collections
+              </h2>
+              <p className='text-sm text-slate-500'>
+                Some of the collections listed on DinoVox
+              </p>
+            </div>
+            <Link
+              to='/marketplace/collections'
+              className='text-sm underline text-slate-700 hover:text-slate-900'
+            >
+              View all
+            </Link>
+          </div>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {collections.map((c) => (
+              <Card key={c.slug}>
+                {c.banner && (
+                  <div
+                    className='h-24 w-full bg-cover'
+                    style={{ backgroundImage: `url(${c.banner})` }}
+                  />
+                )}
+                <CardHeader className='flex items-center gap-4'>
+                  <DisplayNftByToken
+                    tokenIdentifier={c.slug}
+                    nonce={'1'}
+                    className='h-14 w-14 rounded-xl object-cover'
+                    variant='media-only'
+                  />
+                  <div className='space-y-1'>
+                    <div className='text-base font-medium text-slate-900'>
+                      {c.name}
+                    </div>
+                    <div className='text-sm text-slate-500'>
+                      {c.itemsCount} items • Floor {formatToken(c.floor)}
+                    </div>
+                  </div>
+                  <div className='ml-auto flex gap-1'>
+                    {c.sources.map((s) => (
+                      <Badge key={s}>{s}</Badge>
+                    ))}
+                  </div>
+                </CardHeader>
+                <CardFooter>
+                  <Link
+                    className='text-sm underline text-slate-700 hover:text-slate-900'
+                    to={`/marketplace/collections/${c.slug}`}
+                  >
+                    View collection
+                  </Link>
+                  <div className='text-sm text-slate-500'>
+                    {c.listingsActive} listings
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Live auctions */}
+        <section className='space-y-3'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-lg font-semibold text-slate-900'>Listings</h2>
+            <Link
+              to='/marketplace/listings'
+              className='text-sm underline text-slate-700 hover:text-slate-900'
+            >
+              View more
+            </Link>
+          </div>
+          <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
+            {listings?.auctions.map((l) => (
+              <Auction key={l.auction_id} auction={l} />
+            ))}
+          </div>
+        </section>
+      </PageTemplate>
     </div>
   );
 };

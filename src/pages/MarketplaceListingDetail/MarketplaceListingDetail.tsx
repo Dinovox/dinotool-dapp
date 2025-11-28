@@ -73,10 +73,11 @@ function useCountdown(endTime?: number) {
   if (!endTime) return '—';
   const left = Math.max(0, endTime - now);
   const s = Math.floor(left / 1000);
-  const h = Math.floor(s / 3600);
+  const d = Math.floor(s / (3600 * 24));
+  const h = Math.floor((s % (3600 * 24)) / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  return `${h}h ${m}m ${sec}s`;
+  return `${d}d ${h}h ${m}m ${sec}s`;
 }
 
 /* ---------------- Minimal UI bits ---------------- */
@@ -104,6 +105,88 @@ const CardContent: React.FC<
 > = ({ children, className = '' }) => (
   <div className={`p-4 pt-0 ${className}`}>{children}</div>
 );
+
+import { useGetNftActivity } from './hooks/useGetNftActivity';
+import ShortenedAddress from 'helpers/shortenedAddress';
+
+/* ---------------- Activity Tab Component ---------------- */
+const ActivityTab = ({ identifier }: { identifier: string }) => {
+  const { activity, isLoading } = useGetNftActivity(identifier);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className='p-8 text-center text-slate-500'>
+          Loading activity...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!activity || activity.length === 0) {
+    return (
+      <Card>
+        <CardContent className='p-8 text-center text-slate-500'>
+          No activity found for this item.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className='font-semibold'>Activity</div>
+      </CardHeader>
+      <CardContent>
+        <div className='overflow-x-auto'>
+          <table className='w-full text-sm'>
+            <thead className='text-left text-slate-500'>
+              <tr>
+                <th className='py-2 pr-3'>Event</th>
+                <th className='py-2 pr-3'>Price</th>
+                <th className='py-2 pr-3'>From</th>
+                <th className='py-2 pr-3'>To</th>
+                <th className='py-2 pr-3'>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activity.map((tx) => {
+                const eventName =
+                  tx.action?.name || tx.function || 'Transaction';
+                const value = tx.value !== '0' ? tx.value : null;
+
+                return (
+                  <tr key={tx.txHash} className='border-t'>
+                    <td className='py-2 pr-3 font-medium capitalize'>
+                      {eventName.replace(/_/g, ' ')}
+                    </td>
+                    <td className='py-2 pr-3'>
+                      {value ? (
+                        <FormatAmount amount={value} identifier='EGLD' />
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className='py-2 pr-3'>
+                      <ShortenedAddress address={tx.sender} />
+                    </td>
+                    <td className='py-2 pr-3'>
+                      <ShortenedAddress address={tx.receiver} />
+                    </td>
+                    <td className='py-2 pr-3 text-slate-500'>
+                      {new Date(tx.timestamp * 1000).toLocaleDateString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 /* ---------------- Page ---------------- */
 export const MarketplaceListingDetail = () => {
@@ -265,12 +348,17 @@ export const MarketplaceListingDetail = () => {
     const startPrice = listing.auction.startPrice;
     const currentBid = listing.auction.currentBid;
 
+    // If no bids yet, the minimum required is simply the start price
+    if (currentBid.isZero()) {
+      return startPrice;
+    }
+
     let effectiveMinDiff = minDiff;
-    if (minDiff.isZero() && currentBid.gt(0)) {
+    if (minDiff.isZero()) {
       effectiveMinDiff = currentBid.multipliedBy(0.01);
     }
 
-    return BigNumber.max(startPrice, currentBid.plus(effectiveMinDiff));
+    return currentBid.plus(effectiveMinDiff);
   }, [listing]);
 
   useEffect(() => {
@@ -410,7 +498,6 @@ export const MarketplaceListingDetail = () => {
               {activeNft && (
                 <DisplayNft
                   nft={activeNft}
-                  variant='media-only'
                   className='aspect-[4/3] w-full rounded-t-2xl'
                 />
               )}
@@ -572,16 +659,7 @@ export const MarketplaceListingDetail = () => {
           )}
 
           {tab === 'activity' && (
-            <Card>
-              <CardHeader>
-                <div className='font-semibold'>Activity</div>
-              </CardHeader>
-              <CardContent>
-                <div className='text-sm text-slate-500'>
-                  Hook your indexer here (transfers, listings, sales...).
-                </div>
-              </CardContent>
-            </Card>
+            <ActivityTab identifier={listing.identifier} />
           )}
         </div>
 
@@ -812,20 +890,108 @@ export const MarketplaceListingDetail = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Related items */}
-          <Card>
-            <CardHeader>
-              <div className='font-semibold'>More from this collection</div>
-            </CardHeader>
-            <CardContent>
-              <div className='text-sm text-slate-500'>
-                Related items fetching not implemented yet.
-              </div>
-            </CardContent>
-          </Card>
+          {/* More from this collection */}
+          <MoreFromCollection
+            collection={listing.collection}
+            currentListingId={listing.id}
+          />
         </div>
       </div>
     </div>
+  );
+};
+
+/* ---------------- More From Collection Component ---------------- */
+import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
+import DisplayNftByToken from 'helpers/DisplayNftByToken';
+
+const MoreFromCollection = ({
+  collection,
+  currentListingId
+}: {
+  collection: string;
+  currentListingId: string;
+}) => {
+  const { auctions, isLoading } = useGetAuctionsPaginated({
+    page: 1,
+    limit: 4,
+    collection
+  });
+
+  // Keep previous data to prevent flickering when refetching
+  const [displayedAuctions, setDisplayedAuctions] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (auctions.length > 0) {
+      setDisplayedAuctions(auctions);
+    }
+  }, [auctions]);
+
+  // Filter out current listing
+  const otherListings = displayedAuctions.filter(
+    (a: any) => a.auction_id?.toString() !== currentListingId
+  );
+
+  if (otherListings.length === 0 && !isLoading) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className='flex items-center justify-between'>
+          <div className='font-semibold'>More from this collection</div>
+          <Link
+            to={`/marketplace/collections/${collection}`}
+            className='text-xs font-medium text-slate-600 hover:text-slate-900'
+          >
+            View all
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className='grid grid-cols-2 gap-3'>
+          {otherListings.slice(0, 4).map((auction: any) => {
+            const id = auction.auction_id?.toString();
+            const tokenIdentifier =
+              auction.auctioned_tokens?.token_identifier?.toString();
+            const tokenNonce =
+              auction.auctioned_tokens?.token_nonce?.toString();
+            const minBid = auction.min_bid?.toString();
+            const currentBid = auction.current_bid?.toString();
+            const price = new BigNumber(currentBid || minBid || '0');
+            const paymentToken = auction.payment_token?.toString() || 'EGLD';
+
+            return (
+              <Link
+                key={id}
+                to={`/marketplace/listings/${id}`}
+                className='group block rounded-lg border bg-slate-50 p-2 transition-colors hover:border-slate-300'
+              >
+                <div className='aspect-square overflow-hidden rounded-md bg-white'>
+                  <DisplayNftByToken
+                    tokenIdentifier={tokenIdentifier}
+                    nonce={tokenNonce}
+                    variant='media-only'
+                    className='h-full w-full object-cover transition-transform group-hover:scale-105'
+                  />
+                </div>
+                <div className='mt-2'>
+                  <div className='truncate text-xs font-medium text-slate-900'>
+                    {tokenIdentifier} #{tokenNonce}
+                  </div>
+                  <div className='mt-0.5 text-[10px] text-slate-500'>
+                    <span className='font-medium text-slate-900'>
+                      <FormatAmount
+                        amount={price.toFixed()}
+                        identifier={paymentToken}
+                      />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

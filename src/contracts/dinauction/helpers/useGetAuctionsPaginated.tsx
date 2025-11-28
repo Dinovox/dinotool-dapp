@@ -22,16 +22,16 @@ export const useGetAuctionsPaginated = ({
 
   const { network } = useGetNetworkConfig();
 
-  // contrôleur SC
-  const entrypoint = new DevnetEntrypoint({ url: network.apiAddress });
-  const contractAddress = Address.newFromBech32(marketplaceContractAddress);
-  const abi = Abi.create(dinauctionAbi as any);
-  const controller = entrypoint.createSmartContractController(abi);
-
   const fetchAuctions = useCallback(async () => {
     try {
+      console.log('call getActiveAuctionsPaged', page, limit, collection);
       setIsLoading(true);
       setError(null);
+
+      const entrypoint = new DevnetEntrypoint({ url: network.apiAddress });
+      const contractAddress = Address.newFromBech32(marketplaceContractAddress);
+      const abi = Abi.create(dinauctionAbi as any);
+      const controller = entrypoint.createSmartContractController(abi);
 
       const fromIndex = Math.max(0, (page - 1) * limit);
 

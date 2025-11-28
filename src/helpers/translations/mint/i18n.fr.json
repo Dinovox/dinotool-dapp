@@ -3,5 +3,21 @@
   "mint_left": "Restant",
   "supply": "Offre",
   "start": "Début",
-  "end": "Fin"
+  "end": "Fin",
+  "coming_soon": "BIENTÔT DISPONIBLE",
+  "minting_now": "MINT EN COURS",
+  "edition_closed": "ÉDITION TERMINÉE",
+  "vol": "Vol.",
+  "opens_in": "Ouvre dans",
+  "ends_in": "Se termine dans",
+  "closed": "FERMÉ",
+  "remaining": "Restant",
+  "total_supply": "Offre Totale",
+  "your_balance": "Votre Solde",
+  "start_date": "Date de Début",
+  "end_date": "Date de Fin",
+  "please_wait": "VEUILLEZ PATIENTER",
+  "sold_out": "ÉPUISÉ",
+  "loading_plate": "Chargement de la planche...",
+  "printing_text": "Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 Impression... 🦖... GRAOU!🦖 "
 }
