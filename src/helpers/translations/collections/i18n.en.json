@@ -74,5 +74,7 @@
   "ESDTRoleSetNewURI": "Grants a specific account permission to set a new URI for NFTs within this collection. Set this role to allow setting a new URI.",
   "ESDTRoleModifyCreator": "Grants a specific account permission to become the creator of NFTs within this collection. Royalties are sent to the creator.",
   "ESDTRoleNFTRecreate": "Grants a specific account permission to recreate NFTs within this collection. Set this role to allow recreating NFTs.",
-  "claim_creator": "Claim Creator"
+  "claim_creator": "Claim Creator",
+  "no_collections": "No collections",
+  "no_collections_desc": "Create your first NFT collection to get started."
 }

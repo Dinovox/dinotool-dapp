@@ -7,7 +7,7 @@ import {
   DecodedEvent
 } from 'helpers/transactionEventHelper';
 
-export const useMarketplaceEvents = (pollInterval = 6000) => {
+export const useMarketplaceEvents = (pollInterval = 60000) => {
   const [events, setEvents] = useState<DecodedEvent[]>([]);
   const lastProcessedTimestamp = useRef<number>(Math.floor(Date.now() / 1000));
   const processedTxHashes = useRef<Set<string>>(new Set());

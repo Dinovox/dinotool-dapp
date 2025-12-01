@@ -67,7 +67,6 @@ export const ActionCreate = ({
   start_time,
   end_time,
   price_type,
-  is_free,
   is_locked,
   auto_draw,
   fee_percentage,
@@ -189,13 +188,8 @@ export const ActionCreate = ({
       '@' +
       bigNumToHex(
         new BigNumber(
-          getPriceTypeEnum(
-            is_free
-              ? 'Free' + price_type
-              : is_locked
-              ? 'Locked' + price_type
-              : price_type
-          ) ?? PriceType.Egld
+          getPriceTypeEnum(is_locked ? 'Locked' + price_type : price_type) ??
+            PriceType.Egld
         )
       ) +
       '@' +

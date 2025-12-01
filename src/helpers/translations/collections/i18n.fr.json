@@ -74,5 +74,7 @@
   "ESDTRoleSetNewURI": "Accorde à un compte spécifique la permission de définir une nouvelle URI pour les NFT au sein de cette collection. Définissez ce rôle pour autoriser la définition d'une nouvelle URI.",
   "ESDTRoleModifyCreator": "Accorde à un compte spécifique la permission de devenir le créateur des NFT au sein de cette collection. Les redevances sont envoyées au créateur.",
   "ESDTRoleNFTRecreate": "Accorde à un compte spécifique la permission de recréer des NFT au sein de cette collection. Définissez ce rôle pour autoriser la recréation de NFT.",
-  "claim_creator": "Revendiquer le créateur"
+  "claim_creator": "Revendiquer le créateur",
+  "no_collections": "Aucune collection",
+  "no_collections_desc": "Créez votre première collection NFT pour commencer."
 }

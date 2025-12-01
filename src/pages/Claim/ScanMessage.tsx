@@ -121,7 +121,7 @@ export const ScanMessage = () => {
           name='codex'
           placeholder='Scan QRcode or report your code here'
           value={code.trim()}
-          onChange={(event) => setCode(event.currentTarget.value)}
+          onChange={(event) => setCode(event.currentTarget.value.toUpperCase())}
           readOnly={isSubmit}
         />{' '}
         {!isSubmit ? (

@@ -291,18 +291,8 @@ export const Collections = () => {
                 {t('collections:no_collections')}
               </h3>
               <p className='text-gray-500 mb-6 max-w-md mx-auto'>
-                {t(
-                  'collections:no_collections_desc',
-                  'Create your first NFT collection to get started.'
-                )}
+                {t('collections:no_collections_desc')}
               </p>
-              <button
-                onClick={openModal}
-                className='inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow'
-              >
-                <Plus className='h-5 w-5' />
-                <span>{t('collections:create_first_collection')}</span>
-              </button>
             </div>
           )}
         </div>

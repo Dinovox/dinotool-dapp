@@ -9,12 +9,15 @@ import {
   TransactionsFactoryConfig,
   useGetAccount,
   useGetNetworkConfig,
-  useGetAccountInfo
+  useGetAccountInfo,
+  useGetIsLoggedIn
 } from 'lib';
 import BigNumber from 'bignumber.js';
 import { bigNumToHex } from '../bigNumToHex';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
+import { LoginModal } from 'provider/LoginModal';
+import { ConnectButton } from 'components/Button/ConnectButton';
 
 interface ActionIssueProps {
   type: string;
@@ -37,6 +40,7 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
   const { address } = useGetAccountInfo();
   const { t } = useTranslation();
   const loading = useLoadTranslations('actions');
+  const isLoggedIn = useGetIsLoggedIn();
 
   const handleIssue = async () => {
     if (!address) return;
@@ -99,12 +103,18 @@ export const ActionIssueCollection: React.FC<ActionIssueProps> = ({
   };
 
   return (
-    <button
-      onClick={handleIssue}
-      disabled={disabled || name.length < 3 || ticker.length < 3 || loading}
-      className='dinoButton'
-    >
-      {t('collections:new_collection_button')} (0.05 EGLD)
-    </button>
+    <>
+      {isLoggedIn ? (
+        <button
+          onClick={handleIssue}
+          disabled={disabled || name.length < 3 || ticker.length < 3 || loading}
+          className='dinoButton'
+        >
+          {t('collections:new_collection_button')} (0.05 EGLD)
+        </button>
+      ) : (
+        <ConnectButton />
+      )}
+    </>
   );
 };

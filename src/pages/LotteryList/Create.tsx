@@ -38,7 +38,7 @@ const CreateLotteryModal: React.FC<{
   const [form] = Form.useForm();
 
   const [visible, setVisible] = useState(false);
-  const [isFree, setIsFree] = useState(false);
+
   const [isLocked, setIsLocked] = useState(false);
   const [autoDraw, setAutoDraw] = useState(true);
   const [priceType, setPriceType] = useState('');
@@ -60,7 +60,6 @@ const CreateLotteryModal: React.FC<{
 
   const [prizeNonce, setPrizeNonce] = useState<number>(0);
   const [prizeDecimals, setPrizeDecimals] = useState<number>(0);
-  const [acceptConditions, setAcceptConditions] = useState(false);
   const [prizeTicker, setPrizeTicker] = useState<string>('');
   const [priceTicker, setPriceTicker] = useState<string>('');
   const [prizeBalance, setPrizeBalance] = useState<BigNumber>(new BigNumber(0));
@@ -335,7 +334,6 @@ const CreateLotteryModal: React.FC<{
   function handleIsLocked(e: CheckboxChangeEvent): void {
     const checked = e.target.checked;
     setAutoDraw(checked);
-    setIsFree(checked);
     setIsLocked(checked);
     if (checked) {
       setPriceAmount(new BigNumber(0));
@@ -355,15 +353,12 @@ const CreateLotteryModal: React.FC<{
     setMaxTickets(maxTickets > 50 ? 50 : maxTickets);
   }
 
-  const isValidNumber = (value: any) =>
-    BigNumber.isBigNumber(value) && value.isFinite();
-
-  const totalPrice = isFree
+  const totalPrice = isLocked
     ? new BigNumber(0)
     : new BigNumber(priceAmount.multipliedBy(maxTickets) || 0);
 
   const platformFee =
-    priceType === 'Nft' || priceType === 'Sft' || isFree
+    priceType === 'Nft' || priceType === 'Sft' || isLocked
       ? new BigNumber(0)
       : totalPrice
           .multipliedBy(new BigNumber(feePercentage || 0))
@@ -376,7 +371,7 @@ const CreateLotteryModal: React.FC<{
   //     : totalPrice.multipliedBy(feePercentage).dividedBy(100).decimalPlaces(0);
 
   const royalties =
-    priceType === 'Nft' || priceType === 'Sft' || isFree
+    priceType === 'Nft' || priceType === 'Sft' || isLocked
       ? new BigNumber(0)
       : totalPrice
           .minus(platformFee)
@@ -512,7 +507,6 @@ const CreateLotteryModal: React.FC<{
                 >
                   <Radio.Group
                     onChange={handlePrizeType}
-                    disabled={acceptConditions}
                     className='w-full flex'
                     buttonStyle='solid'
                   >
@@ -543,7 +537,6 @@ const CreateLotteryModal: React.FC<{
                   >
                     <Select
                       className='w-full'
-                      disabled={acceptConditions}
                       onDropdownVisibleChange={handleDropdownChange}
                       onChange={(value, datas: any) => {
                         disableKeyboard();
@@ -598,7 +591,6 @@ const CreateLotteryModal: React.FC<{
                           {menu}
                           <Divider style={{ margin: '8px 0' }} />
                           <Input
-                            disabled={acceptConditions}
                             value={prizeIdentifier}
                             className='p-2'
                             placeholder='Manual input...'
@@ -682,7 +674,7 @@ const CreateLotteryModal: React.FC<{
                       onWheel={(e) => (e.target as HTMLInputElement).blur()}
                       value={prizeDisplay}
                       onChange={handlePrizeAmountChange}
-                      disabled={prizeType === 'Nft' || acceptConditions}
+                      disabled={prizeType === 'Nft'}
                       className='w-full rounded-md border-gray-300'
                       suffix={
                         <span className='text-gray-500 text-xs'>
@@ -726,7 +718,6 @@ const CreateLotteryModal: React.FC<{
                     <div className='flex flex-col gap-3'>
                       <Radio.Group
                         onChange={handlePriceType}
-                        disabled={acceptConditions}
                         defaultValue={priceType}
                         value={priceType}
                         className='w-full flex'
@@ -780,7 +771,6 @@ const CreateLotteryModal: React.FC<{
                         defaultValue={priceIdentifier}
                         value={priceIdentifier}
                         className='w-full'
-                        disabled={acceptConditions}
                         onDropdownVisibleChange={handleDropdownChange}
                         onChange={(value, datas: any) => {
                           setPriceValid(true);
@@ -831,7 +821,6 @@ const CreateLotteryModal: React.FC<{
                             {menu}
                             <Divider style={{ margin: '8px 0' }} />
                             <Input
-                              disabled={acceptConditions}
                               value={priceIdentifier}
                               className='p-2'
                               placeholder='Manual input...'
@@ -933,7 +922,6 @@ const CreateLotteryModal: React.FC<{
                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                         value={priceDisplay}
                         onChange={handlePriceAmountChange}
-                        disabled={acceptConditions}
                         className='w-full rounded-md border-gray-300'
                         suffix={
                           <span className='text-gray-500 text-xs'>
@@ -946,7 +934,7 @@ const CreateLotteryModal: React.FC<{
                     </Form.Item>
                   )}
 
-                  {isFree && (
+                  {isLocked && (
                     <div className='text-amber-600 bg-amber-50 p-3 rounded-md text-sm mt-2'>
                       {t('lotteries:free_warning')}
                     </div>
@@ -1074,7 +1062,6 @@ const CreateLotteryModal: React.FC<{
                                     : prev
                                 );
                               }}
-                              disabled={acceptConditions}
                               className='w-full'
                             />
                           </div>
@@ -1107,7 +1094,6 @@ const CreateLotteryModal: React.FC<{
                               onChange={(e) =>
                                 setMaxPerWallet(parseInt(e.target.value, 10))
                               }
-                              disabled={acceptConditions}
                               className='w-full'
                             />
                           </div>
@@ -1144,7 +1130,7 @@ const CreateLotteryModal: React.FC<{
                             </div>
                           )}
 
-                          {priceType != 'Sft' && !isFree && (
+                          {priceType != 'Sft' && !isLocked && (
                             <div className='flex justify-between items-center mb-1'>
                               <span>
                                 {t('lotteries:platform_fee')} ({feePercentage}%)
@@ -1165,7 +1151,7 @@ const CreateLotteryModal: React.FC<{
 
                           {prize_nft_information.royalties &&
                             priceType != 'Sft' &&
-                            !isFree && (
+                            !isLocked && (
                               <div className='flex justify-between items-center mb-1'>
                                 <span>
                                   {t('lotteries:royalty_fee')} (
@@ -1190,7 +1176,7 @@ const CreateLotteryModal: React.FC<{
                             <span className='text-green-600'>
                               <FormatAmount
                                 amount={
-                                  isFree
+                                  isLocked
                                     ? '0'
                                     : finalAmount.isGreaterThan(0)
                                     ? finalAmount.toFixed()
@@ -1222,10 +1208,10 @@ const CreateLotteryModal: React.FC<{
                       <div className='flex flex-col gap-3'>
                         <Checkbox
                           disabled={!cost_graou || payWith == 'EGLD'}
-                          onChange={() => (
-                            setAcceptConditions(!acceptConditions),
+                          checked={payWith == 'GRAOU'}
+                          onChange={() =>
                             setPayWith(payWith == 'GRAOU' ? '' : 'GRAOU')
-                          )}
+                          }
                           className='text-sm'
                         >
                           {!cost_graou ? (
@@ -1268,10 +1254,10 @@ const CreateLotteryModal: React.FC<{
 
                         <Checkbox
                           disabled={payWith == 'GRAOU'}
-                          onChange={() => (
-                            setAcceptConditions(!acceptConditions),
+                          checked={payWith == 'EGLD'}
+                          onChange={() =>
                             setPayWith(payWith == 'EGLD' ? '' : 'EGLD')
-                          )}
+                          }
                           className='text-sm'
                         >
                           {!cost_egld ? (
@@ -1354,15 +1340,11 @@ const CreateLotteryModal: React.FC<{
                         start_time={startTime}
                         end_time={endTime}
                         price_type={priceType}
-                        is_free={isFree}
                         is_locked={isLocked}
                         auto_draw={autoDraw}
                         fee_percentage={Math.ceil(feePercentage * 100)}
-                        acceptConditions={acceptConditions}
                         pay_with={payWith}
-                        disabled={
-                          !acceptConditions || (!cost_graou && !cost_egld)
-                        }
+                        disabled={payWith === '' || (!cost_graou && !cost_egld)}
                       />
                     </div>
                   </div>
