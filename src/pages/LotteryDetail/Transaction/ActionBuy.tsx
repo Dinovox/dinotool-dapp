@@ -65,6 +65,7 @@ export const ActionBuy = ({
     let transaction: Transaction | Transaction[] = [];
     let payload = 'buy@' + bigToHex(BigInt(lottery_id));
     if (price_identifier == 'EGLD-000000') {
+      //Pay with EGLD
       transaction = new Transaction({
         value: BigInt(price_amount),
         data: new TextEncoder().encode(payload),
@@ -76,28 +77,8 @@ export const ActionBuy = ({
         sender: new Address(address),
         version: 1
       });
-    } else if (price_identifier == 'FREE-000000') {
-      payload =
-        'ESDTTransfer@' +
-        Buffer.from(graou_identifier, 'utf8').toString('hex') +
-        '@' +
-        bigToHex(price_amount.toFixed()) +
-        '@' +
-        Buffer.from('buy', 'utf8').toString('hex') +
-        '@' +
-        bigToHex(BigInt(lottery_id));
-      transaction = new Transaction({
-        value: BigInt('0'),
-        data: new TextEncoder().encode(payload),
-        receiver: addressTobech32,
-        gasLimit: BigInt('20000000'),
-
-        gasPrice: BigInt(GAS_PRICE),
-        chainID: network.chainId,
-        sender: new Address(address),
-        version: 1
-      });
     } else if (price_nonce == 0) {
+      //Pay witt ESDT
       payload =
         'ESDTTransfer@' +
         Buffer.from(price_identifier, 'utf8').toString('hex') +
@@ -119,6 +100,7 @@ export const ActionBuy = ({
         version: 1
       });
     } else {
+      //Pay with SFT
       payload =
         'ESDTNFTTransfer@' +
         Buffer.from(price_identifier, 'utf8').toString('hex') +
@@ -178,15 +160,12 @@ export const ActionBuy = ({
                   time_start > 0 ||
                   ended ||
                   balance.isLessThan(fees) ||
-                  (price_identifier == 'FREE-000000' &&
-                    graou_balance.isLessThan(new BigNumber(price_amount))) ||
                   buyed ||
                   (price_identifier == 'EGLD-000000' &&
                     balance.isLessThan(
                       new BigNumber(price_amount).plus(fees)
                     )) ||
                   (price_identifier != 'EGLD-000000' &&
-                    price_identifier != 'FREE-000000' &&
                     price_nonce == 0 &&
                     esdt_balance.isLessThan(new BigNumber(price_amount))) ||
                   (price_identifier != 'EGLD-000000' &&

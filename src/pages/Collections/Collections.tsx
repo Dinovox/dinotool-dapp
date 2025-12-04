@@ -18,7 +18,7 @@ import {
   Leaf
 } from 'lucide-react';
 import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
-import { internal_api_v2 } from 'config';
+import { dinoclaim_api } from 'config';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 export const Collections = () => {
@@ -88,8 +88,9 @@ export const Collections = () => {
         collections.map(async (col) => {
           try {
             const res = await fetch(
-              `${internal_api_v2}/collections/${col.collection}`
+              `${dinoclaim_api}/cache/collections/${col.collection}`
             );
+            console.log('col slug', col.collection, res);
             const data = await res.json();
             return { id: col.collection, data };
           } catch {

@@ -1,5 +1,8 @@
-import { EnvironmentsEnum } from 'types';
-
+export enum EnvironmentsEnum {
+  mainnet = 'mainnet',
+  testnet = 'testnet',
+  devnet = 'devnet'
+}
 export * from './sharedConfig';
 
 export const contractAddress =
@@ -11,6 +14,5 @@ export const metamaskSnapWalletAddress =
   'https://testnet-snap-wallet.multiversx.com';
 export const lotteryContract = 'erd1qqqqqqqqqqqqqpgq';
 export const lottery_cost = '10000000000000000000';
-export const pox_api = 'https://api.poxp.xyz';
 
 export const dinoclaim_api = 'http://localhost:3000';

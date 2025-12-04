@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { useGetLoginInfo, useGetAccountInfo, useGetIsLoggedIn } from 'lib';
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
-import { internal_api_v2, graou_identifier, dinoclaim_api } from 'config';
+import { graou_identifier, dinoclaim_api } from 'config';
 import { FaDiscord, FaTwitter, FaCopy, FaUserCircle } from 'react-icons/fa';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
@@ -64,7 +64,6 @@ export const Profile = () => {
         return;
       }
       try {
-        // const res = await fetch(`${internal_api_v2}/auth`, {
         const res = await fetch(`${dinoclaim_api}/auth`, {
           method: 'GET',
           headers: {
@@ -90,7 +89,6 @@ export const Profile = () => {
 
   const handleConnectDiscord = async () => {
     if (!tokenLogin) return;
-    // const res = await fetch(`${internal_api_v2}/auth/discord`, {
     const res = await fetch(`${dinoclaim_api}/auth/discord`, {
       method: 'POST',
       headers: {
@@ -104,7 +102,6 @@ export const Profile = () => {
   };
   const handleDisconnectDiscord = async () => {
     if (!tokenLogin) return;
-    // const res = await fetch(`${internal_api_v2}/auth/discord`, {
     const res = await fetch(`${dinoclaim_api}/auth/discord`, {
       method: 'DELETE',
       headers: {
@@ -119,7 +116,6 @@ export const Profile = () => {
 
   const handleConnectTwitter = async () => {
     if (!tokenLogin) return;
-    // const res = await fetch(`${internal_api_v2}/auth/twitter`, {
     const res = await fetch(`${dinoclaim_api}/auth/twitter`, {
       method: 'POST',
       headers: {
@@ -133,7 +129,6 @@ export const Profile = () => {
   };
   const handleDisconnectTwitter = async () => {
     if (!tokenLogin) return;
-    // const res = await fetch(`${internal_api_v2}/auth/twitter`, {
     const res = await fetch(`${dinoclaim_api}/auth/twitter`, {
       method: 'DELETE',
       headers: {

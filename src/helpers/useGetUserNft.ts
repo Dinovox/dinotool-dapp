@@ -82,7 +82,7 @@ export const useGetUserNFT = (
     url = url + `&collections=${collection}`;
   }
   const getUserNFT = async () => {
-    if (!address || hasPendingTransactions == true || address == '') {
+    if (!address || address == '') {
       return;
     }
     try {

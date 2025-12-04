@@ -7,7 +7,6 @@ export enum EnvironmentsEnum {
 }
 export const environment: EnvironmentsEnum = EnvironmentsEnum.mainnet;
 export const internal_api = 'https://internal.mvx.fr';
-export const internal_api_v2 = 'https://api.dinovox.com';
 
 export * from './sharedConfig';
 
@@ -42,7 +41,6 @@ export const lottery_cost = {
 
 // export const dinoclaim_api = 'http://localhost:3000';
 export const dinoclaim_api = 'https://claim.dinovox.com';
-export const pox_api = 'https://api.poxp.xyz';
 export const dino_claim_url = 'https://app.dinovox.com/claim';
 export const dinovox_collections = ['FAAPU-28e0bc'];
 export const friends_collections = ['DINOBOOST-9f6811'];

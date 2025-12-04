@@ -149,7 +149,7 @@ export const LotteryDetail = () => {
             items={[
               { label: 'Home', path: '/' },
               { label: 'Lotteries', path: '/lotteries' },
-              { label: `Lottery #${lottery?.id.toFixed()}` }
+              { label: `Lottery #${lottery?.id?.toFixed() || '...'}` }
             ]}
           />
         </div>

@@ -7,7 +7,7 @@ import { useGetLoginInfo } from 'lib';
 import { m } from 'framer-motion';
 import { Collection } from 'helpers/api/accounts/getCollections';
 import { Nfts } from 'helpers/api/accounts/getNfts';
-import { internal_api_v2 } from 'config';
+import { dinoclaim_api } from 'config';
 import { t } from 'i18next';
 
 export const RecreateSft: React.FC<{
@@ -140,9 +140,8 @@ export const RecreateSft: React.FC<{
     if (!tokenLogin) {
       return;
     }
-    // const res = await fetch('http://localhost:3000/pinata/upload', {
 
-    const res = await fetch(`${internal_api_v2}/pinata/upload`, {
+    const res = await fetch(`${dinoclaim_api}/pinata/upload`, {
       method: 'POST',
       body: formData,
       headers: {
