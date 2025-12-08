@@ -52,13 +52,15 @@ interface LotteryCard2Props {
   page_number?: number;
   status_filter?: string;
   price_filter?: string;
+  ids?: number[];
 }
 
 const LotteryCard2: React.FC<LotteryCard2Props> = ({
   data,
   page_number,
   status_filter,
-  price_filter
+  price_filter,
+  ids
 }) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
@@ -240,7 +242,8 @@ const LotteryCard2: React.FC<LotteryCard2Props> = ({
           state: {
             page_number: page_number,
             status: status_filter,
-            price: price_filter
+            price: price_filter,
+            ids: ids
           },
           replace: false
         })

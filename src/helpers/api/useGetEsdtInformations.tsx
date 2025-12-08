@@ -62,6 +62,7 @@ interface FormatAmountProps {
   displayDecimals?: number; // Optional: number of decimals to display, defaults to 2 or actual significant decimals
   showLastNonZeroDecimal?: boolean;
   withPrice?: boolean;
+  nonce?: number;
 }
 
 export const FormatAmount: React.FC<FormatAmountProps> = ({
@@ -69,15 +70,16 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
   identifier,
   displayDecimals,
   showLastNonZeroDecimal,
-  withPrice
+  withPrice,
+  nonce
 }) => {
   // Fetch token information using the hook
-  const esdtInfo = useGetEsdtInformations(identifier);
+  const esdtInfo = useGetEsdtInformations(nonce && nonce > 0 ? '' : identifier);
 
   // Handle EGLD special case
   const ticker =
     identifier === 'EGLD' ? 'EGLD' : esdtInfo?.ticker || identifier;
-  const decimals = identifier === 'EGLD' ? 18 : esdtInfo?.decimals || 18;
+  const decimals = identifier === 'EGLD' ? 18 : esdtInfo?.decimals || 0;
 
   if (amount === null || amount === undefined || isNaN(Number(amount))) {
     return <>{`0 ${ticker}`}</>;
@@ -94,23 +96,29 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
       formattedValue = new BigNumber(formattedValue).toString();
     }
   } else {
-    // Default to a reasonable number of decimals, e.g., 2, but keep more if significant
-    formattedValue = value.toFormat(2, BigNumber.ROUND_DOWN, {
-      decimalSeparator: '.',
-      groupSeparator: ',',
-      groupSize: 3,
-      suffix: ''
-    });
-    // If the value has more significant decimals than 2, show them up to the original 'decimals' but cap at 8
-    if (value.decimalPlaces() > 2) {
-      const decimalsToShow = Math.min(value.decimalPlaces(), 8);
-      formattedValue = value.toFormat(decimalsToShow, BigNumber.ROUND_DOWN, {
-        decimalSeparator: '.',
-        groupSeparator: ',',
-        groupSize: 3,
-        suffix: ''
-      });
+    let decimalsToShow = decimals < 2 ? decimals : 2;
+    if (value.gt(0) && value.lt(0.01)) {
+      // Find the first non-zero digit position
+      // e.g. 0.0000123... -> 4 zeros -> first non-zero at 5th position
+      // We want to show 2 significant digits regardless of zeros
+      // Math.log10(0.0000123) is approx -4.9 -> floor is -5 -> abs is 5.
+      // 5 is the position of the first non-zero digit (1).
+      // We want to keep that one and the next one => 5 + 1 = 6 decimals.
+      const magnitude = Math.floor(Math.log10(value.toNumber()));
+      const leadingZeros = -magnitude - 1; // e.g. -(-5) - 1 = 4 zeros
+      // We want 2 "dust" digits, so we need leadingZeros + 2
+      decimalsToShow = leadingZeros + 2;
+
+      // Cap at the token's actual decimals
+      if (decimalsToShow > decimals) {
+        decimalsToShow = decimals;
+      }
     }
+
+    formattedValue = value.toNumber().toLocaleString(undefined, {
+      minimumFractionDigits: decimalsToShow,
+      maximumFractionDigits: decimalsToShow
+    });
   }
 
   if (withPrice && esdtInfo?.price) {
@@ -121,7 +129,11 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
       <div className='flex flex-col'>
         <span>{`${formattedValue} ${ticker}`}</span>
         <span className='text-sm opacity-70 font-normal'>
-          ≈ ${fiatValue.toFormat(2)}
+          ≈ $
+          {fiatValue.toNumber().toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}
         </span>
       </div>
     );

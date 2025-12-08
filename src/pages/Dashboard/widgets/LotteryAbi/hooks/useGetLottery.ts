@@ -6,7 +6,7 @@ import abi_json from 'contracts/dinodraw.abi.json';
 
 import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import { BigNumber } from 'bignumber.js';
-import { internal_api } from 'config';
+import { dinoclaim_api } from 'config';
 import { useNavigate } from 'react-router-dom';
 
 export const useGetLottery = (lottery_id: any) => {
@@ -59,7 +59,7 @@ export const useGetLottery = (lottery_id: any) => {
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
 
-  const getMintableOffChain = async () => {
+  const getLotteryOffChain = async () => {
     // if (hasPendingTransactions) {
     //   return;
     // }
@@ -95,9 +95,7 @@ export const useGetLottery = (lottery_id: any) => {
       if (!mintable.loading) {
         return;
       }
-      const response = await fetch(
-        `${internal_api}/dinovox/lotteries/${lottery_id}`
-      );
+      const response = await fetch(`${dinoclaim_api}/lotteries/${lottery_id}`);
       if (!response.ok) {
         throw new Error(
           `Failed to fetch lottery details: ${response.statusText}`
@@ -137,7 +135,7 @@ export const useGetLottery = (lottery_id: any) => {
     }
   };
 
-  const getMintableOnChain = async () => {
+  const getLotteryOnChain = async () => {
     /*on-chain datas*/
 
     try {
@@ -163,7 +161,7 @@ export const useGetLottery = (lottery_id: any) => {
         // lottery not found in SC == probably deleted run the last action call
         try {
           const lastActionsResponse = await fetch(
-            `${internal_api}/dinovox/lotteries/last-actions`
+            `${dinoclaim_api}/lotteries/last-actions`
           );
           if (!lastActionsResponse.ok) {
             throw new Error(
@@ -198,8 +196,8 @@ export const useGetLottery = (lottery_id: any) => {
   };
 
   useEffect(() => {
-    getMintableOnChain();
-    getMintableOffChain();
+    getLotteryOnChain();
+    getLotteryOffChain();
   }, [hasPendingTransactions, lottery_id, mintable.loading]);
 
   return mintable;

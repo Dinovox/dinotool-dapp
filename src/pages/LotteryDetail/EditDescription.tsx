@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useGetLoginInfo } from 'lib';
 import axios from 'axios';
-import { internal_api } from 'config';
+import { dinoclaim_api } from 'config';
 import { useNavigate } from 'react-router-dom';
 
 export const EditDescription = ({ lottery_id, lottery_description }: any) => {
@@ -29,7 +29,7 @@ export const EditDescription = ({ lottery_id, lottery_description }: any) => {
         //   config
         // );
         const { data } = await axios.put(
-          internal_api + '/dinovox/lotteries/' + lottery_id,
+          dinoclaim_api + '/lotteries/' + lottery_id,
           {
             description: description
           },

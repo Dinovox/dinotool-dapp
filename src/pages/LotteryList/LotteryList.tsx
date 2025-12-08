@@ -1,7 +1,7 @@
 import { PageWrapper } from 'wrappers';
 import './MintSFT.css';
 import { useGetAccount } from 'lib';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import CreateLotteryModal from './Create';
 import LotteryCard2 from './LotteryCard2';
@@ -13,7 +13,7 @@ import {
 import { graou_identifier, lottery_cost } from 'config';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
 
 // Interface pour les loteries de la DB
@@ -104,6 +104,22 @@ export const LotteryList = () => {
   }, [page, price, status]);
 
   const lotteriesVM = useGetLotteriesVM();
+  const location = useLocation();
+  const stateIds = location.state?.ids || [];
+
+  // Mémoiser les IDs pour éviter les re-renders inutiles
+  const memoizedIds = useMemo(() => {
+    if (stateIds.length > 0) return stateIds;
+    if (status === 'owned') return lotteriesVM.user_owned;
+    if (status === 'user') return lotteriesVM.user_tickets;
+    return [];
+  }, [
+    stateIds,
+    status,
+    lotteriesVM.user_owned.join(','),
+    lotteriesVM.user_tickets.join(',')
+  ]);
+
   const {
     lotteries: lotteriesDB,
     total_count,
@@ -112,12 +128,7 @@ export const LotteryList = () => {
     page,
     limit,
     status,
-    ids:
-      status === 'owned'
-        ? lotteriesVM.user_owned
-        : status === 'user'
-        ? lotteriesVM.user_tickets
-        : [],
+    ids: memoizedIds,
     price
   }) as { lotteries: DBLottery[]; total_count: number; isLoading: boolean };
   //console.log('LotteriesDB:', lotteriesDB);
@@ -330,6 +341,15 @@ export const LotteryList = () => {
                         '/default-lottery-image.png',
                       winner_id: lottery.winner_id
                     }}
+                    ids={
+                      stateIds.length > 0
+                        ? stateIds
+                        : status === 'owned'
+                        ? lotteriesVM.user_owned
+                        : status === 'user'
+                        ? lotteriesVM.user_tickets
+                        : []
+                    }
                   />
                 ))
               ) : (

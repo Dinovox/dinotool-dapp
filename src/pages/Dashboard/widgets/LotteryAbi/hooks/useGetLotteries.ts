@@ -8,7 +8,7 @@ import {
 import { lotteryContractAddress } from 'config';
 import { useGetNetworkConfig, useGetAccount } from 'lib';
 import abi_json from 'contracts/dinodraw.abi.json';
-import { internal_api } from 'config';
+import { dinoclaim_api } from 'config';
 
 export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
   const [lotteries, setLotteries] = useState<any[]>([]);
@@ -19,7 +19,7 @@ export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
       // console.log('ids', ids);
       setIsLoading(true);
       const response = await fetch(
-        `${internal_api}/dinovox/lotteries/?page=${page}&limit=${limit}&status=${status}` +
+        `${dinoclaim_api}/lotteries/?page=${page}&limit=${limit}&status=${status}` +
           (ids.length > 0 ? `&ids=${ids}` : '') +
           (price ? `&price=${price}` : '')
       );
@@ -28,6 +28,17 @@ export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
           `Failed to fetch lotteries list: ${response.statusText}`
         );
       }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn(
+          'API returned non-JSON response, possibly HTML error page'
+        );
+        setLotteries([]);
+        return;
+      }
+
       const data = await response.json();
       if (data?.lotteries) {
         setLotteries(data.lotteries);
@@ -37,7 +48,7 @@ export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
         setLotteries([]);
       }
     } catch (err) {
-      console.error('Unable to call getMintable', err);
+      console.error('Unable to call getLotteries', err);
       setLotteries([]);
     } finally {
       setIsLoading(false);
@@ -46,7 +57,7 @@ export const useGetLotteriesDB = ({ page, limit, status, ids, price }: any) => {
 
   useEffect(() => {
     getDbData();
-  }, [page, limit, status, price]);
+  }, [page, limit, status, price, ids.join(',')]);
 
   return { lotteries, total_count, isLoading };
 };

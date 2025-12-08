@@ -39,7 +39,7 @@ export const lottery_cost = {
   egld: '100000000000000000'
 };
 
-// export const dinoclaim_api = 'http://localhost:3000';
+//export const dinoclaim_api = 'http://localhost:3000';
 export const dinoclaim_api = 'https://claim.dinovox.com';
 export const dino_claim_url = 'https://app.dinovox.com/claim';
 export const dinovox_collections = ['FAAPU-28e0bc'];

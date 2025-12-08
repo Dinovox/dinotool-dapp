@@ -53,10 +53,10 @@ const CreateLotteryModal: React.FC<{
   const [prizeType, setPrizeType] = useState<string>('');
   const [prizeIdentifier, setPrizeIdentifier] = useState('');
 
-  const [prizeDisplay, setPrizeDisplay] = useState(''); // Valeur affichée à l'utilisateur
-  const [prizeAmount, setPrizeAmount] = useState(new BigNumber(0)); // Valeur en traitement
-  const [priceDisplay, setPriceDisplay] = useState(''); // Valeur affichée à l'utilisateur
-  const [priceAmount, setPriceAmount] = useState(new BigNumber(0));
+  const [prizeDisplay, setPrizeDisplay] = useState('1'); // Valeur affichée à l'utilisateur
+  const [prizeAmount, setPrizeAmount] = useState(new BigNumber(1)); // Valeur en traitement
+  const [priceDisplay, setPriceDisplay] = useState('1'); // Valeur affichée à l'utilisateur
+  const [priceAmount, setPriceAmount] = useState(new BigNumber(1));
 
   const [prizeNonce, setPrizeNonce] = useState<number>(0);
   const [prizeDecimals, setPrizeDecimals] = useState<number>(0);
@@ -101,10 +101,20 @@ const CreateLotteryModal: React.FC<{
       setPrizeTicker('EGLD-000000');
       setPrizeNonce(0);
       setPrizeDecimals(18);
-      setPrizeAmount(new BigNumber(0));
-      setPrizeDisplay('');
-      form.setFieldsValue({ prizeAmount: '', prizeIdentifier: 'EGLD-000000' });
+      setPrizeAmount(new BigNumber(1));
+      setPrizeDisplay('1');
+      form.setFieldsValue({ prizeAmount: '1', prizeIdentifier: 'EGLD-000000' });
       setPrizeBalance(new BigNumber(account?.balance));
+    } else if (e.target.value === 'Sft') {
+      setPrizeType(e.target.value);
+      setPrizeIdentifier('');
+      setPrizeTicker('');
+      setPrizeNonce(0);
+      setPrizeDecimals(0);
+      setPrizeAmount(new BigNumber(1));
+      setPrizeDisplay('1');
+      form.setFieldsValue({ prizeAmount: '1', prizeIdentifier: '' });
+      setPrizeBalance(new BigNumber(0));
     } else {
       setPrizeType(e.target.value);
       setPrizeIdentifier('');
@@ -125,9 +135,17 @@ const CreateLotteryModal: React.FC<{
       setPriceIdentifier('EGLD-000000');
       setPriceTicker('EGLD-000000');
       setPriceDecimals(18);
-      setPriceAmount(new BigNumber(0));
-      setPriceDisplay('');
-      form.setFieldsValue({ priceAmount: '', priceIdentifier: 'EGLD-000000' });
+      setPriceAmount(new BigNumber(1));
+      setPriceDisplay('1');
+      form.setFieldsValue({ priceAmount: '1', priceIdentifier: 'EGLD-000000' });
+    } else if (e.target.value === 'Sft') {
+      setPriceType(e.target.value);
+      setPriceTicker('');
+      setPriceIdentifier('');
+      setPriceDecimals(0);
+      setPriceAmount(new BigNumber(1));
+      setPriceDisplay('1');
+      form.setFieldsValue({ priceAmount: '1', priceIdentifier: '' });
     } else {
       setPriceType(e.target.value);
       setPriceTicker('');
@@ -326,10 +344,6 @@ const CreateLotteryModal: React.FC<{
     }, 300);
   };
 
-  if (!address) {
-    return null;
-  }
-
   //locked = free
   function handleIsLocked(e: CheckboxChangeEvent): void {
     const checked = e.target.checked;
@@ -434,6 +448,10 @@ const CreateLotteryModal: React.FC<{
       return false;
     return priceValid;
   }, [priceType, priceIdentifier, priceAmount, priceValid]);
+
+  if (!address) {
+    return null;
+  }
 
   return (
     <div className='flex justify-center'>
@@ -556,11 +574,13 @@ const CreateLotteryModal: React.FC<{
                         );
                         setPrizeBalance(new BigNumber(datas?.datas?.balance));
                         setPrizeAmount(
-                          new BigNumber(prizeType === 'Nft' ? 1 : 0)
+                          new BigNumber(prizeType === 'Nft' ? 1 : prizeAmount)
                         );
-                        setPrizeDisplay(prizeType === 'Nft' ? '1' : '');
+                        setPrizeDisplay(
+                          prizeType === 'Nft' ? '1' : prizeDisplay
+                        );
                         form.setFieldsValue({
-                          prizeAmount: prizeType === 'Nft' ? '1' : ''
+                          prizeAmount: prizeType === 'Nft' ? '1' : prizeDisplay
                         });
                       }}
                       showSearch={true}
@@ -600,8 +620,8 @@ const CreateLotteryModal: React.FC<{
                               setPrizeIdentifier(value);
                               setPrizeNonce(0);
                               setPrizeDecimals(0);
-                              setPrizeAmount(new BigNumber(0));
-                              setPrizeDisplay('');
+                              // setPrizeAmount(new BigNumber(0));
+                              // setPrizeDisplay('');
                               form.setFieldsValue({ prizeAmount: '' });
                             }}
                           />
@@ -789,9 +809,13 @@ const CreateLotteryModal: React.FC<{
                           setPriceDecimals(
                             datas?.datas?.decimals ? datas?.datas?.decimals : 0
                           );
-                          setPriceAmount(new BigNumber(0));
-                          setPriceDisplay('');
-                          form.setFieldsValue({ priceAmount: '' });
+                          setPriceAmount(
+                            new BigNumber(priceType === 'Sft' ? 1 : 0)
+                          );
+                          setPriceDisplay(priceType === 'Sft' ? '1' : '0');
+                          form.setFieldsValue({
+                            priceAmount: priceType === 'Sft' ? '1' : '0'
+                          });
                         }}
                         showSearch={true}
                         placeholder={t('lotteries:identifier_placeholder')}

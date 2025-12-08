@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { useGetPendingTransactions } from 'lib';
+import { useState, useEffect } from 'react';
+import { useGetPendingTransactions, useGetSuccessfulTransactions } from 'lib';
 import { signAndSendTransactions } from 'helpers';
 import {
   AbiRegistry,
@@ -18,10 +18,12 @@ import bigToHex from 'helpers/bigToHex';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import { red } from '@mui/material/colors';
+import { useNavigate } from 'react-router-dom';
 
 export const ActionDelete = ({ lottery_id }: any) => {
   const { network } = useGetNetworkConfig();
   const { address } = useGetAccountInfo();
+  const navigate = useNavigate();
 
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
@@ -29,9 +31,35 @@ export const ActionDelete = ({ lottery_id }: any) => {
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
 
-  const /*transactionSessionId*/ [, setTransactionSessionId] = useState<
-      string | null
-    >(null);
+  const successfulTransactions = useGetSuccessfulTransactions();
+  const [previousSuccessCount, setPreviousSuccessCount] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize the count on first render
+  useEffect(() => {
+    if (!isInitialized) {
+      setPreviousSuccessCount(successfulTransactions.length);
+      setIsInitialized(true);
+    }
+  }, [isInitialized, successfulTransactions.length]);
+
+  // Redirect when a new successful transaction is detected
+  useEffect(() => {
+    if (isInitialized && successfulTransactions.length > previousSuccessCount) {
+      // A new transaction was successful
+      console.log('successfulTransactions', successfulTransactions);
+      setPreviousSuccessCount(successfulTransactions.length);
+      // Small delay to ensure transaction is fully processed
+      setTimeout(() => {
+        navigate('/lotteries?page=1&status=owned');
+      }, 500);
+    }
+  }, [
+    successfulTransactions.length,
+    previousSuccessCount,
+    navigate,
+    isInitialized
+  ]);
 
   // console.log('price_identifier', price_identifier);
   // console.log('price_nonce', price_nonce.toFixed());
@@ -59,9 +87,7 @@ export const ActionDelete = ({ lottery_id }: any) => {
         successMessage: 'Delete transaction successful'
       }
     });
-    if (sessionId != null) {
-      setTransactionSessionId(sessionId);
-    }
+    // Transaction will be tracked via successfulTransactions hook
   };
   if (!address) {
     return null;
