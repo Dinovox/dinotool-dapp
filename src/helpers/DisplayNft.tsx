@@ -25,6 +25,10 @@ type DisplayNftProps = {
    * Mode d'affichage: 'card' (défaut) ou 'media-only' (juste l'image/vidéo).
    */
   variant?: 'card' | 'media-only' | 'name-only';
+  /**
+   * Force l'utilisation de la miniature (image) même si c'est une vidéo.
+   */
+  useThumbnail?: boolean;
 };
 
 const resolveIpfs = (uri: string): string => {
@@ -64,10 +68,11 @@ export const DisplayNft: React.FC<DisplayNftProps> = ({
   amount,
   className = '',
   badgeLabel,
-  variant = 'card'
+  variant = 'card',
+  useThumbnail = false
 }) => {
   const media = React.useMemo(() => getPrimaryMedia(nft), [nft]);
-  const video = isVideo(media);
+  const video = !useThumbnail && isVideo(media);
   const network = useGetNetworkConfig();
 
   const explorerUrl =
@@ -101,7 +106,11 @@ export const DisplayNft: React.FC<DisplayNftProps> = ({
           </video>
         ) : (
           <img
-            src={media.thumbnailUrl || media.url}
+            src={
+              useThumbnail
+                ? media.thumbnailUrl || media.url
+                : media.thumbnailUrl || media.url
+            }
             alt={nft.name || nft.identifier}
             className='h-full w-full object-cover'
           />

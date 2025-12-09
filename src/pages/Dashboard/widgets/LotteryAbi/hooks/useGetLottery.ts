@@ -132,6 +132,10 @@ export const useGetLottery = (lottery_id: any) => {
       // setMintable(data);
     } catch (err) {
       console.error('Unable to call getMintable', err);
+      setMintable((prev: any) => ({
+        ...prev,
+        loading: false
+      }));
     }
   };
 

@@ -22,10 +22,42 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
   esdtInfo,
   amount,
   is_free = false,
-  is_locked = false
+  is_locked = false,
+  showAmount = true,
+  showIdentifier = true
 }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
+
+  const renderDetails = () => (
+    <span className='identifier'>
+      {' '}
+      {showAmount &&
+        Number(
+          new BigNumber(amount).dividedBy(10 ** esdtInfo?.decimals).toFixed()
+        ).toLocaleString(undefined, {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 8
+        })}{' '}
+      {showIdentifier &&
+        (esdtInfo?.identifier == 'EGLD-000000'
+          ? 'EGLD'
+          : esdtInfo?.identifier)}{' '}
+      {is_free && (
+        <span className='tooltip'>
+          (ℹ)
+          <span className='text'>{t('lotteries:free_tooltip')}</span>
+        </span>
+      )}
+      {is_locked && (
+        <span className='tooltip'>
+          (ℹ)
+          <span className='text'>{t('lotteries:locked_tooltip')}</span>
+        </span>
+      )}
+    </span>
+  );
+
   return (
     <div>
       <div className='info-item'>
@@ -53,32 +85,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
                 }
                 alt='SFT'
               />
-              <span className='identifier'>
-                {' '}
-                {Number(
-                  new BigNumber(amount)
-                    .dividedBy(10 ** esdtInfo?.decimals)
-                    .toFixed()
-                ).toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 8
-                })}{' '}
-                EGLD{' '}
-                {is_free && (
-                  <span className='tooltip'>
-                    (ℹ)
-                    <span className='text'>{t('lotteries:free_tooltip')}</span>
-                  </span>
-                )}
-                {is_locked && (
-                  <span className='tooltip'>
-                    (ℹ)
-                    <span className='text'>
-                      {t('lotteries:locked_tooltip')}
-                    </span>
-                  </span>
-                )}
-              </span>{' '}
+              {(showAmount || showIdentifier) && renderDetails()}
             </div>
           </>
         ) : (
@@ -97,33 +104,7 @@ const EsdtDisplay: React.FC<EsdtDisplayProps> = ({
                 }
                 alt='SFT'
               />
-
-              <span className='identifier'>
-                {' '}
-                {Number(
-                  new BigNumber(amount)
-                    .dividedBy(10 ** esdtInfo?.decimals)
-                    .toFixed()
-                ).toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 8
-                })}{' '}
-                {esdtInfo?.identifier}{' '}
-                {is_free && (
-                  <span className='tooltip'>
-                    (ℹ)
-                    <span className='text'>{t('lotteries:free_tooltip')}</span>
-                  </span>
-                )}{' '}
-                {is_locked && (
-                  <span className='tooltip'>
-                    (ℹ)
-                    <span className='text'>
-                      {t('lotteries:locked_tooltip')}
-                    </span>
-                  </span>
-                )}
-              </span>
+              {(showAmount || showIdentifier) && renderDetails()}
             </div>
           </>
         )}{' '}

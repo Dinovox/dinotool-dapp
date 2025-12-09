@@ -25,6 +25,7 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ConnectButton } from 'components/Button/ConnectButton';
+import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 
 // import './../../Mint/MintSFT.css';
 
@@ -33,11 +34,9 @@ export const ActionBuy = ({
   price_identifier,
   price_nonce,
   price_amount,
-  price_decimals,
   buyed,
   balance,
   esdt_balance,
-  graou_balance,
   sft_balance,
   time_start,
   ended
@@ -227,19 +226,16 @@ export const ActionBuy = ({
                   esdt_balance.isLessThan(new BigNumber(price_amount)) && (
                     <>
                       {' '}
-                      {Number(
-                        esdt_balance.dividedBy(10 ** price_decimals).toFixed()
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 8
-                      })}{' '}
+                      <FormatAmount
+                        amount={esdt_balance}
+                        identifier={price_identifier}
+                        showIdentifier={false}
+                      />
                       /{' '}
-                      {Number(
-                        price_amount.dividedBy(10 ** price_decimals).toFixed()
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 1,
-                        maximumFractionDigits: 8
-                      })}{' '}
+                      <FormatAmount
+                        amount={price_amount}
+                        identifier={price_identifier}
+                      />
                     </>
                   )}
 

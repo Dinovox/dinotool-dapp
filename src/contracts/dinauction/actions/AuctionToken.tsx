@@ -59,7 +59,7 @@ export const ActionAuctionToken = ({
 
   disabled
 }: ActionAuctionTokenProps) => {
-  const loading = useLoadTranslations('auctions');
+  const loading = useLoadTranslations('marketplace');
   const { t } = useTranslation();
 
   const transactions: Record<string, any> = useGetPendingTransactions();
@@ -182,11 +182,11 @@ export const ActionAuctionToken = ({
           onClick={sendFundTransaction}
           disabled={disabled}
         >
-          {t('auction:create_auction')}
+          {t('marketplace:create_listing')}
         </button>
       ) : (
         <button className='dinoButton' disabled>
-          {t('auction:processing')}
+          {t('marketplace:processing')}
         </button>
       )}
     </>

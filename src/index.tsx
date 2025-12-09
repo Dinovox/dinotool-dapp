@@ -6,12 +6,16 @@ import { App } from './App';
 import { config } from './initConfig';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-initApp(config).then(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <Router>
-        <App />
-      </Router>
-    </React.StrictMode>
-  );
-});
+initApp(config)
+  .catch((err) => {
+    console.error('App initialization failed:', err);
+  })
+  .finally(() => {
+    ReactDOM.createRoot(document.getElementById('root')!).render(
+      <React.StrictMode>
+        <Router>
+          <App />
+        </Router>
+      </React.StrictMode>
+    );
+  });

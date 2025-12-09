@@ -87,5 +87,11 @@
   "locked_tooltip": "Les loteries gratuites permettent aux utilisateurs de participer sans perdre de jetons, le coût de participation est temporairement verrouillé dans le contrat. Les fonds sont libérés une fois la loterie terminée.",
   "check_collection": "Tout le monde peut créer une loterie. Avant de participer, pensez à vérifier la collection de l'artiste.",
   "only_one_winner_warning": "Un seul gagnant sera sélectionné et recevra la récompense. Si vous souhaitez sélectionner plusieurs gagnants, vous pouvez créer une nouvelle loterie.",
-  "your_balance": "Votre solde"
+  "your_balance": "Votre solde",
+  "in_progress": "En cours",
+  "lottery_deleted": "Loterie supprimée",
+  "mode": "Mode",
+  "edit_description": "Modifier la description",
+  "drawn_on": "Tiré le",
+  "lottery_not_found": "Loterie introuvable"
 }

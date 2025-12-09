@@ -336,7 +336,7 @@ export const Marketplace = () => {
           <div className='flex items-center justify-between'>
             <div>
               <h2 className='text-lg font-semibold text-slate-900'>
-                Trending collections
+                Collections
               </h2>
               <p className='text-sm text-slate-500'>
                 Some of the collections listed on DinoVox

@@ -32,7 +32,7 @@ export const ActionWithdraw = ({
 
   disabled
 }: ActionAuctionTokenProps) => {
-  const loading = useLoadTranslations('auctions');
+  const loading = useLoadTranslations('marketplace');
   const { t } = useTranslation();
 
   const transactions: Record<string, any> = useGetPendingTransactions();
@@ -136,11 +136,11 @@ export const ActionWithdraw = ({
           onClick={sendFundTransaction}
           disabled={disabled}
         >
-          {t('auction:withdraw_auction')}
+          {t('marketplace:withdraw_auction')}
         </button>
       ) : (
         <button className='dinoButton' disabled>
-          {t('auction:processing')}
+          {t('marketplace:processing')}
         </button>
       )}
     </>

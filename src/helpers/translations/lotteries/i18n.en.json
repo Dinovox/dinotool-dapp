@@ -87,5 +87,11 @@
   "locked_tooltip": "Locked lotteries allow users to participate without losing tokens, as the participation cost is only temporarily locked within the smart contract. The funds are released once the lottery ends.",
   "check_collection": "Everyone can create a lottery. Before participating, make sure to check the artist's collection.",
   "only_one_winner_warning": "Only one winner will be selected and receive the prize. If you want to select multiple winners, you can create a new lottery.",
-  "your_balance": "Your balance"
+  "your_balance": "Your balance",
+  "in_progress": "In Progress",
+  "lottery_deleted": "Lottery Deleted",
+  "mode": "Mode",
+  "edit_description": "Edit Description",
+  "drawn_on": "Drawn on",
+  "lottery_not_found": "Lottery not found"
 }

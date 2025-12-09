@@ -45,21 +45,42 @@ type AuctionItem = {
 
 function Countdown({ endTime }: { endTime: number }) {
   const [now, setNow] = useState(Date.now());
+
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const left = Math.max(0, endTime - now);
-  const s = Math.floor(left / 1000);
-  const d = Math.floor(s / (3600 * 24));
-  const h = Math.floor((s % (3600 * 24)) / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return (
-    <span>
-      {d}d {h}h {m}m {sec}s
-    </span>
-  );
+
+  let diff = Math.max(0, endTime - now);
+  if (diff === 0) return <span>0s</span>;
+
+  // Convert to seconds
+  const s = Math.floor(diff / 1000);
+
+  const secondsInMonth = 30 * 24 * 60 * 60; // 30 days ≈ 1 month
+  const secondsInDay = 24 * 60 * 60;
+
+  const months = Math.floor(s / secondsInMonth);
+  const afterMonths = s % secondsInMonth;
+
+  const days = Math.floor(afterMonths / secondsInDay);
+  const afterDays = afterMonths % secondsInDay;
+
+  const hours = Math.floor(afterDays / 3600);
+  const minutes = Math.floor((afterDays % 3600) / 60);
+  const seconds = afterDays % 60;
+
+  const parts: string[] = [];
+
+  if (months > 0) parts.push(`${months}M`);
+  if (months > 0 || days > 0) parts.push(`${days}d`);
+  if (months > 0 || days > 0 || hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0 || hours > 0 || days > 0 || months > 0)
+    parts.push(`${minutes}m`);
+
+  parts.push(`${seconds}s`);
+
+  return <span>{parts.join(' ')}</span>;
 }
 
 const Badge = ({
@@ -147,7 +168,10 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
   }, [auction.max_bid]);
 
   return (
-    <div className='group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col h-full'>
+    <Link
+      to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
+      className='group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 overflow-hidden flex flex-col h-full'
+    >
       {/* Image Section */}
       <div className='relative aspect-square bg-gray-100 overflow-hidden'>
         <DisplayNftByToken
@@ -260,17 +284,13 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
           <div className='flex gap-1.5'>
             {/* Show Bid Now if: not a direct sale (max_price != start_price) */}
             {!isDirectSale && (
-              <Link
-                to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
-                className='flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow'
-              >
+              <div className='flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow'>
                 Bid Now
-              </Link>
+              </div>
             )}
             {/* Show Buy Now if: max_price > 0 */}
             {hasBuyNow && (
-              <Link
-                to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
+              <div
                 className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-lg transition-colors shadow-sm hover:shadow ${
                   isDirectSale
                     ? 'bg-gray-900 text-white hover:bg-gray-800'
@@ -278,11 +298,11 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
                 }`}
               >
                 Buy Now
-              </Link>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

@@ -15,7 +15,7 @@ import {
 
 import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import { useGetUserNFT } from 'helpers/useGetUserNft';
-import { useGetAccountInfo, formatAmount } from 'lib';
+import { useGetAccountInfo, formatAmount, useGetAccount } from 'lib';
 import { ActionCreate } from './Transaction/ActionCreate';
 import BigNumber from 'bignumber.js';
 import { graou_identifier, lottery_cost, xgraou_identifier } from 'config';
@@ -30,9 +30,7 @@ import {
 
 const CreateLotteryModal: React.FC<{
   count: string;
-  cost_graou: boolean;
-  cost_egld: boolean;
-}> = ({ count, cost_graou, cost_egld }: any) => {
+}> = ({ count }: any) => {
   const loading = useLoadTranslations('lotteries');
   const { t } = useTranslation();
   const [form] = Form.useForm();
@@ -69,11 +67,28 @@ const CreateLotteryModal: React.FC<{
   const [priceValid, setPriceValid] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
 
+  //Load user info
   const { address, account } = useGetAccountInfo();
-  const test = new BigNumber(account?.balance).dividedBy(10 ** 18);
+  const { balance } = useGetAccount();
+  const user_esdt = useGetUserESDT(undefined, {
+    enabled: visible
+  });
+  const user_sft = useGetUserNFT(address, undefined, undefined, {
+    enabled: visible
+  });
 
-  const user_esdt = useGetUserESDT();
-  const user_sft = useGetUserNFT(address);
+  //Balance in graou
+  const userGraouBalance = new BigNumber(
+    user_esdt.find((esdt: any) => esdt.identifier === graou_identifier)
+      ?.balance || 0
+  );
+  //cost from config
+  const graou_cost = new BigNumber(lottery_cost.graou);
+  const egld_cost = new BigNumber(lottery_cost.egld);
+
+  //check if user has enough balance
+  const has_graou = userGraouBalance.isGreaterThanOrEqualTo(graou_cost);
+  const has_egld = new BigNumber(balance).isGreaterThanOrEqualTo(egld_cost);
 
   const showModal = () => {
     setVisible(true);
@@ -1231,14 +1246,14 @@ const CreateLotteryModal: React.FC<{
                     >
                       <div className='flex flex-col gap-3'>
                         <Checkbox
-                          disabled={!cost_graou || payWith == 'EGLD'}
+                          disabled={!has_graou || payWith == 'EGLD'}
                           checked={payWith == 'GRAOU'}
                           onChange={() =>
                             setPayWith(payWith == 'GRAOU' ? '' : 'GRAOU')
                           }
                           className='text-sm'
                         >
-                          {!cost_graou ? (
+                          {!has_graou ? (
                             <Trans
                               i18nKey='lotteries:you_need_x_graou'
                               values={{
@@ -1284,7 +1299,7 @@ const CreateLotteryModal: React.FC<{
                           }
                           className='text-sm'
                         >
-                          {!cost_egld ? (
+                          {!has_egld ? (
                             <Trans
                               i18nKey='lotteries:you_need_x_egld'
                               values={{
@@ -1368,7 +1383,7 @@ const CreateLotteryModal: React.FC<{
                         auto_draw={autoDraw}
                         fee_percentage={Math.ceil(feePercentage * 100)}
                         pay_with={payWith}
-                        disabled={payWith === '' || (!cost_graou && !cost_egld)}
+                        disabled={payWith === '' || (!has_graou && !has_egld)}
                       />
                     </div>
                   </div>

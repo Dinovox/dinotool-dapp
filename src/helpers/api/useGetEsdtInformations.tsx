@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetNetworkConfig } from 'lib';
 import BigNumber from 'bignumber.js';
+import bigToHex from 'helpers/bigToHex';
 
 export const useGetEsdtInformations = (
   identifier: string,
@@ -63,6 +64,7 @@ interface FormatAmountProps {
   showLastNonZeroDecimal?: boolean;
   withPrice?: boolean;
   nonce?: number;
+  showIdentifier?: boolean;
 }
 
 export const FormatAmount: React.FC<FormatAmountProps> = ({
@@ -71,7 +73,8 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
   displayDecimals,
   showLastNonZeroDecimal,
   withPrice,
-  nonce
+  nonce,
+  showIdentifier = true
 }) => {
   // Fetch token information using the hook
   const esdtInfo = useGetEsdtInformations(nonce && nonce > 0 ? '' : identifier);
@@ -135,6 +138,7 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
             maximumFractionDigits: 2
           })}
         </span>
+        ?
       </div>
     );
   }
@@ -154,5 +158,13 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
   //   );
   // }
 
-  return <>{`${formattedValue} ${ticker}`}</>;
+  return (
+    <>
+      {`${formattedValue}   ${showIdentifier ? ticker : ''}${
+        showIdentifier && nonce && nonce > 0
+          ? `-${bigToHex(BigInt(nonce))}`
+          : ''
+      }`}
+    </>
+  );
 };

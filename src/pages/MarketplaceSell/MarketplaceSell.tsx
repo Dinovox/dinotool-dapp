@@ -7,7 +7,8 @@ import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 import { m } from 'framer-motion';
-import { use } from 'i18next';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 import { max } from 'moment';
 /* ---------------- Types ---------------- */
 type SaleType = 'fixed' | 'auction';
@@ -110,7 +111,21 @@ const PAYMENT_TOKEN_TICKER: TokenAmount['ticker'] = 'EGLD';
 /* ---------------- Page ---------------- */
 export const MarketplaceSell = () => {
   const { address } = useGetAccountInfo();
-  const user_nft = useGetUserNFT(address);
+  useLoadTranslations('marketplace');
+  const { t } = useTranslation();
+
+  // Pagination & Search state
+  const [query, setQuery] = React.useState('');
+  const [from, setFrom] = React.useState(0);
+  const pageSize = 12;
+
+  // Debounce search query if needed, or just pass directly if user ok with instant search
+  // For now passing directly.
+  const user_nft = useGetUserNFT(address, undefined, undefined, {
+    search: query,
+    from: from,
+    size: pageSize
+  });
 
   const navigate = useNavigate();
 
@@ -118,7 +133,11 @@ export const MarketplaceSell = () => {
   const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1);
 
   // selection
-  const [query, setQuery] = React.useState('');
+  // const [query, setQuery] = React.useState(''); // Moved up
+  // Reset pagination when query changes
+  React.useEffect(() => {
+    setFrom(0);
+  }, [query]);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const selected = React.useMemo(
     () => user_nft.find((n: UserNft) => n.identifier === selectedId) || null,
@@ -171,6 +190,9 @@ export const MarketplaceSell = () => {
   }, [saleType]);
 
   // search inventory
+  // Client-side filtering removed in favor of server-side
+  const filtered = user_nft;
+  /*
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return user_nft;
@@ -181,6 +203,7 @@ export const MarketplaceSell = () => {
         n.collection.toLowerCase().includes(q)
     );
   }, [query, user_nft]);
+  */
 
   // validations
   const fixedValid =
@@ -343,22 +366,27 @@ export const MarketplaceSell = () => {
       {/* Header */}
       <div className='text-sm text-slate-600'>
         <Link to='/marketplace' className='underline'>
-          Marketplace
+          {t('marketplace:marketplace')}
         </Link>
         <span className='px-2'>/</span>
-        <span>Sell</span>
+        <span>{t('marketplace:sell')}</span>
       </div>
       <div className='flex items-center gap-2'>
         <div className='h-6 w-6 rounded-md bg-slate-200' />
-        <h1 className='text-2xl font-semibold'>List an item</h1>
+        <h1 className='text-2xl font-semibold'>{t('marketplace:list_item')}</h1>
         <div className='ml-2 flex gap-1'>
-          <Badge>Auction SC</Badge>
+          <Badge>{t('marketplace:auction_sc')}</Badge>
         </div>
       </div>
 
       {/* Stepper */}
       <div className='grid grid-cols-4 gap-2 text-sm'>
-        {['Select NFT', 'Sale type', 'Configure', 'Review'].map((label, i) => {
+        {[
+          t('marketplace:select_nft'),
+          t('marketplace:sale_type'),
+          t('marketplace:configure'),
+          t('marketplace:review')
+        ].map((label, i) => {
           const n = (i + 1) as 1 | 2 | 3 | 4;
           const active = step === n;
           const done = step > n;
@@ -370,7 +398,9 @@ export const MarketplaceSell = () => {
               } ${done ? 'bg-slate-50' : 'bg-white'}`}
             >
               <div className='font-medium'>{label}</div>
-              <div className='text-xs text-slate-500'>Step {n}</div>
+              <div className='text-xs text-slate-500'>
+                {t('marketplace:step')} {n}
+              </div>
             </div>
           );
         })}
@@ -382,52 +412,80 @@ export const MarketplaceSell = () => {
           {/* Inventory */}
           <Card>
             <CardHeader className='flex items-center justify-between'>
-              <div className='font-semibold'>Your wallet NFTs</div>
+              <div className='font-semibold'>{t('marketplace:select_nft')}</div>
               <div className='flex items-center gap-2'>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder='Search by id / name / collection'
+                  placeholder={t('marketplace:search_placeholder')}
                   className='h-9 w-64 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                 />
               </div>
             </CardHeader>
-            <CardContent className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>
-              {filtered.map((n: UserNft) => {
-                const isSel = n.id === selectedId;
-                return (
-                  <button
-                    key={n.identifier}
-                    onClick={() => setSelectedId(n.identifier)}
-                    className={`text-left rounded-2xl border overflow-hidden hover:opacity-90 ${
-                      isSel ? 'ring-2 ring-slate-900' : ''
-                    }`}
-                    title={n.identifier}
-                  >
-                    <div className='aspect-square bg-slate-100'>
-                      <DisplayNft nft={n} />
-                    </div>
-                    <div className='px-3 py-2'>
-                      <div className='text-xs text-slate-500 truncate'>
-                        {n.identifier}
+            <CardContent className='flex flex-col gap-4'>
+              <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 min-h-[200px]'>
+                {filtered.map((n: UserNft) => {
+                  const isSel = n.identifier === selectedId; // Fix: n.id might be undefined in some types, use identifier
+                  return (
+                    <button
+                      key={n.identifier}
+                      onClick={() => setSelectedId(n.identifier)}
+                      className={`text-left rounded-2xl border overflow-hidden hover:opacity-90 ${
+                        isSel ? 'ring-2 ring-slate-900' : ''
+                      }`}
+                      title={n.identifier}
+                    >
+                      <div className='aspect-square bg-slate-100'>
+                        <DisplayNft nft={n} useThumbnail />
                       </div>
-                      <div className='text-sm font-medium truncate'>
-                        {n.name}
+                      <div className='px-3 py-2'>
+                        <div className='text-xs text-slate-500 truncate'>
+                          {n.identifier}
+                        </div>
+                        <div className='text-sm font-medium truncate'>
+                          {n.name}
+                        </div>
+                        <div className='mt-1 text-xs text-slate-500'>
+                          {n.collection}
+                        </div>
                       </div>
-                      <div className='mt-1 text-xs text-slate-500'>
-                        {n.collection}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <div className='col-span-full py-8 text-center text-slate-500'>
+                    {t('marketplace:no_nfts')}
+                  </div>
+                )}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className='flex items-center justify-between border-t pt-4'>
+                <button
+                  disabled={from === 0}
+                  onClick={() => setFrom(Math.max(0, from - pageSize))}
+                  className='rounded-md border px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-50'
+                >
+                  Previous
+                </button>
+                <span className='text-xs text-slate-500'>
+                  Showing {from + 1} - {from + filtered.length}
+                </span>
+                <button
+                  disabled={filtered.length < pageSize}
+                  onClick={() => setFrom(from + pageSize)}
+                  className='rounded-md border px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-50'
+                >
+                  Next
+                </button>
+              </div>
             </CardContent>
           </Card>
 
           {/* Preview */}
           <Card>
             <CardHeader>
-              <div className='font-semibold'>Preview</div>
+              <div className='font-semibold'>{t('marketplace:preview')}</div>
             </CardHeader>
             <CardContent className='space-y-3'>
               {selected ? (
@@ -442,23 +500,26 @@ export const MarketplaceSell = () => {
                       {selected.collection}
                     </div>
                   </div>
-                  {Array.isArray(selected.attributes) &&
-                  selected.attributes.length ? (
+                  {(selected.metadata as any)?.attributes &&
+                  Array.isArray((selected.metadata as any).attributes) &&
+                  (selected.metadata as any).attributes.length > 0 ? (
                     <div className='grid grid-cols-2 gap-2'>
-                      {selected.attributes.map((a: any, i: any) => (
-                        <div key={i} className='rounded-md border p-2'>
-                          <div className='text-[11px] uppercase tracking-wide text-slate-500'>
-                            {a.trait}
+                      {(selected.metadata as any).attributes.map(
+                        (a: any, i: number) => (
+                          <div key={i} className='rounded-md border p-2'>
+                            <div className='text-[11px] uppercase tracking-wide text-slate-500'>
+                              {a.trait_type || a.trait}
+                            </div>
+                            <div className='text-sm font-medium'>{a.value}</div>
                           </div>
-                          <div className='text-sm font-medium'>{a.value}</div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   ) : null}
                 </>
               ) : (
                 <div className='text-sm text-slate-500'>
-                  Select an NFT to continue.
+                  {t('marketplace:select_preview')}
                 </div>
               )}
             </CardContent>
@@ -467,79 +528,132 @@ export const MarketplaceSell = () => {
       )}
 
       {step === 2 && (
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        <div className='mx-auto max-w-2xl space-y-6'>
+          {/* Selected NFT Summary */}
+          {selected ? (
+            <div className='flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm'>
+              <div className='h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100'>
+                <DisplayNft
+                  nft={selected}
+                  variant='media-only'
+                  useThumbnail
+                  className='h-full w-full object-cover'
+                />
+              </div>
+              <div className='flex-1 min-w-0'>
+                <div className='text-lg font-semibold truncate'>
+                  {selected.name}
+                </div>
+                <div className='text-sm text-slate-500 truncate'>
+                  {selected.identifier}
+                </div>
+              </div>
+              <button
+                onClick={() => setStep(1)}
+                className='text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline'
+              >
+                {t('marketplace:change')}
+              </button>
+            </div>
+          ) : (
+            <div className='rounded-xl border border-red-200 bg-red-50 p-4 text-red-700'>
+              {t('marketplace:no_nft_selected')}
+            </div>
+          )}
+
+          {/* Sale Type Selection */}
           <Card>
             <CardHeader>
-              <div className='font-semibold'>Choose sale type</div>
+              <div className='font-semibold'>{t('marketplace:sale_type')}</div>
             </CardHeader>
             <CardContent className='space-y-4'>
-              <label className='flex items-start gap-3 rounded-xl border p-3'>
+              <label className='flex cursor-pointer items-start gap-3 rounded-xl border p-3 hover:bg-slate-50 transition-colors'>
                 <input
                   type='radio'
                   name='saleType'
+                  className='mt-1'
                   checked={saleType === 'fixed'}
                   onChange={() => setSaleType('fixed')}
                 />
                 <div>
                   <div className='font-medium'>
-                    Fixed price (via auctionToken)
+                    {t('marketplace:fixed_price')}
                   </div>
                   <div className='text-sm text-slate-500'>
-                    Uses min_bid = max_bid. Instant sale when someone bids the
-                    price.
+                    {t('marketplace:fixed_price_desc')}
                   </div>
                 </div>
               </label>
-              <label className='flex items-start gap-3 rounded-xl border p-3'>
+              <label className='flex cursor-pointer items-start gap-3 rounded-xl border p-3 hover:bg-slate-50 transition-colors'>
                 <input
                   type='radio'
                   name='saleType'
+                  className='mt-1'
                   checked={saleType === 'auction'}
                   onChange={() => setSaleType('auction')}
                 />
                 <div>
-                  <div className='font-medium'>Auction</div>
+                  <div className='font-medium'>{t('marketplace:auction')}</div>
                   <div className='text-sm text-slate-500'>
-                    Bids between start and end time. Optional min step and “Buy
-                    now” (max bid).
+                    {t('marketplace:auction_desc')}
                   </div>
                 </div>
               </label>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className='font-semibold'>Selected NFT</div>
-            </CardHeader>
-            <CardContent>
-              {selected ? (
-                <div className='flex gap-3'>
-                  <DisplayNft nft={selected} amount={selected.balance} />
-                </div>
-              ) : (
-                <div className='text-sm text-slate-500'>
-                  No NFT selected (go back to step 1).
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
       )}
 
       {step === 3 && (
-        <div className='grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'>
+        <div className='mx-auto max-w-2xl space-y-6'>
+          {/* Selected NFT Summary */}
+          {selected && (
+            <div className='flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm'>
+              <div className='h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100'>
+                <DisplayNft
+                  nft={selected}
+                  variant='media-only'
+                  useThumbnail
+                  className='h-full w-full object-cover'
+                />
+              </div>
+              <div className='flex-1 min-w-0'>
+                <div className='text-lg font-semibold truncate'>
+                  {selected.name}
+                </div>
+                <div className='text-sm text-slate-500 truncate'>
+                  {selected.identifier}
+                </div>
+              </div>
+              <div className='text-right'>
+                <div className='text-sm font-medium'>
+                  {saleType === 'fixed'
+                    ? t('marketplace:fixed_price')
+                    : t('marketplace:auction')}
+                </div>
+                <button
+                  onClick={() => setStep(2)}
+                  className='text-xs text-blue-600 hover:underline'
+                >
+                  {t('marketplace:change_type')}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Config */}
           <Card>
             <CardHeader>
-              <div className='font-semibold'>Configure listing</div>
+              <div className='font-semibold'>
+                {t('marketplace:configure_listing')}
+              </div>
             </CardHeader>
             <CardContent className='space-y-5'>
               {saleType === 'fixed' ? (
                 <>
                   <div>
                     <label className='block text-sm text-slate-600 mb-1'>
-                      Fixed price
+                      {t('marketplace:price')}
                     </label>
                     <div className='flex items-center gap-2'>
                       <input
@@ -551,13 +665,12 @@ export const MarketplaceSell = () => {
                       <Badge>{PAYMENT_TOKEN_TICKER}</Badge>
                     </div>
                     <p className='mt-1 text-xs text-slate-500'>
-                      Will be mapped to min_bid = max_bid in the auctionToken
-                      call. Marketplace fee & royalties calculés à la vente.
+                      {t('marketplace:price_hint')}
                     </p>
                   </div>
                   <div>
                     <label className='block text-sm text-slate-600 mb-1'>
-                      Start time
+                      {t('marketplace:start_time')}
                     </label>
                     <input
                       type='datetime-local'
@@ -566,12 +679,12 @@ export const MarketplaceSell = () => {
                       className='h-10 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                     />
                     <p className='mt-1 text-xs text-slate-500'>
-                      If set in the past, the SC will treat it as starting now.
+                      {t('marketplace:start_time_hint')}
                     </p>
                   </div>
                   <div>
                     <label className='block text-sm text-slate-600 mb-1'>
-                      End time
+                      {t('marketplace:end_time')}
                     </label>
                     <input
                       type='datetime-local'
@@ -586,7 +699,7 @@ export const MarketplaceSell = () => {
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <div>
                       <label className='block text-sm text-slate-600 mb-1'>
-                        Minimum price (reserve)
+                        {t('marketplace:min_price')}
                       </label>
                       <div className='flex items-center gap-2'>
                         <input
@@ -598,13 +711,12 @@ export const MarketplaceSell = () => {
                         <Badge>{PAYMENT_TOKEN_TICKER}</Badge>
                       </div>
                       <p className='mt-1 text-xs text-slate-500'>
-                        This maps directly to <code>min_bid</code> in the smart
-                        contract.
+                        {t('marketplace:min_price_hint')}
                       </p>
                     </div>
                     <div>
                       <label className='block text-sm text-slate-600 mb-1'>
-                        Minimum bid step (optional)
+                        {t('marketplace:min_step')}
                       </label>
                       <input
                         type='number'
@@ -615,13 +727,13 @@ export const MarketplaceSell = () => {
                         className='h-10 w-28 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
                       <p className='mt-1 text-xs text-slate-500'>
-                        Minimal amount that a new bid must exceed the current
+                        {t('marketplace:min_step_hint')}
                       </p>
                     </div>
 
                     <div>
                       <label className='block text-sm text-slate-600 mb-1'>
-                        Amount to sell
+                        {t('marketplace:qty')}
                       </label>
                       <div className='flex items-center gap-2'>
                         <input
@@ -646,18 +758,19 @@ export const MarketplaceSell = () => {
                         />
                         <Badge>
                           {selected
-                            ? `${selected.balance || '1'} available`
+                            ? `${selected.balance || '1'} ${t(
+                                'marketplace:available'
+                              )}`
                             : '—'}
                         </Badge>
                       </div>
                       <p className='mt-1 text-xs text-slate-500'>
-                        Number of items to include in the auction (for SFTs).
-                        For NFTs use 1.
+                        {t('marketplace:qty_hint')}
                       </p>
                     </div>
                     <div>
                       <label className='block text-sm text-slate-600 mb-1'>
-                        Start time
+                        {t('marketplace:start_time')}
                       </label>
                       <input
                         type='datetime-local'
@@ -666,13 +779,12 @@ export const MarketplaceSell = () => {
                         className='h-10 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
                       <p className='mt-1 text-xs text-slate-500'>
-                        If set in the past, the SC will treat it as starting
-                        now.
+                        {t('marketplace:start_time_hint')}
                       </p>
                     </div>
                     <div>
                       <label className='block text-sm text-slate-600 mb-1'>
-                        End time
+                        {t('marketplace:end_time')}
                       </label>
                       <input
                         type='datetime-local'
@@ -692,12 +804,14 @@ export const MarketplaceSell = () => {
                         checked={allowBuyNow}
                         onChange={(e) => setAllowBuyNow(e.target.checked)}
                       />
-                      <span className='text-sm'>Allow “Buy now” </span>
+                      <span className='text-sm'>
+                        {t('marketplace:allow_buy_now')}{' '}
+                      </span>
                     </label>
                     {allowBuyNow && (
                       <div>
                         <label className='block text-sm text-slate-600 mb-1'>
-                          Buy now price
+                          {t('marketplace:buy_now_price')}
                         </label>
                         <div className='flex items-center gap-2'>
                           <input
@@ -709,8 +823,7 @@ export const MarketplaceSell = () => {
                           <Badge>{PAYMENT_TOKEN_TICKER}</Badge>
                         </div>
                         <p className='mt-1 text-xs text-slate-500'>
-                          Mapped to <code>max_bid</code>. If a bid reaches this
-                          value, the auction ends instantly.
+                          {t('marketplace:buy_now_hint')}
                         </p>
                       </div>
                     )}
@@ -719,130 +832,55 @@ export const MarketplaceSell = () => {
               )}
             </CardContent>
           </Card>
-
-          {/* Live preview */}
-          <Card>
-            <CardHeader>
-              <div className='font-semibold'>Live preview</div>
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              {selected ? (
-                <>
-                  <div className='rounded-xl overflow-hidden border'>
-                    <DisplayNft nft={selected} />
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <div className='text-lg font-semibold'>{selected.name}</div>
-                    <Badge>{saleType}</Badge>
-                  </div>
-                  <div className='text-sm text-slate-500'>
-                    {selected.identifier} • {selected.collection}
-                  </div>
-
-                  {saleType === 'fixed' ? (
-                    <div className='rounded-xl border p-3'>
-                      <div className='text-xs uppercase tracking-wide text-slate-500'>
-                        Fixed price
-                      </div>
-                      <div className='text-2xl font-semibold'>
-                        {fmt({
-                          ticker: PAYMENT_TOKEN_TICKER,
-                          amount: fixedPrice,
-                          decimals: 18
-                        })}
-                      </div>
-                      <div className='mt-1 text-xs text-slate-500'>
-                        Internally uses auctionToken(min_bid = max_bid).
-                      </div>
-                    </div>
-                  ) : (
-                    <div className='rounded-xl border p-3 space-y-1'>
-                      <div className='text-xs uppercase tracking-wide text-slate-500'>
-                        Auction
-                      </div>
-                      <div className='text-sm'>
-                        Start:{' '}
-                        <span className='font-medium'>
-                          {new Date(startAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className='text-sm'>
-                        End:{' '}
-                        <span className='font-medium'>
-                          {new Date(endAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className='text-sm'>
-                        Min bid:{' '}
-                        <span className='font-medium'>
-                          {fmt({
-                            ticker: PAYMENT_TOKEN_TICKER,
-                            amount: minBid,
-                            decimals: 18
-                          })}
-                        </span>
-                      </div>
-                      {allowBuyNow && buyNowPrice && (
-                        <div className='text-sm'>
-                          Buy now:{' '}
-                          <span className='font-medium'>
-                            {fmt({
-                              ticker: PAYMENT_TOKEN_TICKER,
-                              amount: buyNowPrice,
-                              decimals: 18
-                            })}
-                          </span>
-                        </div>
-                      )}
-                      {minBidStep > 0 && (
-                        <div className='text-sm'>
-                          Min bid step: {minBidStep}% of min bid
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className='text-xs text-slate-500'>
-                    Fees/royalties affichés sur la page de détail au moment de
-                    la vente.
-                  </div>
-                </>
-              ) : (
-                <div className='text-sm text-slate-500'>
-                  Select an NFT to preview.
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       )}
 
       {step === 4 && (
-        <div className='grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'>
+        <div className='mx-auto max-w-2xl space-y-6'>
+          {selected && (
+            <div className='flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm'>
+              <div className='h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100'>
+                <DisplayNft
+                  nft={selected}
+                  variant='media-only'
+                  useThumbnail
+                  className='h-full w-full object-cover'
+                />
+              </div>
+              <div className='flex-1 min-w-0'>
+                <div className='text-lg font-semibold truncate'>
+                  {selected.name}
+                </div>
+                <div className='text-sm text-slate-500 truncate'>
+                  {selected.identifier}
+                </div>
+              </div>
+            </div>
+          )}
+
           <Card>
             <CardHeader>
-              <div className='font-semibold'>Review & confirm</div>
+              <div className='font-semibold'>
+                {t('marketplace:review_confirm')}
+              </div>
             </CardHeader>
             <CardContent className='space-y-4'>
-              <div className='rounded-xl border overflow-hidden'>
-                <DisplayNft nft={selected!} amount={selected?.balance} />
-              </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3 text-sm'>
                 <div className='rounded-md border p-3'>
-                  <div className='text-xs text-slate-500'>Item</div>
-                  <div className='font-medium'>{selected?.name}</div>
-                  <div className='text-slate-500'>{selected?.identifier}</div>
-                </div>
-                <div className='rounded-md border p-3'>
-                  <div className='text-xs text-slate-500'>Sale type</div>
+                  <div className='text-xs text-slate-500'>
+                    {t('marketplace:sale_type')}
+                  </div>
                   <div className='font-medium'>
                     {saleType === 'fixed'
-                      ? 'Fixed price (auctionToken)'
-                      : 'Auction'}
+                      ? t('marketplace:fixed_price')
+                      : t('marketplace:auction')}
                   </div>
                 </div>
                 {saleType === 'fixed' ? (
                   <div className='rounded-md border p-3'>
-                    <div className='text-xs text-slate-500'>Price</div>
+                    <div className='text-xs text-slate-500'>
+                      {t('marketplace:price')}
+                    </div>
                     <div className='font-medium'>
                       {fmt({
                         ticker: PAYMENT_TOKEN_TICKER,
@@ -854,7 +892,9 @@ export const MarketplaceSell = () => {
                 ) : (
                   <>
                     <div className='rounded-md border p-3'>
-                      <div className='text-xs text-slate-500'>Min bid</div>
+                      <div className='text-xs text-slate-500'>
+                        {t('marketplace:min_price')}
+                      </div>
                       <div className='font-medium'>
                         {fmt({
                           ticker: PAYMENT_TOKEN_TICKER,
@@ -864,18 +904,22 @@ export const MarketplaceSell = () => {
                       </div>
                     </div>
                     <div className='rounded-md border p-3'>
-                      <div className='text-xs text-slate-500'>Schedule</div>
+                      <div className='text-xs text-slate-500'>
+                        {t('marketplace:schedule')}
+                      </div>
                       <div className='font-medium'>
                         {new Date(startAt).toLocaleString()} →{' '}
                         {new Date(endAt).toLocaleString()}
                       </div>
                     </div>
                     <div className='rounded-md border p-3'>
-                      <div className='text-xs text-slate-500'>Options</div>
+                      <div className='text-xs text-slate-500'>
+                        {t('marketplace:options')}
+                      </div>
                       <div className='font-medium'>
-                        Min step {minBidStep}{' '}
+                        {t('marketplace:min_step')} {minBidStep}{' '}
                         {allowBuyNow && buyNowPrice
-                          ? `· Buy now ${fmt({
+                          ? `· ${t('marketplace:buy_now_price')} ${fmt({
                               ticker: PAYMENT_TOKEN_TICKER,
                               amount: buyNowPrice,
                               decimals: 18
@@ -887,87 +931,70 @@ export const MarketplaceSell = () => {
                 )}
               </div>
 
-              <label className='mt-2 flex items-center gap-2'>
-                <input
-                  type='checkbox'
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
+              <div className='border-t pt-4'>
+                <label className='flex items-center gap-2'>
+                  <input
+                    type='checkbox'
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                  />
+                  <span className='text-sm'>
+                    {t('marketplace:confirm_terms')}
+                  </span>
+                </label>
+              </div>
+
+              <div className='pt-2'>
+                <ActionAuctionToken
+                  auctionned_token_identifier={
+                    selected ? selected.collection : ''
+                  }
+                  auctionned_nonce={
+                    selected
+                      ? new BigNumber(selected.nonce ? selected.nonce : 0)
+                      : new BigNumber(0)
+                  }
+                  auctionned_amount={new BigNumber(amountToSell)}
+                  minimum_bid={
+                    saleType === 'fixed'
+                      ? new BigNumber(toDenominatedInteger(fixedPrice))
+                      : new BigNumber(toDenominatedInteger(minBid))
+                  }
+                  maximum_bid={
+                    saleType === 'fixed'
+                      ? new BigNumber(toDenominatedInteger(fixedPrice))
+                      : allowBuyNow && buyNowPrice
+                      ? new BigNumber(toDenominatedInteger(buyNowPrice))
+                      : new BigNumber(0)
+                  }
+                  deadline={toTimestampSeconds(endAt)}
+                  accepted_payment_token_identifier={PAYMENT_TOKEN_TICKER}
+                  opt_min_bid_diff={
+                    saleType === 'fixed'
+                      ? new BigNumber(0)
+                      : minBidStep > 0
+                      ? new BigNumber(minBidStep)
+                      : new BigNumber(0)
+                  }
+                  //Pour vente directe
+                  opt_sft_max_one_per_payment={
+                    saleType === 'fixed' && maxOnePerPayment ? true : false
+                  }
+                  opt_start_time={
+                    saleType === 'fixed'
+                      ? undefined
+                      : (() => {
+                          const s = toTimestampSeconds(startAt);
+                          return s <= Math.floor(Date.now() / 1000)
+                            ? undefined
+                            : s;
+                        })()
+                  }
+                  disabled={busy || !agreeTerms}
                 />
-                <span className='text-sm'>
-                  I confirm I own this item and agree to the marketplace terms.
-                </span>
-              </label>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className='font-semibold'>Create listing</div>
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              <ActionAuctionToken
-                auctionned_token_identifier={
-                  selected ? selected.collection : ''
-                }
-                auctionned_nonce={
-                  selected
-                    ? new BigNumber(selected.nonce ? selected.nonce : 0)
-                    : new BigNumber(0)
-                }
-                auctionned_amount={new BigNumber(amountToSell)}
-                minimum_bid={
-                  saleType === 'fixed'
-                    ? new BigNumber(toDenominatedInteger(fixedPrice))
-                    : new BigNumber(toDenominatedInteger(minBid))
-                }
-                maximum_bid={
-                  saleType === 'fixed'
-                    ? new BigNumber(toDenominatedInteger(fixedPrice))
-                    : allowBuyNow && buyNowPrice
-                    ? new BigNumber(toDenominatedInteger(buyNowPrice))
-                    : new BigNumber(0)
-                }
-                deadline={toTimestampSeconds(endAt)}
-                accepted_payment_token_identifier={PAYMENT_TOKEN_TICKER}
-                opt_min_bid_diff={
-                  saleType === 'fixed'
-                    ? new BigNumber(0)
-                    : minBidStep > 0
-                    ? new BigNumber(minBidStep)
-                    : new BigNumber(0)
-                }
-                //Pour vente directe
-                opt_sft_max_one_per_payment={
-                  saleType === 'fixed' && maxOnePerPayment ? true : false
-                }
-                opt_start_time={
-                  saleType === 'fixed'
-                    ? undefined
-                    : (() => {
-                        const s = toTimestampSeconds(startAt);
-                        return s <= Math.floor(Date.now() / 1000)
-                          ? undefined
-                          : s;
-                      })()
-                }
-                disabled={busy || !agreeTerms}
-              />
-
-              {/* Submit */}
-              {/* <button
-                onClick={onSubmit}
-                disabled={!agreeTerms || busy}
-                className={`inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium text-white ${
-                  !agreeTerms || busy
-                    ? 'bg-slate-400'
-                    : 'bg-slate-900 hover:bg-slate-800'
-                }`}
-              >
-                {busy ? 'Listing…' : 'Confirm & list'}
-              </button> */}
-              <div className='text-xs text-slate-500'>
-                Cette action ouvrira votre wallet pour signer la transaction
-                (quand branché au smart contract marketplace).
+                <div className='mt-2 text-center text-xs text-slate-500'>
+                  {t('marketplace:wallet_sign_hint')}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -980,7 +1007,7 @@ export const MarketplaceSell = () => {
           onClick={() => setStep((s) => (s > 1 ? ((s - 1) as any) : s))}
           className='h-10 rounded-md border px-4 text-sm'
         >
-          Back
+          {t('marketplace:back')}
         </button>
         <div className='flex items-center gap-2'>
           {step < 4 && (
@@ -991,7 +1018,7 @@ export const MarketplaceSell = () => {
                 canContinue ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-400'
               }`}
             >
-              Continue
+              {t('marketplace:continue')}
             </button>
           )}
         </div>
