@@ -298,5 +298,12 @@ export const LOTTERY_EVENTS: EventDefinition[] = [
       { name: 'lottery_id', type: 'u64', indexed: true },
       { name: 'winner', type: 'address', indexed: true }
     ]
+  },
+  {
+    identifier: 'lotteryBuyed',
+    fields: [
+      { name: 'lottery_id', type: 'u64', indexed: true },
+      { name: 'buyer', type: 'address', indexed: true }
+    ]
   }
 ];

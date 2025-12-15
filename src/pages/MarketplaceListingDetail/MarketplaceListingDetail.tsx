@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useGetFullAuctionData } from 'contracts/dinauction/helpers/useGetFullAuctionData';
 import { useGetNftInformations } from 'pages/LotteryList/Transaction/helpers/useGetNftInformation';
 import { DisplayNft } from 'helpers/DisplayNft';
-import type { UserNft } from 'helpers/useGetUserNft';
+import { useGetUserNFT, type UserNft } from 'helpers/useGetUserNft';
 import { ActionBid } from 'contracts/dinauction/actions/Bid';
 import { ActionWithdraw } from 'contracts/dinauction/actions/Withdraw';
 import { ActionEndAuction } from 'contracts/dinauction/actions/EndAuction';
@@ -12,8 +12,15 @@ import {
   useGetEsdtInformations,
   FormatAmount
 } from 'helpers/api/useGetEsdtInformations';
+import { useGetOffers, Offer } from 'helpers/api/useGetOffers';
+import { ActionAcceptOffer } from 'contracts/dinauction/actions/AcceptOffer';
+import { ActionMakeOffer } from 'contracts/dinauction/actions/MakeOffer';
+import { ActionWithdrawOffer } from 'contracts/dinauction/actions/WithdrawOffer';
+import { ActionWithdrawAuctionAndAccept } from 'contracts/dinauction/actions/WithdrawAuctionAndAccept';
 import { useGetAccount } from 'lib';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
+import { useGetNftActivity } from './hooks/useGetNftActivity';
+import ShortenedAddress from 'helpers/shortenedAddress';
 
 /* ---------------- Types ---------------- */
 type MarketSource = 'dinovox' | 'xoxno';
@@ -105,9 +112,6 @@ const CardContent: React.FC<
 > = ({ children, className = '' }) => (
   <div className={`p-4 pt-0 ${className}`}>{children}</div>
 );
-
-import { useGetNftActivity } from './hooks/useGetNftActivity';
-import ShortenedAddress from 'helpers/shortenedAddress';
 
 /* ---------------- Activity Tab Component ---------------- */
 const ActivityTab = ({ identifier }: { identifier: string }) => {
@@ -202,6 +206,11 @@ export const MarketplaceListingDetail = () => {
   const [bidAmount, setBidAmount] = React.useState('');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  // Offer State
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [offerPrice, setOfferPrice] = useState('');
+  const [offerDuration, setOfferDuration] = useState('3'); // Days
+
   // 1. Fetch Auction Data from Contract
   const { auction: rawAuction, isLoading: loadingAuction } =
     useGetFullAuctionData(id);
@@ -209,10 +218,35 @@ export const MarketplaceListingDetail = () => {
   // 2. Extract Token Info for NFT Fetch
   const tokenIdentifier =
     rawAuction?.auctioned_tokens?.token_identifier?.toString();
-  const tokenNonce = rawAuction?.auctioned_tokens?.token_nonce?.toString();
+  const tokenNonce =
+    rawAuction?.auctioned_tokens?.token_nonce?.toString() || '0';
+
+  // Fetch specific offers for this NFT (collection + nonce)
+  const collectionId = tokenIdentifier
+    ? tokenIdentifier.split('-').slice(0, 2).join('-')
+    : undefined;
+
+  const { data: offersData } = useGetOffers({
+    collection: collectionId,
+    nonce: tokenNonce ? parseInt(tokenNonce).toString() : undefined, // Ensure clean number-string
+    limit: 10,
+    enabled: !!collectionId
+  });
 
   // 3. Fetch NFT Data from API
   const nftInfo: any = useGetNftInformations(tokenIdentifier, tokenNonce);
+
+  // Check if user has this token in wallet
+  const userOwnedTokens = useGetUserNFT(
+    address,
+    tokenIdentifier + '-' + bigToHex(BigInt(tokenNonce)),
+    undefined,
+    {
+      enabled: !!address && !!tokenIdentifier,
+      size: 1
+    }
+  );
+  const userHasToken = userOwnedTokens && userOwnedTokens.length > 0;
 
   const paymentToken = rawAuction?.payment_token?.toString() || 'EGLD';
   const tokenInformations = useGetEsdtInformations(paymentToken);
@@ -601,7 +635,9 @@ export const MarketplaceListingDetail = () => {
                       Minted on-chain •{' '}
                       {new Date(listing.createdAt).toLocaleString()}
                     </li>
-                    <li>Seller: {listing.seller}</li>
+                    <li>
+                      Seller: <ShortenedAddress address={listing.seller} />
+                    </li>
                     <li>
                       Collection:{' '}
                       <Link
@@ -706,12 +742,22 @@ export const MarketplaceListingDetail = () => {
               </div>
 
               {/* Actions */}
-              {address === listing.seller ? (
+              {address === listing.seller ||
+              address === listing.auction?.currentWinner ? (
                 listing.auction?.currentBid &&
                 listing.auction.currentBid.gt(0) ? (
-                  <div className='w-full rounded-md bg-amber-50 p-3 text-sm text-amber-800'>
-                    Auction has bids. You cannot withdraw.
-                  </div>
+                  listing.status === 'ended' ? (
+                    <ActionEndAuction
+                      auction_id={
+                        new BigNumber(listing.auction?.auctionId || id)
+                      }
+                    />
+                  ) : (
+                    <div className='w-full rounded-md bg-amber-50 p-3 text-sm text-amber-800'>
+                      Auction has bids. You cannot withdraw. Wait for the
+                      auction to end to receive your funds.
+                    </div>
+                  )
                 ) : (
                   <ActionWithdraw
                     auction_id={new BigNumber(listing.auction?.auctionId || id)}
@@ -723,8 +769,7 @@ export const MarketplaceListingDetail = () => {
                     <>
                       {listing?.isCached === false &&
                       address &&
-                      listing.auction?.currentBid.gt(0) &&
-                      timeLeft === '0h 0m 0s' ? (
+                      listing.auction?.currentBid.gt(0) ? (
                         <ActionEndAuction
                           auction_id={
                             new BigNumber(listing.auction?.auctionId || id)
@@ -820,6 +865,86 @@ export const MarketplaceListingDetail = () => {
                             )}{' '}
                         </>
                       </div>
+                      {/* Make Offer Section */}
+                      <div className='mt-4 border-t pt-4'>
+                        {!showOfferForm ? (
+                          <button
+                            onClick={() => setShowOfferForm(true)}
+                            className='w-full rounded-md border border-slate-300 bg-white py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors'
+                          >
+                            Make an offer
+                          </button>
+                        ) : (
+                          <div className='bg-slate-50 p-3 rounded-md space-y-3 border border-slate-200'>
+                            <div className='flex justify-between items-center'>
+                              <span className='text-sm font-semibold text-slate-700'>
+                                Make Offer
+                                {listing.auction?.currentBid?.gt(0) && (
+                                  <span className='ml-2 text-xs font-normal text-slate-500'>
+                                    (Direct Offer)
+                                  </span>
+                                )}
+                              </span>
+                              <button
+                                onClick={() => setShowOfferForm(false)}
+                                className='text-xs text-slate-500 hover:text-red-500'
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            <div>
+                              <label className='block text-xs text-slate-500 mb-1'>
+                                Price ({paymentToken})
+                              </label>
+                              <input
+                                value={offerPrice}
+                                onChange={(e) => setOfferPrice(e.target.value)}
+                                className='w-full h-9 rounded-md border border-gray-300 px-2 text-sm outline-none focus:border-slate-400'
+                                placeholder='Amount'
+                              />
+                            </div>
+                            <div>
+                              <label className='block text-xs text-slate-500 mb-1'>
+                                Valid for (days)
+                              </label>
+                              <input
+                                type='number'
+                                value={offerDuration}
+                                onChange={(e) =>
+                                  setOfferDuration(e.target.value)
+                                }
+                                className='w-full h-9 rounded-md border border-gray-300 px-2 text-sm outline-none focus:border-slate-400'
+                                min='1'
+                              />
+                            </div>
+                            <ActionMakeOffer
+                              nftIdentifier={listing.identifier}
+                              nftNonce={tokenNonce || 0}
+                              paymentToken={paymentToken}
+                              offerPrice={new BigNumber(offerPrice || '0')
+                                .shiftedBy(tokenInformations?.decimals || 0)
+                                .toFixed(0)}
+                              deadline={
+                                Math.floor(Date.now() / 1000) +
+                                (parseInt(offerDuration) || 1) * 86400
+                              }
+                              // If there are bids, we MUST NOT link to auction (pass undefined) to avoid blocking or errors.
+                              // If there are NO bids, we can link (optional, but good for tracking).
+                              // User request "sans passer par le système d'enchère" implies supporting unlinked offers.
+                              // So if bids exist, we force unlinked.
+                              auctionId={
+                                listing.auction?.currentBid?.gt(0)
+                                  ? undefined
+                                  : listing.auction?.auctionId
+                              }
+                              label='Send Offer'
+                              disabled={
+                                !offerPrice || parseFloat(offerPrice) <= 0
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
                       <div className='text-xs text-slate-500'>
                         {address === listing.seller
                           ? null
@@ -860,6 +985,107 @@ export const MarketplaceListingDetail = () => {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* Offers Section */}
+              {offersData?.offers && offersData.offers.length > 0 && (
+                <div className='mt-8 pt-6 border-t border-gray-100'>
+                  <h3 className='text-sm font-semibold text-gray-900 mb-4'>
+                    Offers
+                  </h3>
+                  <div className='space-y-3'>
+                    {offersData.offers.map((offer) => {
+                      const isExpired =
+                        Date.now() > new Date(offer.deadline).getTime();
+                      const isOwner = offer.owner?.address === address;
+
+                      return (
+                        <div
+                          key={offer.id}
+                          className='flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100'
+                        >
+                          <div className='flex flex-col'>
+                            <div className='font-medium text-gray-900 flex items-center gap-2'>
+                              <FormatAmount
+                                amount={offer.paymentAmount}
+                                identifier={offer.paymentTokenIdentifier}
+                              />
+                              {offer.offerTokenNonce === 0 && (
+                                <span className='inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10'>
+                                  Collection Offer
+                                </span>
+                              )}
+                            </div>
+                            <div className='text-xs text-gray-500'>
+                              from{' '}
+                              {offer.owner ? (
+                                <ShortenedAddress
+                                  address={offer.owner.address}
+                                />
+                              ) : (
+                                '-'
+                              )}
+                              {isExpired && (
+                                <span className='text-red-500 ml-1'>
+                                  (Expired)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            {/* Action for regular users (or owner with token in wallet) */}
+                            {!isOwner && !isExpired && (
+                              <div className='flex flex-col gap-2 scale-90 origin-right'>
+                                {/* Option 1: Accept from Wallet (if user has token) */}
+                                {userHasToken && (
+                                  <ActionAcceptOffer
+                                    offerId={offer.id}
+                                    offerNonce={offer.offerTokenNonce}
+                                    nftIdentifier={offer.offerTokenIdentifier}
+                                    nftNonce={offer.offerTokenNonce}
+                                    label='Accept (Wallet)'
+                                  />
+                                )}
+
+                                {/* Option 2: Accept & Close Auction (if seller, no bids, and auction active) */}
+                                {address === listing.seller &&
+                                  listing.auction?.currentBid.isZero() && (
+                                    <ActionWithdrawAuctionAndAccept
+                                      auctionId={listing.auction.auctionId}
+                                      offerId={offer.id}
+                                      label='Accept & Close'
+                                    />
+                                  )}
+
+                                {/* Fallback Warning if neither is possible */}
+                                {!userHasToken &&
+                                  !(
+                                    address === listing.seller &&
+                                    listing.auction?.currentBid.isZero()
+                                  ) && (
+                                    <span
+                                      className='text-xs text-gray-400 cursor-not-allowed'
+                                      title='You must have the token in your wallet to accept'
+                                    >
+                                      Accept
+                                    </span>
+                                  )}
+                              </div>
+                            )}
+                            {isOwner && (
+                              <div className='scale-90 origin-right'>
+                                <ActionWithdrawOffer
+                                  offerId={offer.id}
+                                  label='Cancel'
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
               {/* Meta */}
@@ -920,6 +1146,7 @@ export const MarketplaceListingDetail = () => {
 /* ---------------- More From Collection Component ---------------- */
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
+import bigToHex from 'helpers/bigToHex';
 
 const MoreFromCollection = ({
   collection,

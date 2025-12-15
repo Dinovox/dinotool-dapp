@@ -4,12 +4,14 @@ import { useGetUserNFT, UserNftResponse, UserNft } from 'helpers/useGetUserNft';
 import { useGetAccountInfo } from 'lib';
 import NftDisplay from 'pages/LotteryList/NftDisplay';
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
 import { m } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 import { max } from 'moment';
+import { LoginModal } from 'provider/LoginModal';
+import { ConnectButton } from 'components/Button/ConnectButton';
 /* ---------------- Types ---------------- */
 type SaleType = 'fixed' | 'auction';
 type TokenAmount = { ticker: string; amount: string; decimals: number };
@@ -114,14 +116,22 @@ export const MarketplaceSell = () => {
   useLoadTranslations('marketplace');
   const { t } = useTranslation();
 
+  /* ---------------- URL params ---------------- */
+  const [searchParams] = useSearchParams();
+  const collectionParam = searchParams.get('collection');
+
   // Pagination & Search state
-  const [query, setQuery] = React.useState('');
+  const [query, setQuery] = React.useState(collectionParam || ''); // Init with collection param if present
   const [from, setFrom] = React.useState(0);
   const pageSize = 12;
 
   // Debounce search query if needed, or just pass directly if user ok with instant search
   // For now passing directly.
   const user_nft = useGetUserNFT(address, undefined, undefined, {
+    // If query matches collection param, we pass it as collection filter specifically to be more precise?
+    // Or just generic search. Let's stick to generic search as per existing logic, or simple search=query.
+    // If collectionParam is present, maybe we want to filter exactly by collection?
+    // Let's rely on 'search' valid for collection too.
     search: query,
     from: from,
     size: pageSize

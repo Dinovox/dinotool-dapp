@@ -11,6 +11,7 @@ import { useRoutesWithTranslation } from 'routes';
 import { PageNotFound, Unlock } from 'pages';
 import { NftProvider } from './helpers/contexts/NftContext';
 import { MarketplaceNotification } from 'components/MarketplaceNotification/MarketplaceNotification';
+import { LotteryNotification } from 'components/LotteryNotification/LotteryNotification';
 
 export const App = () => {
   const routes = useRoutesWithTranslation();
@@ -23,6 +24,7 @@ export const App = () => {
       <BatchTransactionsContextProvider>
         <Layout>
           <MarketplaceNotification />
+          <LotteryNotification />
           <Routes location={background || location}>
             {routes.map((route) => (
               <Route

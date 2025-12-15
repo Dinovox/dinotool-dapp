@@ -13,7 +13,13 @@ import { useGetUserESDT } from 'helpers/useGetUserEsdt';
 import BigNumber from 'bignumber.js';
 import { ConnectButton } from 'components/Button/ConnectButton';
 import { motion } from 'framer-motion';
-import { User, MessageCircle, Gift, ShieldCheck } from 'lucide-react';
+import { User, MessageCircle, Gift, ShieldCheck, Tag } from 'lucide-react';
+import { useGetOffers } from 'helpers/api/useGetOffers';
+import { ActionWithdrawOffer } from 'contracts/dinauction/actions/WithdrawOffer';
+import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import { useGetAuctions } from 'helpers/api/useGetAuctions';
+import { Gavel } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export type DiscordInfo = {
   discordId: string;
@@ -57,6 +63,18 @@ export const Profile = () => {
 
   const [isDiscordLinked, setIsDiscordLinked] = useState(false);
   const [isTwitterLinked, setIsTwitterLinked] = useState(false);
+
+  const { data: offersData, loading: offersLoading } = useGetOffers({
+    owner: address,
+    limit: 50,
+    enabled: !!address
+  });
+
+  const { data: auctionsData, loading: auctionsLoading } = useGetAuctions({
+    owner: address,
+    limit: 50,
+    enabled: !!address
+  });
 
   useEffect(() => {
     const fetchAuthProfile = async () => {
@@ -440,7 +458,7 @@ export const Profile = () => {
             </div>
           </div>
 
-          {/* Additional Info / Stats Placeholder */}
+          {/* Member Statistics */}
           <div className='bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-lg p-8 text-white relative overflow-hidden'>
             <div className='absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -mr-16 -mt-16'></div>
             <div className='relative z-10'>
@@ -467,6 +485,175 @@ export const Profile = () => {
                   <p className='font-mono font-bold text-xl'>-</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* User's Active Auctions */}
+          <div className='bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 p-8'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-2 bg-orange-50 rounded-xl text-orange-500'>
+                <Gavel size={20} />
+              </div>
+              <div>
+                <h3 className='text-lg font-bold text-gray-900'>
+                  My Active Auctions
+                </h3>
+                <p className='text-sm text-gray-500'>
+                  Manage your active auctions
+                </p>
+              </div>
+            </div>
+
+            <div className='space-y-4'>
+              {auctionsLoading && (
+                <div className='text-center py-8 text-gray-500'>
+                  Loading auctions...
+                </div>
+              )}
+
+              {!auctionsLoading &&
+                (!auctionsData?.auctions ||
+                  auctionsData.auctions.length === 0) && (
+                  <div className='text-center py-8 rounded-2xl bg-gray-50 border border-gray-100 border-dashed'>
+                    <p className='text-gray-500 text-sm'>
+                      You have no active auctions.
+                    </p>
+                  </div>
+                )}
+
+              {auctionsData?.auctions?.map((auction) => {
+                const isEnded =
+                  Date.now() > new Date(auction.deadline).getTime();
+
+                return (
+                  <div
+                    key={auction.id}
+                    className='flex flex-wrap md:flex-nowrap items-center justify-between gap-4 p-4 rounded-2xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all'
+                  >
+                    <div>
+                      <div className='font-bold text-gray-900 flex items-center gap-2 mb-1'>
+                        Auction #{auction.id}
+                      </div>
+                      <div className='text-sm text-gray-500'>
+                        Token:{' '}
+                        <span className='font-medium text-gray-700'>
+                          {auction.tokenIdentifier}
+                        </span>
+                        <span className='ml-1 text-gray-400'>
+                          • Nonce #{auction.tokenNonce?.toString() || '0'}
+                        </span>
+                      </div>
+                      <div className='text-sm text-gray-500 mt-1'>
+                        Current Bid:{' '}
+                        <FormatAmount
+                          amount={auction.currentBid}
+                          identifier={auction.paymentTokenIdentifier}
+                        />
+                      </div>
+                      {isEnded && (
+                        <span className='inline-block mt-1 text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded'>
+                          Ended
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <Link
+                        to={`/marketplace/listings/${auction.id}`}
+                        className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors'
+                      >
+                        View Auction
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* User's Active Offers */}
+          <div className='bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 p-8'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-2 bg-purple-50 rounded-xl text-purple-500'>
+                <Tag size={20} />
+              </div>
+              <div>
+                <h3 className='text-lg font-bold text-gray-900'>
+                  My Active Offers
+                </h3>
+                <p className='text-sm text-gray-500'>
+                  Manage your pending offers
+                </p>
+              </div>
+            </div>
+
+            <div className='space-y-4'>
+              {offersLoading && (
+                <div className='text-center py-8 text-gray-500'>
+                  Loading offers...
+                </div>
+              )}
+
+              {!offersLoading &&
+                (!offersData?.offers || offersData.offers.length === 0) && (
+                  <div className='text-center py-8 rounded-2xl bg-gray-50 border border-gray-100 border-dashed'>
+                    <p className='text-gray-500 text-sm'>
+                      You have no active offers.
+                    </p>
+                  </div>
+                )}
+
+              {offersData?.offers?.map((offer) => {
+                const isExpired =
+                  Date.now() > new Date(offer.deadline).getTime();
+
+                return (
+                  <div
+                    key={offer.id}
+                    className='flex flex-wrap md:flex-nowrap items-center justify-between gap-4 p-4 rounded-2xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all'
+                  >
+                    <div>
+                      <div className='font-bold text-gray-900 flex items-center gap-2 mb-1'>
+                        <FormatAmount
+                          amount={offer.paymentAmount}
+                          identifier={offer.paymentTokenIdentifier}
+                        />
+                        {offer.offerTokenNonce === 0 && (
+                          <span className='inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-600 ring-1 ring-inset ring-blue-700/10'>
+                            Collection Offer
+                          </span>
+                        )}
+                      </div>
+                      <div className='text-sm text-gray-500'>
+                        Collection:{' '}
+                        <span className='font-medium text-gray-700'>
+                          {offer.offerTokenIdentifier
+                            ?.split('-')
+                            .slice(0, 2)
+                            .join('-')}
+                        </span>
+                        {offer.offerTokenNonce > 0 && (
+                          <span className='ml-1 text-gray-400'>
+                            • Item #{offer.offerTokenNonce}
+                          </span>
+                        )}
+                      </div>
+                      {isExpired && (
+                        <span className='inline-block mt-1 text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded'>
+                          Expired
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <ActionWithdrawOffer
+                        offerId={offer.id}
+                        label='Cancel Offer'
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </motion.div>

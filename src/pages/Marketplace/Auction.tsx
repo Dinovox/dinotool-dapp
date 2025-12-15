@@ -177,6 +177,7 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
         <DisplayNftByToken
           tokenIdentifier={auction?.auctioned_tokens?.token_identifier}
           nonce={auction?.auctioned_tokens?.token_nonce?.toString()}
+          variant='media-only'
           className='absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110'
         />
 
