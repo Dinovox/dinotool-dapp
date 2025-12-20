@@ -10,7 +10,8 @@ import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import { Auction } from './Auction';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
 import { PageTemplate } from 'components/PageTemplate';
-type MarketSource = 'dinovox' | 'xoxno';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 type SaleType = 'fixed' | 'auction';
 
 type TokenAmount = {
@@ -29,7 +30,6 @@ type AuctionData = {
 
 type Listing = {
   id: string;
-  source: MarketSource;
   saleType: SaleType;
   identifier: string;
   collectionSlug: string;
@@ -52,7 +52,6 @@ type Collection = {
   volume24h?: TokenAmount;
   volume7d?: TokenAmount;
   listingsActive: number;
-  sources: MarketSource[];
 };
 
 type SortKey =
@@ -63,7 +62,6 @@ type SortKey =
   | 'listings:endingSoon';
 
 type ListingFilters = {
-  sources: MarketSource[];
   saleTypes: SaleType[];
   token?: string;
   priceMin?: string;
@@ -74,7 +72,14 @@ type ListingFilters = {
 };
 
 import { useGetAccountCollections } from 'helpers/api/accounts/useGetAccountCollections';
-import { marketplaceContractAddress } from 'config';
+import {
+  marketplaceContractAddress,
+  dinovox_collections,
+  friends_collections
+} from 'config';
+import { useGetCollectionBranding } from 'helpers/api/useGetCollectionBranding';
+import { useGetCollectionStats } from 'helpers/api/useGetCollectionStats';
+import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 
 // ... (imports remain the same)
 
@@ -89,8 +94,6 @@ function applyListingFilters(
   filters: ListingFilters
 ): Listing[] {
   return list.filter((l) => {
-    if (filters.sources?.length && !filters.sources.includes(l.source))
-      return false;
     if (filters.saleTypes?.length && !filters.saleTypes.includes(l.saleType))
       return false;
     if (
@@ -180,7 +183,7 @@ function Countdown({ endTime }: { endTime: number }) {
 /** ---------- Mini-UI Tailwind pur (pas de shadcn) ---------- **/
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className='rounded-2xl border border-gray-200 bg-white shadow-sm'>
+    <div className='rounded-2xl border border-gray-200 bg-white shadow-sm h-full flex flex-col'>
       {children}
     </div>
   );
@@ -235,17 +238,104 @@ const Input = (props: React.ComponentProps<'input'>) => (
   />
 );
 
-const Badge = ({ children }: { children: React.ReactNode }) => (
-  <span className='inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-700'>
-    {children}
-  </span>
-);
+const Badge = ({
+  children,
+  tone
+}: {
+  children: React.ReactNode;
+  tone?: 'brand' | 'neutral' | 'info';
+}) => {
+  let colors = 'border-gray-200 bg-gray-50 text-gray-700';
+  if (tone === 'brand') colors = 'border-amber-300 bg-amber-50 text-amber-700';
+  if (tone === 'info') colors = 'border-blue-200 bg-blue-50 text-blue-700';
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs ${colors}`}
+    >
+      {children}
+    </span>
+  );
+};
+
+const MarketplaceCollectionCard = ({ c }: { c: Collection }) => {
+  const { t } = useTranslation();
+  const { branding } = useGetCollectionBranding(c.slug);
+  const { stats } = useGetCollectionStats(c.slug);
+
+  const isOwnedByDinovox = dinovox_collections.includes(c.slug);
+  const isFriendOfDinovox = friends_collections.includes(c.slug);
+
+  return (
+    <Card>
+      {/* Banner: use branding banner if available, else usage c.banner (asset), else placeholder color */}
+      <div
+        className='h-24 w-full bg-cover rounded-t-2xl bg-slate-100'
+        style={{
+          backgroundImage:
+            branding?.images.banner || c.banner
+              ? `url(${branding?.images.banner || c.banner})`
+              : undefined
+        }}
+      />
+      <CardHeader className='flex items-center gap-4 flex-1'>
+        {branding?.images.logo ? (
+          <img
+            src={branding.images.logo}
+            alt={c.name}
+            className='h-14 w-14 rounded-xl object-cover border border-gray-100 shadow-sm'
+          />
+        ) : (
+          <DisplayNftByToken
+            tokenIdentifier={c.slug}
+            nonce={'1'}
+            className='h-14 w-14 rounded-xl object-cover'
+            variant='media-only'
+          />
+        )}
+
+        <div className='flex-1 space-y-1 overflow-hidden'>
+          <div className='text-base font-medium text-slate-900 truncate pr-2'>
+            {branding?.branding.name || c.name}
+          </div>
+          <div className='text-sm text-slate-500'>
+            {c.itemsCount} {t('marketplace:items')} • {t('marketplace:floor')}{' '}
+            {stats?.floor_ask_egld ? (
+              <FormatAmount amount={stats.floor_ask_egld} identifier='EGLD' />
+            ) : (
+              '-'
+            )}
+          </div>
+          <div className='flex gap-1 flex-wrap pt-1'>
+            {isOwnedByDinovox && <Badge tone='brand'>DinoVox</Badge>}
+            {isFriendOfDinovox && <Badge tone='info'>Friends</Badge>}
+            {branding?.branding?.tags?.map((tag) => (
+              <Badge key={tag}>{tag}</Badge>
+            ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardFooter>
+        <Link
+          className='text-sm underline text-slate-700 hover:text-slate-900'
+          to={`/marketplace/collections/${c.slug}`}
+        >
+          {t('marketplace:view_collection')}
+        </Link>
+        <div className='text-sm text-slate-500'>
+          {c.listingsActive} {t('marketplace:listings').toLowerCase()}
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
 
 /** ---------- Page ---------- **/
 export const Marketplace = () => {
+  useLoadTranslations('marketplace');
+  const { t } = useTranslation();
   const [sort, setSort] = useState<SortKey>('listings:best');
   const [filters] = useState<ListingFilters>({
-    sources: ['dinovox', 'xoxno'],
     saleTypes: ['fixed', 'auction']
   });
   const [search, setSearch] = useState('');
@@ -274,8 +364,7 @@ export const Marketplace = () => {
       floor: undefined,
       volume24h: undefined,
       volume7d: undefined,
-      listingsActive: c.count,
-      sources: ['dinovox'] as MarketSource[]
+      listingsActive: c.count
     }));
   }, [accountCollections]);
 
@@ -286,10 +375,10 @@ export const Marketplace = () => {
   return (
     <div className='mx-auto px-4 py-6 space-y-6'>
       <PageTemplate
-        title='MARKETPLACE'
+        title={t('marketplace:marketplace').toUpperCase()}
         breadcrumbItems={[
-          { label: 'Home', path: '/' },
-          { label: 'Marketplace' }
+          { label: t('marketplace:home'), path: '/' },
+          { label: t('marketplace:marketplace') }
         ]}
         maxWidth='1400px'
       >
@@ -300,7 +389,7 @@ export const Marketplace = () => {
             to='/marketplace/sell'
             className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
           >
-            Sell an item
+            {t('marketplace:sell_an_item')}
           </Link>
         </div>
 
@@ -311,9 +400,9 @@ export const Marketplace = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder='Search collections or listings...'
+              placeholder={t('marketplace:search_placeholder')}
             />
-            <Button onClick={handleSearch}>Search</Button>
+            <Button onClick={handleSearch}>{t('marketplace:search')}</Button>
           </div>
 
           {/* <div className='flex items-center gap-2'>
@@ -336,61 +425,22 @@ export const Marketplace = () => {
           <div className='flex items-center justify-between'>
             <div>
               <h2 className='text-lg font-semibold text-slate-900'>
-                Collections
+                {t('marketplace:collections')}
               </h2>
               <p className='text-sm text-slate-500'>
-                Some of the collections listed on DinoVox
+                {t('marketplace:collections_subtitle')}
               </p>
             </div>
             <Link
               to='/marketplace/collections'
               className='text-sm underline text-slate-700 hover:text-slate-900'
             >
-              View all
+              {t('marketplace:view_all')}
             </Link>
           </div>
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
             {collections.map((c) => (
-              <Card key={c.slug}>
-                {c.banner && (
-                  <div
-                    className='h-24 w-full bg-cover'
-                    style={{ backgroundImage: `url(${c.banner})` }}
-                  />
-                )}
-                <CardHeader className='flex items-center gap-4'>
-                  <DisplayNftByToken
-                    tokenIdentifier={c.slug}
-                    nonce={'1'}
-                    className='h-14 w-14 rounded-xl object-cover'
-                    variant='media-only'
-                  />
-                  <div className='space-y-1'>
-                    <div className='text-base font-medium text-slate-900'>
-                      {c.name}
-                    </div>
-                    <div className='text-sm text-slate-500'>
-                      {c.itemsCount} items • Floor {formatToken(c.floor)}
-                    </div>
-                  </div>
-                  <div className='ml-auto flex gap-1'>
-                    {c.sources.map((s) => (
-                      <Badge key={s}>{s}</Badge>
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardFooter>
-                  <Link
-                    className='text-sm underline text-slate-700 hover:text-slate-900'
-                    to={`/marketplace/collections/${c.slug}`}
-                  >
-                    View collection
-                  </Link>
-                  <div className='text-sm text-slate-500'>
-                    {c.listingsActive} listings
-                  </div>
-                </CardFooter>
-              </Card>
+              <MarketplaceCollectionCard key={c.slug} c={c} />
             ))}
           </div>
         </section>
@@ -398,12 +448,14 @@ export const Marketplace = () => {
         {/* Live auctions */}
         <section className='space-y-3'>
           <div className='flex items-center justify-between'>
-            <h2 className='text-lg font-semibold text-slate-900'>Listings</h2>
+            <h2 className='text-lg font-semibold text-slate-900'>
+              {t('marketplace:listings')}
+            </h2>
             <Link
               to='/marketplace/listings'
               className='text-sm underline text-slate-700 hover:text-slate-900'
             >
-              View more
+              {t('marketplace:view_more')}
             </Link>
           </div>
           <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4'>

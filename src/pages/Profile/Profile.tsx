@@ -281,7 +281,7 @@ export const Profile = () => {
               <p className='text-sm text-gray-500 mb-6'>
                 {profile?.twitter
                   ? '@' + profile.twitter.username
-                  : 'Dinovox Member'}
+                  : 'DinoVox Member'}
               </p>
 
               <div className='bg-gray-50 rounded-xl p-3 border border-gray-100 mb-6'>
@@ -308,7 +308,7 @@ export const Profile = () => {
                     EGLD Balance
                   </p>
                   <p className='text-lg font-bold text-gray-900'>
-                    {egldBalance.toFixed(2)}
+                    <FormatAmount amount={egldBalance} identifier='egld' />
                   </p>
                 </div>
                 <div className='bg-green-50 rounded-xl p-3 border border-green-100'>
@@ -316,7 +316,7 @@ export const Profile = () => {
                     GRAOU Balance
                   </p>
                   <p className='text-lg font-bold text-gray-900'>
-                    {graouBalance.toFixed(0)}
+                    <FormatAmount amount={graouBalance} identifier='graou' />
                   </p>
                 </div>
               </div>

@@ -27,7 +27,7 @@ const PartnerInfo: React.FC<PartnerInfoProps> = ({ partner, address }) => {
             </h3>
             <p className='text-sm text-yellow-700 mb-2'>
               Cette adresse wallet n'est pas encore liée à un compte partenaire
-              Dinovox.
+              DinoVox.
             </p>
             <p className='text-xs text-yellow-600 font-mono break-all'>
               {address}

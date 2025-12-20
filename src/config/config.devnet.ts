@@ -18,7 +18,7 @@ export const lotteryContractAddress =
 export const vaultContractAddress =
   'erd1qqqqqqqqqqqqqpgq8uctjpczcsv49xr0clc3wfn98r5e48hcch9s2l2j55';
 export const marketplaceContractAddress =
-  'erd1qqqqqqqqqqqqqpgqc5x7tu8a6s6qe23fjzpc47ya6a6pr2fmch9s3zqu48';
+  'erd1qqqqqqqqqqqqqpgqgt7l8mmynwtyfw9y34en8u75vcdq8mpxch9stzzjcq';
 
 export const API_URL = 'https://devnet-api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];
@@ -38,5 +38,10 @@ export const lottery_cost = {
 //export const dinoclaim_api = 'http://localhost:3000';
 export const dinoclaim_api = 'https://devnet-claim.dinovox.com';
 export const dino_claim_url = 'https://devnet-app.dinovox.com/claim';
-export const dinovox_collections = ['FAAPU-28e0bc'];
+export const dinovox_collections = ['FAAPU-28e0bc', 'DINOCARDS-ddaf7a'];
 export const friends_collections = ['DINOBOOST-9f6811'];
+
+export const auction_tokens = [
+  { token: 'EGLD', identifier: 'EGLD', decimals: 18 },
+  { token: 'USDC', identifier: 'USDC-350c4e', decimals: 6 }
+];

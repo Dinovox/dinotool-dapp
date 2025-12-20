@@ -48,6 +48,7 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
         return;
       }
 
+      console.log(response);
       // The ABI defines the output as a single Auction struct
       // controller.query usually returns an array of results.
       // Since it returns one item, we take the first one.

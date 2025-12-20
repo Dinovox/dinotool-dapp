@@ -43,6 +43,7 @@ export type UseGetAuctionsParams = {
   limit?: number;
   owner?: string;
   collection?: string;
+  include_inactive?: boolean;
   enabled?: boolean;
 };
 
@@ -51,6 +52,7 @@ export const useGetAuctions = ({
   limit = 20,
   owner,
   collection,
+  include_inactive = false,
   enabled = true
 }: UseGetAuctionsParams) => {
   const { network } = useGetNetworkConfig();
@@ -70,6 +72,7 @@ export const useGetAuctions = ({
     params.append('limit', limit.toString());
     if (owner) params.append('owner', owner);
     if (collection) params.append('collection', collection);
+    if (include_inactive) params.append('include_inactive', 'true');
 
     const url = `/marketplace/auctions?${params.toString()}`;
     const config: AxiosRequestConfig = {
@@ -86,7 +89,7 @@ export const useGetAuctions = ({
     } finally {
       setLoading(false);
     }
-  }, [page, limit, owner, collection, enabled]);
+  }, [page, limit, owner, collection, include_inactive, enabled]);
 
   useEffect(() => {
     fetchAuctions();

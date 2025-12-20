@@ -12,13 +12,6 @@ type Listing = {
   status: 'active' | 'sold' | 'cancelled' | 'ended';
 };
 
-/** ---------------- Mock data for filters ---------------- **/
-const MOCK_COLLECTIONS = [
-  { slug: 'dinovox', name: 'Dinovox' },
-  { slug: 'dino-bones', name: 'Dino Bones' },
-  { slug: 'x-dinosaurs', name: 'X Dinosaurs' }
-];
-
 /** ---------------- Petits composants UI ---------------- **/
 const Card: React.FC<React.PropsWithChildren> = ({ children }) => (
   <div className='rounded-2xl border border-gray-200 bg-white shadow-sm'>

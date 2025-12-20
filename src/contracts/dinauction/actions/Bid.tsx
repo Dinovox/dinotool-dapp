@@ -56,7 +56,7 @@ export const ActionBid = ({
 
   const sendBidTransaction = async () => {
     const isEGLD = paymentToken === 'EGLD';
-    
+
     // Convert auction_id, nft_nonce to BigInt for hex conversion
     const auctionIdBigInt = BigInt(auctionId);
     const nftNonceBigInt = BigInt(nftNonce);
@@ -103,7 +103,7 @@ export const ActionBid = ({
       transaction = new Transaction({
         value: BigInt(0),
         data: new TextEncoder().encode(payload),
-        receiver: new Address(address), // sender to self for ESDT
+        receiver: new Address(marketplaceContractAddress),
         gasLimit: BigInt('12000000'),
         gasPrice: BigInt(GAS_PRICE),
         chainID: network.chainId,
@@ -137,7 +137,7 @@ export const ActionBid = ({
           {label || (directBuy ? 'Buy' : 'Place bid')}
         </button>
       ) : (
-        <button 
+        <button
           disabled
           className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white opacity-50 cursor-not-allowed'
         >

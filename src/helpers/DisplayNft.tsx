@@ -24,7 +24,7 @@ type DisplayNftProps = {
   /**
    * Mode d'affichage: 'card' (défaut) ou 'media-only' (juste l'image/vidéo).
    */
-  variant?: 'card' | 'media-only' | 'name-only';
+  variant?: 'card' | 'media-only' | 'name-only' | 'minted-date';
   /**
    * Force l'utilisation de la miniature (image) même si c'est une vidéo.
    */
@@ -132,6 +132,10 @@ export const DisplayNft: React.FC<DisplayNftProps> = ({
   }
   if (variant === 'name-only') {
     return <>{nft.name || 'Unnamed NFT'}</>;
+  }
+
+  if (variant === 'minted-date') {
+    return <>{new Date(nft.timestamp * 1000).toLocaleString()}</>;
   }
 
   return (

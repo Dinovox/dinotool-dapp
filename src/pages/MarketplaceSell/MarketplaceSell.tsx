@@ -107,7 +107,9 @@ const computeMinBidDiff = (minBidAmount: string, pct: number): string => {
 };
 
 /* ---------------- Constantes marketplace ---------------- */
-const PAYMENT_TOKEN_TICKER: TokenAmount['ticker'] = 'EGLD';
+const MARKETPLACE_FEE_PERCENT = 1; // 1%
+import { auction_tokens } from 'config';
+
 // Tu pourras ensuite autoriser des ESDT spécifiques via la whitelist du SC
 
 /* ---------------- Page ---------------- */
@@ -173,9 +175,22 @@ export const MarketplaceSell = () => {
     );
     return d.toISOString().slice(0, 16);
   });
-  const [minBidStep, setMinBidStep] = React.useState(0);
+  const [minBidStep, setMinBidStep] = React.useState('');
   const [allowBuyNow, setAllowBuyNow] = React.useState(false);
   const [buyNowPrice, setBuyNowPrice] = React.useState('');
+  const [hasEndTime, setHasEndTime] = React.useState(false);
+  const [paymentToken, setPaymentToken] = React.useState(
+    auction_tokens && auction_tokens.length > 0
+      ? auction_tokens[0].identifier
+      : 'EGLD'
+  );
+
+  const selectedPaymentToken = React.useMemo(
+    () =>
+      auction_tokens.find((t) => t.identifier === paymentToken) ||
+      auction_tokens[0],
+    [paymentToken]
+  );
 
   // misc
   const [agreeTerms, setAgreeTerms] = React.useState(false);
@@ -192,7 +207,7 @@ export const MarketplaceSell = () => {
     } else {
       const d = new Date(
         Date.now() +
-          10 * 365 * 24 * 3600 * 1000 -
+          365 * 24 * 3600 * 1000 -
           new Date().getTimezoneOffset() * 60000
       );
       setEndAt(d.toISOString().slice(0, 16));
@@ -476,17 +491,20 @@ export const MarketplaceSell = () => {
                   onClick={() => setFrom(Math.max(0, from - pageSize))}
                   className='rounded-md border px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-50'
                 >
-                  Previous
+                  {t('marketplace:previous')}
                 </button>
                 <span className='text-xs text-slate-500'>
-                  Showing {from + 1} - {from + filtered.length}
+                  {t('marketplace:showing_range', {
+                    start: from + 1,
+                    end: from + filtered.length
+                  })}
                 </span>
                 <button
                   disabled={filtered.length < pageSize}
                   onClick={() => setFrom(from + pageSize)}
                   className='rounded-md border px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-50'
                 >
-                  Next
+                  {t('marketplace:next')}
                 </button>
               </div>
             </CardContent>
@@ -672,7 +690,17 @@ export const MarketplaceSell = () => {
                         inputMode='decimal'
                         className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
-                      <Badge>{PAYMENT_TOKEN_TICKER}</Badge>
+                      <select
+                        value={paymentToken}
+                        onChange={(e) => setPaymentToken(e.target.value)}
+                        className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                      >
+                        {auction_tokens.map((t) => (
+                          <option key={t.identifier} value={t.identifier}>
+                            {t.token}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <p className='mt-1 text-xs text-slate-500'>
                       {t('marketplace:price_hint')}
@@ -692,16 +720,106 @@ export const MarketplaceSell = () => {
                       {t('marketplace:start_time_hint')}
                     </p>
                   </div>
+                  {/* SFT Options for Fixed Price */}
+                  {selected && parseInt(selected.balance || '1') > 1 && (
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div>
+                        <label className='block text-sm text-slate-600 mb-1'>
+                          {t('marketplace:qty')}
+                        </label>
+                        <div className='flex items-center gap-2'>
+                          <input
+                            type='number'
+                            min={1}
+                            max={Number(selected.balance || '1')}
+                            value={amountToSell}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              const num =
+                                raw === ''
+                                  ? ''
+                                  : String(Math.max(0, Number(raw)));
+                              setAmountToSell(num);
+                            }}
+                            className='h-10 w-28 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                          />
+                          <Badge>
+                            {selected.balance} {t('marketplace:available')}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className='block text-sm text-slate-600 mb-2'>
+                          {t('marketplace:sell_type')}
+                        </label>
+                        <div className='flex gap-4'>
+                          <label className='flex items-center gap-2 cursor-pointer'>
+                            <input
+                              type='radio'
+                              checked={!maxOnePerPayment}
+                              onChange={() => setMaxOnePerPayment(false)}
+                            />
+                            <span className='text-sm'>
+                              {t('marketplace:sell_batch')}
+                            </span>
+                          </label>
+                          <label className='flex items-center gap-2 cursor-pointer'>
+                            <input
+                              type='radio'
+                              checked={maxOnePerPayment}
+                              onChange={() => setMaxOnePerPayment(true)}
+                            />
+                            <span className='text-sm'>
+                              {t('marketplace:sell_unit')}
+                            </span>
+                          </label>
+                        </div>
+                        <p className='mt-1 text-xs text-slate-500'>
+                          {maxOnePerPayment
+                            ? t('marketplace:sell_unit_desc')
+                            : t('marketplace:sell_batch_desc')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
-                    <label className='block text-sm text-slate-600 mb-1'>
-                      {t('marketplace:end_time')}
+                    <label className='flex items-center gap-2 mb-2'>
+                      <input
+                        type='checkbox'
+                        checked={hasEndTime}
+                        onChange={(e) => setHasEndTime(e.target.checked)}
+                      />
+                      <span className='text-sm text-slate-600'>
+                        {t('marketplace:set_expiration_date')}
+                      </span>
                     </label>
-                    <input
-                      type='datetime-local'
-                      value={endAt}
-                      onChange={(e) => setEndAt(e.target.value)}
-                      className='h-10 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
-                    />
+                    {hasEndTime && (
+                      <>
+                        <label className='block text-sm text-slate-600 mb-1'>
+                          {t('marketplace:end_time')}
+                        </label>
+                        <input
+                          type='datetime-local'
+                          value={endAt}
+                          onChange={(e) => setEndAt(e.target.value)}
+                          className='h-10 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                        />
+                        <p className='mt-1 text-xs text-slate-500'>
+                          {endAt && startAt
+                            ? `${Math.max(
+                                0,
+                                Math.floor(
+                                  (new Date(endAt).getTime() -
+                                    new Date(startAt).getTime()) /
+                                    (1000 * 60 * 60 * 24)
+                                )
+                              )} ${t('marketplace:days') || 'days'}`
+                            : ''}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </>
               ) : (
@@ -718,7 +836,17 @@ export const MarketplaceSell = () => {
                           inputMode='decimal'
                           className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                         />
-                        <Badge>{PAYMENT_TOKEN_TICKER}</Badge>
+                        <select
+                          value={paymentToken}
+                          onChange={(e) => setPaymentToken(e.target.value)}
+                          className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                        >
+                          {auction_tokens.map((t) => (
+                            <option key={t.identifier} value={t.identifier}>
+                              {t.token}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       <p className='mt-1 text-xs text-slate-500'>
                         {t('marketplace:min_price_hint')}
@@ -729,11 +857,9 @@ export const MarketplaceSell = () => {
                         {t('marketplace:min_step')}
                       </label>
                       <input
-                        type='number'
                         value={minBidStep}
-                        onChange={(e) =>
-                          setMinBidStep(parseInt(e.target.value || '0', 10))
-                        }
+                        onChange={(e) => setMinBidStep(e.target.value)}
+                        inputMode='decimal'
                         className='h-10 w-28 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
                       <p className='mt-1 text-xs text-slate-500'>
@@ -792,6 +918,7 @@ export const MarketplaceSell = () => {
                         {t('marketplace:start_time_hint')}
                       </p>
                     </div>
+
                     <div>
                       <label className='block text-sm text-slate-600 mb-1'>
                         {t('marketplace:end_time')}
@@ -802,10 +929,20 @@ export const MarketplaceSell = () => {
                         onChange={(e) => setEndAt(e.target.value)}
                         className='h-10 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
+                      <p className='mt-1 text-xs text-slate-500'>
+                        {endAt && startAt
+                          ? `${Math.max(
+                              0,
+                              Math.floor(
+                                (new Date(endAt).getTime() -
+                                  new Date(startAt).getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              )
+                            )} ${t('marketplace:days') || 'days'}`
+                          : ''}
+                      </p>
                     </div>
                   </div>
-
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'></div>
 
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <label className='flex items-center gap-2'>
@@ -830,13 +967,16 @@ export const MarketplaceSell = () => {
                             inputMode='decimal'
                             className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                           />
-                          <Badge>{PAYMENT_TOKEN_TICKER}</Badge>
+                          <Badge>{paymentToken}</Badge>
                         </div>
                         <p className='mt-1 text-xs text-slate-500'>
                           {t('marketplace:buy_now_hint')}
                         </p>
                       </div>
                     )}
+                  </div>
+                  <div className='rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800'>
+                    {t('marketplace:auction_bid_warning')}
                   </div>
                 </>
               )}
@@ -886,19 +1026,51 @@ export const MarketplaceSell = () => {
                       : t('marketplace:auction')}
                   </div>
                 </div>
-                {saleType === 'fixed' ? (
-                  <div className='rounded-md border p-3'>
-                    <div className='text-xs text-slate-500'>
-                      {t('marketplace:price')}
-                    </div>
-                    <div className='font-medium'>
-                      {fmt({
-                        ticker: PAYMENT_TOKEN_TICKER,
-                        amount: fixedPrice,
-                        decimals: 18
-                      })}
-                    </div>
+
+                {/* Info commune: Quantité / Type de vente SFT */}
+                <div className='rounded-md border p-3'>
+                  <div className='text-xs text-slate-500'>
+                    {t('marketplace:qty') || 'Quantity'}
                   </div>
+                  <div className='font-medium'>
+                    {amountToSell} item(s)
+                    {parseInt(amountToSell) > 1 && (
+                      <span className='ml-1 text-slate-500 text-xs font-normal'>
+                        ({maxOnePerPayment ? 'Unit' : 'Batch'})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Info commune: Calendrier */}
+                <div className='rounded-md border p-3'>
+                  <div className='text-xs text-slate-500'>
+                    {t('marketplace:schedule')}
+                  </div>
+                  <div className='font-medium'>
+                    {new Date(startAt).toLocaleString()}{' '}
+                    <span className='text-slate-400'>→</span>{' '}
+                    {hasEndTime || saleType === 'auction'
+                      ? new Date(endAt).toLocaleString()
+                      : t('marketplace:infinite')}
+                  </div>
+                </div>
+
+                {saleType === 'fixed' ? (
+                  <>
+                    <div className='rounded-md border p-3'>
+                      <div className='text-xs text-slate-500'>
+                        {t('marketplace:price')}
+                      </div>
+                      <div className='font-medium'>
+                        {fmt({
+                          ticker: selectedPaymentToken.token,
+                          amount: fixedPrice,
+                          decimals: selectedPaymentToken.decimals
+                        })}
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className='rounded-md border p-3'>
@@ -907,32 +1079,29 @@ export const MarketplaceSell = () => {
                       </div>
                       <div className='font-medium'>
                         {fmt({
-                          ticker: PAYMENT_TOKEN_TICKER,
+                          ticker: selectedPaymentToken.token,
                           amount: minBid,
-                          decimals: 18
+                          decimals: selectedPaymentToken.decimals
                         })}
                       </div>
                     </div>
-                    <div className='rounded-md border p-3'>
-                      <div className='text-xs text-slate-500'>
-                        {t('marketplace:schedule')}
-                      </div>
-                      <div className='font-medium'>
-                        {new Date(startAt).toLocaleString()} →{' '}
-                        {new Date(endAt).toLocaleString()}
-                      </div>
-                    </div>
+                    {/* Schedule moved up to common */}
                     <div className='rounded-md border p-3'>
                       <div className='text-xs text-slate-500'>
                         {t('marketplace:options')}
                       </div>
                       <div className='font-medium'>
-                        {t('marketplace:min_step')} {minBidStep}{' '}
+                        {t('marketplace:min_step')}{' '}
+                        {fmt({
+                          ticker: selectedPaymentToken.token,
+                          amount: minBidStep,
+                          decimals: selectedPaymentToken.decimals
+                        })}{' '}
                         {allowBuyNow && buyNowPrice
                           ? `· ${t('marketplace:buy_now_price')} ${fmt({
-                              ticker: PAYMENT_TOKEN_TICKER,
+                              ticker: selectedPaymentToken.token,
                               amount: buyNowPrice,
-                              decimals: 18
+                              decimals: selectedPaymentToken.decimals
                             })}`
                           : ''}
                       </div>
@@ -940,6 +1109,116 @@ export const MarketplaceSell = () => {
                   </>
                 )}
               </div>
+
+              {/* FEE SUMMARY */}
+              {selected && (
+                <div className='rounded-xl bg-slate-50 p-4 space-y-2 border border-slate-200'>
+                  <h3 className='font-semibold text-slate-700 text-sm mb-2'>
+                    {t('marketplace:fees_summary')}
+                  </h3>
+
+                  {saleType === 'fixed' ? (
+                    <div className='space-y-1 text-sm'>
+                      <div className='flex justify-between'>
+                        <span className='text-slate-600'>
+                          {t('marketplace:sales_price')}
+                        </span>
+                        <span className='font-medium'>
+                          {maxOnePerPayment && parseInt(amountToSell) > 1
+                            ? (
+                                parseFloat(fixedPrice || '0') *
+                                parseInt(amountToSell)
+                              ).toFixed(4)
+                            : fixedPrice}{' '}
+                          {selectedPaymentToken.token}
+                        </span>
+                      </div>
+                      <div className='flex justify-between text-slate-500'>
+                        <span>
+                          {t('marketplace:marketplace_fee', {
+                            percent: MARKETPLACE_FEE_PERCENT
+                          })}
+                        </span>
+                        <span>
+                          -
+                          {(
+                            ((maxOnePerPayment && parseInt(amountToSell) > 1
+                              ? parseFloat(fixedPrice || '0') *
+                                parseInt(amountToSell)
+                              : parseFloat(fixedPrice || '0')) *
+                              MARKETPLACE_FEE_PERCENT) /
+                            100
+                          ).toFixed(4)}{' '}
+                          {selectedPaymentToken.token}
+                        </span>
+                      </div>
+                      <div className='flex justify-between text-slate-500'>
+                        <span>
+                          {t('marketplace:creator_royalties', {
+                            percent: selected.royalties || 0
+                          })}
+                        </span>
+                        <span>
+                          -
+                          {(
+                            ((maxOnePerPayment && parseInt(amountToSell) > 1
+                              ? parseFloat(fixedPrice || '0') *
+                                parseInt(amountToSell)
+                              : parseFloat(fixedPrice || '0')) *
+                              (selected.royalties || 0)) /
+                            100
+                          ).toFixed(4)}{' '}
+                          {selectedPaymentToken.token}
+                        </span>
+                      </div>
+                      <div className='border-t border-slate-200 my-2 pt-2 flex justify-between font-semibold text-slate-900 text-base'>
+                        <span>{t('marketplace:estimated_receive')}</span>
+                        <span>
+                          {(
+                            (maxOnePerPayment && parseInt(amountToSell) > 1
+                              ? parseFloat(fixedPrice || '0') *
+                                parseInt(amountToSell)
+                              : parseFloat(fixedPrice || '0')) *
+                            (1 -
+                              (MARKETPLACE_FEE_PERCENT +
+                                (selected.royalties || 0)) /
+                                100)
+                          ).toFixed(4)}{' '}
+                          {selectedPaymentToken.token}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='text-sm text-slate-500'>
+                      <p>{t('marketplace:auction_fee_intro')}</p>
+                      <ul className='list-disc list-inside mt-1 ml-1 space-y-0.5'>
+                        <li>
+                          <strong>
+                            {t('marketplace:auction_fee_marketplace', {
+                              percent: MARKETPLACE_FEE_PERCENT
+                            })}
+                          </strong>
+                        </li>
+                        <li>
+                          <strong>
+                            {t('marketplace:auction_fee_royalties', {
+                              percent: selected.royalties || 0
+                            })}
+                          </strong>
+                        </li>
+                      </ul>
+                      <p className='mt-2 italic'>
+                        {t('marketplace:auction_fee_receive', {
+                          percent:
+                            100 -
+                            MARKETPLACE_FEE_PERCENT -
+                            (selected.royalties || 0)
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className='border-t pt-4'>
                 <label className='flex items-center gap-2'>
@@ -967,23 +1246,52 @@ export const MarketplaceSell = () => {
                   auctionned_amount={new BigNumber(amountToSell)}
                   minimum_bid={
                     saleType === 'fixed'
-                      ? new BigNumber(toDenominatedInteger(fixedPrice))
-                      : new BigNumber(toDenominatedInteger(minBid))
+                      ? new BigNumber(
+                          toDenominatedInteger(
+                            fixedPrice,
+                            selectedPaymentToken.decimals
+                          )
+                        )
+                      : new BigNumber(
+                          toDenominatedInteger(
+                            minBid,
+                            selectedPaymentToken.decimals
+                          )
+                        )
                   }
                   maximum_bid={
                     saleType === 'fixed'
-                      ? new BigNumber(toDenominatedInteger(fixedPrice))
+                      ? new BigNumber(
+                          toDenominatedInteger(
+                            fixedPrice,
+                            selectedPaymentToken.decimals
+                          )
+                        )
                       : allowBuyNow && buyNowPrice
-                      ? new BigNumber(toDenominatedInteger(buyNowPrice))
+                      ? new BigNumber(
+                          toDenominatedInteger(
+                            buyNowPrice,
+                            selectedPaymentToken.decimals
+                          )
+                        )
                       : new BigNumber(0)
                   }
-                  deadline={toTimestampSeconds(endAt)}
-                  accepted_payment_token_identifier={PAYMENT_TOKEN_TICKER}
+                  deadline={
+                    saleType === 'fixed' && !hasEndTime
+                      ? 0
+                      : toTimestampSeconds(endAt)
+                  }
+                  accepted_payment_token_identifier={paymentToken}
                   opt_min_bid_diff={
                     saleType === 'fixed'
                       ? new BigNumber(0)
-                      : minBidStep > 0
-                      ? new BigNumber(minBidStep)
+                      : minBidStep && parseFloat(minBidStep) > 0
+                      ? new BigNumber(
+                          toDenominatedInteger(
+                            minBidStep,
+                            selectedPaymentToken.decimals
+                          )
+                        )
                       : new BigNumber(0)
                   }
                   //Pour vente directe

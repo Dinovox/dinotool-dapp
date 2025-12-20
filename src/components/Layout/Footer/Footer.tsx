@@ -13,12 +13,12 @@ export const Footer = () => {
           className='flex items-center text-sm hover:underline'
           href='https://dinovox.com/'
         >
-          Made with Graou by the Dinovox team
+          Made with Graou by the DinoVox team
         </a>
         <a
           target='_blank'
           className='flex items-center text-sm hover:underline'
-          href='https://github.com/Dinovox/'
+          href='https://github.com/dinovox/'
         >
           <img
             src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'

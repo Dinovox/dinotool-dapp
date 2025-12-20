@@ -17,12 +17,14 @@ export interface ActionEndAuctionProps {
   auction_id: BigNumber;
   disabled?: boolean;
   onSuccess?: () => void;
+  label?: React.ReactNode;
 }
 
 export const ActionEndAuction = ({
   auction_id,
   disabled,
-  onSuccess
+  onSuccess,
+  label
 }: ActionEndAuctionProps) => {
   const transactions: Record<string, any> = useGetPendingTransactions();
   const hasPendingTransactions = Object.keys(transactions).length > 0;
@@ -80,7 +82,7 @@ export const ActionEndAuction = ({
           disabled={disabled}
           className='inline-flex h-10 w-full items-center justify-center rounded-md bg-green-600 px-4 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          End Auction
+          {label || 'End Auction'}
         </button>
       ) : (
         <button

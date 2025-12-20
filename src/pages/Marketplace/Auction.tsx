@@ -4,6 +4,11 @@ import BigNumber from 'bignumber.js';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 import { useGetAccount } from 'lib';
+import { useGetCollectionBranding } from 'helpers/api/useGetCollectionBranding';
+import { dinovox_collections, friends_collections } from 'config';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
+
 // Types adapted from Marketplace.tsx
 type TokenAmount = {
   ticker: string;
@@ -41,15 +46,25 @@ type AuctionItem = {
   max_bid?: string;
   original_owner?: string;
   current_winner?: string;
+  auctionType?: any;
 };
 
 function Countdown({ endTime }: { endTime: number }) {
+  const { t } = useTranslation('marketplace');
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Handle infinite duration (very large timestamp or 0 if 0 means infinite)
+  // u64max is huge, so we check if year is > 3000 (timestamp > ~32503680000000)
+  // Also checking 0 explicitly depending on interpretation, but usually 0 = expired/started?
+  // User said "u64max" is infinite.
+  if (endTime > 32503680000000) {
+    return <span>{t('infinite')}</span>;
+  }
 
   let diff = Math.max(0, endTime - now);
   if (diff === 0) return <span>0s</span>;
@@ -98,6 +113,8 @@ const Badge = ({
 );
 
 export const Auction = ({ auction: rawAuction }: { auction: any }) => {
+  useLoadTranslations('marketplace');
+  const { t } = useTranslation('marketplace');
   const { address } = useGetAccount();
   // Normalize contract data to AuctionItem
   const auction: AuctionItem = useMemo(() => {
@@ -147,9 +164,18 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
       min_bid: rawAuction.min_bid?.toString(),
       max_bid: rawAuction.max_bid?.toString(),
       original_owner: rawAuction.original_owner?.toString(),
-      current_winner: rawAuction.current_winner?.toString()
+      current_winner: rawAuction.current_winner?.toString(),
+      auctionType: rawAuction.auction_type
     };
   }, [rawAuction]);
+
+  const tokenIdentifier = auction.auctioned_tokens?.token_identifier || '';
+  const collectionIdentifier = tokenIdentifier.split('-').slice(0, 2).join('-');
+
+  const { branding } = useGetCollectionBranding(collectionIdentifier);
+
+  const isOwnedByDinovox = dinovox_collections.includes(collectionIdentifier);
+  const isFriendOfDinovox = friends_collections.includes(collectionIdentifier);
 
   const isCreator = address && auction.original_owner === address;
   const isWinner = address && auction.current_winner === address;
@@ -183,17 +209,26 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
 
         {/* Badges overlay */}
         <div className='absolute left-2 top-2 flex gap-1 flex-wrap'>
-          {auction?.source && <Badge>{String(auction.source)}</Badge>}
-          {!isDirectSale && <Badge>auction</Badge>}
-          {hasBuyNow && <Badge>buy now</Badge>}
+          {isOwnedByDinovox && (
+            <Badge className='!bg-amber-50 !text-amber-700 !border-amber-300'>
+              DinoVox
+            </Badge>
+          )}
+          {isFriendOfDinovox && <Badge>Friends</Badge>}
+          {branding?.branding?.tags?.map((tag) => (
+            <Badge key={tag}>{tag}</Badge>
+          ))}
+
+          {!isDirectSale && <Badge>{t('marketplace:auction')}</Badge>}
+          {hasBuyNow && <Badge>{t('marketplace:buy_now')}</Badge>}
           {isCreator && (
             <Badge className='!bg-blue-100 !text-blue-700 !border-blue-200'>
-              Creator
+              {t('marketplace:creator')}
             </Badge>
           )}
           {isWinner && (
             <Badge className='!bg-green-100 !text-green-700 !border-green-200'>
-              Winning
+              {t('marketplace:winning')}
             </Badge>
           )}
         </div>
@@ -214,14 +249,18 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
           {isDirectSale ? (
             <>
               <div className='flex justify-between items-center text-sm'>
-                <span className='text-gray-500'>Quantity</span>
+                <span className='text-gray-500'>{t('marketplace:qty')}</span>
                 <span className='font-bold text-gray-900'>
                   {auction?.auctioned_tokens?.amount || '1'}
                 </span>
               </div>
 
               <div className='flex justify-between items-center text-sm'>
-                <span className='text-gray-500'>Price</span>
+                <span className='text-gray-500'>
+                  {auction.auctionType?.name === 'SftOnePerPayment'
+                    ? t('marketplace:unit_price')
+                    : t('marketplace:price')}
+                </span>
                 <span className='font-bold text-gray-900'>
                   <FormatAmount
                     amount={auction?.max_bid}
@@ -236,7 +275,7 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
               {' '}
               {auction?.min_bid && (
                 <div className='flex justify-between items-center text-xs text-gray-500'>
-                  <span>Min bid</span>
+                  <span>{t('marketplace:min_price')}</span>
                   <span>
                     <FormatAmount
                       amount={auction?.min_bid}
@@ -246,7 +285,9 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
                 </div>
               )}
               <div className='flex justify-between items-center text-sm'>
-                <span className='text-gray-500'>Current bid</span>
+                <span className='text-gray-500'>
+                  {t('marketplace:current_bid')}
+                </span>
                 <span className='font-bold text-gray-900'>
                   <FormatAmount
                     amount={
@@ -261,7 +302,7 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
               <div className='flex justify-between items-center text-xs text-gray-500 min-h-[20px]'>
                 {auction?.max_bid ? (
                   <>
-                    <span>Direct Buy</span>
+                    <span>{t('marketplace:direct_buy')}</span>
                     <span>
                       <FormatAmount
                         amount={auction?.max_bid}
@@ -286,7 +327,7 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
             {/* Show Bid Now if: not a direct sale (max_price != start_price) */}
             {!isDirectSale && (
               <div className='flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow'>
-                Bid Now
+                {t('marketplace:bid_now')}
               </div>
             )}
             {/* Show Buy Now if: max_price > 0 */}
@@ -298,7 +339,7 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
                     : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                Buy Now
+                {t('marketplace:buy_now')}
               </div>
             )}
           </div>

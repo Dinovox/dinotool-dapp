@@ -9,6 +9,7 @@ export const callSyncMarketplaceActivity = async () => {
     };
     await axios.get(url, config);
     console.log('Marketplace activity synced');
+    window.dispatchEvent(new Event('marketplace:synced'));
   } catch (err) {
     console.error('Failed to sync marketplace activity', err);
   }

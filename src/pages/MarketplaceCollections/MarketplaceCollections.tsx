@@ -8,6 +8,9 @@ import {
   friends_collections
 } from 'config';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
+import { useGetCollectionStats } from 'helpers/api/useGetCollectionStats';
+import { useGetCollectionBranding } from 'helpers/api/useGetCollectionBranding';
+import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 
 type MarketSource = 'local' | 'xoxno';
 
@@ -154,6 +157,114 @@ function CardFooter({
   );
 }
 
+const CollectionCard = ({ collection }: { collection: Collection }) => {
+  const { stats } = useGetCollectionStats(collection.collection);
+  const { branding } = useGetCollectionBranding(collection.collection);
+
+  return (
+    <Card>
+      {/* Aperçu plus large */}
+      <div
+        className='h-40 w-full bg-center bg-cover rounded-t-2xl bg-slate-100'
+        style={{
+          backgroundImage: `url(${
+            branding?.images.banner || collection.banner || ''
+          })`
+        }}
+      />
+
+      {/* avatar/logo plus grand */}
+      <CardHeader className='-mt-12 flex items-center gap-4'>
+        {branding?.images.logo ? (
+          <img
+            src={branding.images.logo}
+            alt={collection.name}
+            className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
+          />
+        ) : (
+          <DisplayNftByToken
+            tokenIdentifier={collection.collection}
+            nonce='1'
+            variant='media-only'
+            className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
+          />
+        )}
+        <div className='space-y-1 overflow-hidden'>
+          <div className='text-base font-semibold text-slate-900 truncate'>
+            {collection.name}
+          </div>
+          <div className='text-xs text-slate-500 truncate'>
+            {collection.collection}
+          </div>
+          <div className='flex flex-wrap gap-1'>
+            {/* badge “owned” mis en avant */}
+            {collection.isOwnedByDinovox && <Badge tone='brand'>DinoVox</Badge>}
+            {/* badge “friends” */}
+            {collection.isFriendOfDinovox && <Badge tone='info'>Friends</Badge>}
+
+            {/* Branding Tags */}
+            {branding?.branding?.tags && branding.branding.tags.length > 0
+              ? branding.branding.tags.map((tag) => (
+                  <Badge key={tag}>{tag}</Badge>
+                ))
+              : /* sources fallback (excluding local) */
+                collection.sources
+                  .filter((s) => s !== 'local')
+                  .map((s) => <Badge key={s}>{s}</Badge>)}
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className='grid grid-cols-2 gap-4'>
+        <div>
+          <div className='text-xs text-slate-500'>Floor</div>
+          <div className='text-sm font-medium text-slate-900'>
+            {stats?.floor_ask_egld ? (
+              <FormatAmount amount={stats.floor_ask_egld} identifier='EGLD' />
+            ) : (
+              '-'
+            )}
+          </div>
+        </div>
+        <div>
+          <div className='text-xs text-slate-500'>Listings</div>
+          <div className='text-sm font-medium text-slate-900'>
+            {collection.listingsActive}
+          </div>
+        </div>
+        <div>
+          <div className='text-xs text-slate-500'>Vol. 24h</div>
+          <div className='text-sm font-medium text-slate-900'>
+            {stats?.volume_24h ? (
+              <FormatAmount amount={stats.volume_24h} identifier='EGLD' />
+            ) : (
+              '-'
+            )}
+          </div>
+        </div>
+        <div>
+          <div className='text-xs text-slate-500'>Vol. 7d</div>
+          <div className='text-sm font-medium text-slate-900'>
+            {stats?.volume_7d ? (
+              <FormatAmount amount={stats.volume_7d} identifier='EGLD' />
+            ) : (
+              '-'
+            )}
+          </div>
+        </div>
+      </CardContent>
+
+      <CardFooter>
+        <Link
+          to={`/marketplace/collections/${collection.collection}`}
+          className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
+        >
+          View collection
+        </Link>
+      </CardFooter>
+    </Card>
+  );
+};
 /** ---------------- Page ---------------- **/
 export const MarketplaceCollections = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -296,7 +407,7 @@ export const MarketplaceCollections = () => {
               checked={ownedOnly}
               onChange={(e) => setOwnedOnly(e.target.checked)}
             />
-            Owned by Dinovox
+            Owned by DinoVox
           </label>
 
           <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
@@ -305,7 +416,7 @@ export const MarketplaceCollections = () => {
               checked={friendsOnly}
               onChange={(e) => setFriendsOnly(e.target.checked)}
             />
-            Friends of Dinovox
+            Friends of DinoVox
           </label>
 
           {/* <div className='flex items-center gap-2'>
@@ -330,78 +441,7 @@ export const MarketplaceCollections = () => {
       {/* Grid */}
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
         {filtered.map((c) => (
-          <Card key={c.collection}>
-            {/* Aperçu plus large */}
-            <div
-              className='h-40 w-full bg-center bg-cover rounded-t-2xl bg-slate-100'
-              style={c.banner ? { backgroundImage: `url(${c.banner})` } : {}}
-            />
-
-            {/* avatar/logo plus grand */}
-            <CardHeader className='-mt-12 flex items-center gap-4'>
-              <DisplayNftByToken
-                tokenIdentifier={c.collection}
-                nonce='1'
-                variant='media-only'
-                className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
-              />
-              <div className='space-y-1 overflow-hidden'>
-                <div className='text-base font-semibold text-slate-900 truncate'>
-                  {c.name}
-                </div>
-                <div className='text-xs text-slate-500 truncate'>
-                  {c.collection}
-                </div>
-                <div className='flex flex-wrap gap-1'>
-                  {/* badge “owned” mis en avant */}
-                  {c.isOwnedByDinovox && <Badge tone='brand'>Dinovox</Badge>}
-                  {/* badge “friends” */}
-                  {c.isFriendOfDinovox && <Badge tone='info'>Friends</Badge>}
-                  {/* badges informatifs (disponibilité des listings par agrégateur) */}
-                  {c.sources.map((s) => (
-                    <Badge key={s}>{s}</Badge>
-                  ))}
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className='grid grid-cols-2 gap-4'>
-              <div>
-                <div className='text-xs text-slate-500'>Floor</div>
-                <div className='text-sm font-medium text-slate-900'>
-                  {formatToken(c.floor)}
-                </div>
-              </div>
-              <div>
-                <div className='text-xs text-slate-500'>Listings</div>
-                <div className='text-sm font-medium text-slate-900'>
-                  {c.listingsActive}
-                </div>
-              </div>
-              <div>
-                <div className='text-xs text-slate-500'>Vol. 24h</div>
-                <div className='text-sm font-medium text-slate-900'>
-                  {formatToken(c.volume24h)}
-                </div>
-              </div>
-              <div>
-                <div className='text-xs text-slate-500'>Vol. 7d</div>
-                <div className='text-sm font-medium text-slate-900'>
-                  {formatToken(c.volume7d)}
-                </div>
-              </div>
-              {/* Items count removed as it's redundant with listings for now since we only see listed items */}
-            </CardContent>
-
-            <CardFooter>
-              <Link
-                to={`/marketplace/collections/${c.collection}`}
-                className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
-              >
-                View collection
-              </Link>
-            </CardFooter>
-          </Card>
+          <CollectionCard key={c.collection} collection={c} />
         ))}
       </div>
 

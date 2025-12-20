@@ -85,6 +85,17 @@ export const useGetOffers = ({
 
   useEffect(() => {
     fetchOffers();
+
+    const handleSync = () => {
+      console.log('Sync event received, refreshing offers...');
+      fetchOffers();
+    };
+
+    window.addEventListener('marketplace:synced', handleSync);
+
+    return () => {
+      window.removeEventListener('marketplace:synced', handleSync);
+    };
   }, [fetchOffers]);
 
   return { data, loading, error, refresh: fetchOffers };

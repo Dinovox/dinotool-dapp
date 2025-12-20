@@ -110,21 +110,53 @@ export const ActionAuctionToken = ({
       '@' +
       bigToHex(BigInt(deadline)) +
       '@' +
-      Buffer.from(accepted_payment_token_identifier, 'utf8').toString('hex') +
-      (opt_min_bid_diff
-        ? '@' + bigToHex(BigInt(opt_min_bid_diff.toFixed()))
-        : '') +
-      (opt_sft_max_one_per_payment
-        ? '@' + bigToHex(BigInt(opt_sft_max_one_per_payment))
-        : '') +
-      (opt_accepted_payment_token_nonce
-        ? '@' + bigToHex(BigInt(opt_accepted_payment_token_nonce))
-        : '') +
-      (opt_start_time ? '@' + bigToHex(BigInt(opt_start_time)) : '');
+      Buffer.from(accepted_payment_token_identifier, 'utf8').toString('hex');
+
+    // Handle optional arguments positionally
+    const args = [];
+
+    // 1. opt_min_bid_diff
+    const hasSftMaxOne = opt_sft_max_one_per_payment !== undefined;
+    const hasPaymentTokenNonce =
+      opt_accepted_payment_token_nonce !== undefined &&
+      opt_accepted_payment_token_nonce !== null; // 0 is valid
+    const hasStartTime =
+      opt_start_time !== undefined && opt_start_time !== null;
+
+    // Determine how many optional args we need to send
+    let argsNeeded = 0;
+    if (hasStartTime) argsNeeded = 4;
+    else if (hasPaymentTokenNonce) argsNeeded = 3;
+    else if (hasSftMaxOne) argsNeeded = 2;
+    else if (opt_min_bid_diff) argsNeeded = 1;
+
+    if (argsNeeded >= 1) {
+      args.push(
+        opt_min_bid_diff ? bigToHex(BigInt(opt_min_bid_diff.toFixed())) : ''
+      );
+    }
+    if (argsNeeded >= 2) {
+      // Boolean to hex: true -> '01', false -> '' (or '00')
+      args.push(opt_sft_max_one_per_payment ? '01' : '');
+    }
+    if (argsNeeded >= 3) {
+      args.push(
+        opt_accepted_payment_token_nonce
+          ? bigToHex(BigInt(opt_accepted_payment_token_nonce))
+          : ''
+      );
+    }
+    if (argsNeeded >= 4) {
+      args.push(opt_start_time ? bigToHex(BigInt(opt_start_time)) : '');
+    }
+
+    // Append args to payload
+    const extraPayload = args.length > 0 ? '@' + args.join('@') : '';
+    const fullPayload = payload + extraPayload;
 
     const transaction = new Transaction({
       value: BigInt(0),
-      data: new TextEncoder().encode(payload),
+      data: new TextEncoder().encode(fullPayload),
       receiver: new Address(address),
       gasLimit: BigInt('14000000'),
 

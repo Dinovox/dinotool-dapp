@@ -22,7 +22,7 @@ export const usePartner = () => {
       if (isPartnerAddress) {
         setPartner({
           address,
-          name: 'Partenaire Dinovox',
+          name: 'Partenaire DinoVox',
           email: 'partner@dinovox.com',
           isVerified: true,
           joinDate: new Date('2024-01-15'),
