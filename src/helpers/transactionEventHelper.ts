@@ -223,7 +223,9 @@ export const MARKETPLACE_EVENTS: EventDefinition[] = [
       { name: 'auction_id', type: 'u64', indexed: true },
       { name: 'nr_bought_tokens', type: 'biguint', indexed: true },
       { name: 'buyer', type: 'address', indexed: true },
-      { name: 'bid_sft_amount', type: 'biguint', indexed: true }
+      { name: 'bid_sft_amount', type: 'biguint', indexed: true },
+      { name: 'payment_token_id', type: 'string', indexed: true },
+      { name: 'payment_token_nonce', type: 'u64', indexed: true }
     ]
   },
   {

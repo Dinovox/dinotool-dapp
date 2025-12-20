@@ -1,7 +1,7 @@
 import { ActionAuctionToken } from 'contracts/dinauction/actions/AuctionToken';
 import DisplayNft from 'helpers/DisplayNft';
 import { useGetUserNFT, UserNftResponse, UserNft } from 'helpers/useGetUserNft';
-import { useGetAccountInfo } from 'lib';
+import { useGetAccountInfo, useGetPendingTransactions } from 'lib';
 import NftDisplay from 'pages/LotteryList/NftDisplay';
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,6 +12,10 @@ import useLoadTranslations from 'hooks/useLoadTranslations';
 import { max } from 'moment';
 import { LoginModal } from 'provider/LoginModal';
 import { ConnectButton } from 'components/Button/ConnectButton';
+import {
+  waitForTransactionEvent,
+  MARKETPLACE_EVENTS
+} from 'helpers/transactionEventHelper';
 /* ---------------- Types ---------------- */
 type SaleType = 'fixed' | 'auction';
 type TokenAmount = { ticker: string; amount: string; decimals: number };
@@ -141,8 +145,8 @@ export const MarketplaceSell = () => {
 
   const navigate = useNavigate();
 
-  // steps: 1 = select NFT, 2 = select sale type, 3 = configure, 4 = review
-  const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1);
+  // steps: 1 = select NFT, 2 = select sale type, 3 = configure, 4 = review, 5 = processing
+  const [step, setStep] = React.useState<1 | 2 | 3 | 4 | 5>(1);
 
   // selection
   // const [query, setQuery] = React.useState(''); // Moved up
@@ -194,6 +198,43 @@ export const MarketplaceSell = () => {
 
   // misc
   const [agreeTerms, setAgreeTerms] = React.useState(false);
+
+  // Transaction monitoring
+  const transactions: Record<string, any> = useGetPendingTransactions();
+  const [creationTxSessionId, setCreationTxSessionId] = React.useState<
+    string | null
+  >(null);
+  const [txHash, setTxHash] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    if (creationTxSessionId && !txHash) {
+      let foundHash = null;
+      if (Array.isArray(transactions) && transactions.length > 0) {
+        foundHash = transactions[0]?.hash;
+      } else if (transactions[creationTxSessionId]) {
+        foundHash = transactions[creationTxSessionId].transactions?.[0]?.hash;
+      }
+
+      if (foundHash) {
+        setTxHash(foundHash);
+        checkTransactionStatus(foundHash);
+      }
+    }
+  }, [creationTxSessionId, txHash, transactions]);
+
+  const checkTransactionStatus = async (hash: string) => {
+    try {
+      const events = await waitForTransactionEvent(hash, MARKETPLACE_EVENTS);
+      const auctionEvent = events.find(
+        (e) => e.identifier === 'auction_token_event'
+      );
+      if (auctionEvent) {
+        navigate(`/marketplace/listings/${auctionEvent.auction_id}`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
   const [busy, setBusy] = React.useState(false);
 
   useEffect(() => {
@@ -1309,6 +1350,10 @@ export const MarketplaceSell = () => {
                         })()
                   }
                   disabled={busy || !agreeTerms}
+                  onTransactionSent={(sid) => {
+                    setCreationTxSessionId(sid);
+                    setStep(5);
+                  }}
                 />
                 <div className='mt-2 text-center text-xs text-slate-500'>
                   {t('marketplace:wallet_sign_hint')}
@@ -1319,28 +1364,51 @@ export const MarketplaceSell = () => {
         </div>
       )}
 
-      {/* Footer actions */}
-      <div className='flex items-center justify-between'>
-        <button
-          onClick={() => setStep((s) => (s > 1 ? ((s - 1) as any) : s))}
-          className='h-10 rounded-md border px-4 text-sm'
-        >
-          {t('marketplace:back')}
-        </button>
-        <div className='flex items-center gap-2'>
-          {step < 4 && (
-            <button
-              onClick={() => canContinue && setStep((s) => (s + 1) as any)}
-              disabled={!canContinue}
-              className={`h-10 rounded-md px-4 text-sm text-white ${
-                canContinue ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-400'
-              }`}
-            >
-              {t('marketplace:continue')}
-            </button>
-          )}
+      {step === 5 && (
+        <div className='flex flex-col items-center justify-center py-20 min-h-[400px]'>
+          <div className='w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6'></div>
+          <h2 className='text-xl font-bold text-slate-800 mb-2'>
+            {t
+              ? t('marketplace:creation_in_progress')
+              : 'Creation in progress...'}
+          </h2>
+          <p className='text-slate-500'>
+            {t
+              ? t('marketplace:waiting_for_confirmation')
+              : 'Waiting for transaction confirmation...'}
+          </p>
+          <p className='text-xs text-slate-400 mt-2'>
+            {t ? t('marketplace:do_not_close') : 'Do not close this window.'}
+          </p>
         </div>
-      </div>
+      )}
+
+      {/* Footer actions */}
+      {step < 5 && (
+        <div className='flex items-center justify-between'>
+          <button
+            onClick={() => setStep((s) => (s > 1 ? ((s - 1) as any) : s))}
+            className='h-10 rounded-md border px-4 text-sm'
+          >
+            {t('marketplace:back')}
+          </button>
+          <div className='flex items-center gap-2'>
+            {step < 4 && (
+              <button
+                onClick={() => canContinue && setStep((s) => (s + 1) as any)}
+                disabled={!canContinue}
+                className={`h-10 rounded-md px-4 text-sm text-white ${
+                  canContinue
+                    ? 'bg-slate-900 hover:bg-slate-800'
+                    : 'bg-slate-400'
+                }`}
+              >
+                {t('marketplace:continue')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

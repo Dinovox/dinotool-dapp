@@ -138,5 +138,9 @@
   "insufficient_funds": "Fonds insuffisants",
   "your_balance": "Votre solde",
   "make_offer": "Faire une offre",
-  "unit_price": "Prix unitaire"
+  "unit_price": "Prix unitaire",
+  "creation_in_progress": "Création en cours",
+  "waiting_for_confirmation": "En attente de confirmation de la transaction",
+  "do_not_close": "Ne fermez pas cette fenêtre.",
+  "ended": "Terminé"
 }

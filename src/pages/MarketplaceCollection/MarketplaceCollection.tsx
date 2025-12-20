@@ -930,6 +930,7 @@ export const MarketplaceCollectionById = () => {
                                 : t
                                 ? t('marketplace:infinite')
                                 : 'Infinite'}
+                              ?
                               {isExpired && (
                                 <span className='text-red-500 text-xs ml-1'>
                                   (Expired)

@@ -29,7 +29,7 @@ import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import bigToHex from 'helpers/bigToHex';
-import { dinoclaim_api } from 'config';
+import { dinoclaim_api, auction_tokens } from 'config';
 
 /* ---------------- Types ---------------- */
 type MarketSource = 'dinovox' | 'xoxno';
@@ -304,6 +304,9 @@ export const MarketplaceListingDetail = () => {
   // Offer State
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
+  const [offerPaymentToken, setOfferPaymentToken] = useState(
+    auction_tokens[0]?.identifier || 'EGLD'
+  );
   const [offerDuration, setOfferDuration] = useState('0'); // Days (0 = indeterminate)
 
   // Live overrides from polling
@@ -404,7 +407,7 @@ export const MarketplaceListingDetail = () => {
   const paymentToken = rawAuction?.payment_token?.toString() || 'EGLD';
   const tokenInformations = useGetEsdtInformations(paymentToken);
 
-  // Buyer Balance Check
+  // Buyer Balance Check (Listing)
   const userEsdt = useGetUserESDT();
   const buyerBalance = useMemo(() => {
     if (!address) return new BigNumber(0);
@@ -420,6 +423,28 @@ export const MarketplaceListingDetail = () => {
   const hasEnoughFunds = (amount: BigNumber | string) => {
     const cost = new BigNumber(amount);
     return buyerBalance.gte(cost);
+  };
+
+  // Offer Logic: Token Decimals & Balance
+  const offerTokenDecimals = useMemo(() => {
+    const t = auction_tokens.find((t) => t.identifier === offerPaymentToken);
+    return t?.decimals || 18;
+  }, [offerPaymentToken]);
+
+  const offerBuyerBalance = useMemo(() => {
+    if (!address) return new BigNumber(0);
+    if (offerPaymentToken === 'EGLD') {
+      return new BigNumber(balance || 0);
+    }
+    const token = userEsdt.find(
+      (item: any) => item.identifier === offerPaymentToken
+    );
+    return new BigNumber(token?.balance || 0);
+  }, [address, offerPaymentToken, userEsdt, balance]);
+
+  const hasEnoughFundsForOffer = (amount: BigNumber | string) => {
+    const cost = new BigNumber(amount);
+    return offerBuyerBalance.gte(cost);
   };
 
   // 4. Normalize Data
@@ -1214,19 +1239,46 @@ export const MarketplaceListingDetail = () => {
                               </div>
                             )}
                             <div>
-                              <label className='block text-xs text-slate-500 mb-1'>
-                                {t
-                                  ? t('marketplace:price_listing', {
-                                      currency: paymentToken
-                                    })
-                                  : `Price (${paymentToken})`}
-                              </label>
-                              <input
-                                value={offerPrice}
-                                onChange={(e) => setOfferPrice(e.target.value)}
-                                className='w-full h-9 rounded-md border border-gray-300 px-2 text-sm outline-none focus:border-slate-400'
-                                placeholder='Amount'
-                              />
+                              <div className='flex justify-between items-center mb-1'>
+                                <label className='block text-xs text-slate-500'>
+                                  {t ? t('marketplace:price') : 'Price'}
+                                </label>
+                                <select
+                                  value={offerPaymentToken}
+                                  onChange={(e) =>
+                                    setOfferPaymentToken(e.target.value)
+                                  }
+                                  className='text-xs border-none bg-transparent outline-none font-semibold text-indigo-600 focus:ring-0 cursor-pointer pr-4 hover:text-indigo-800'
+                                >
+                                  {auction_tokens.map((t) => (
+                                    <option
+                                      key={t.identifier}
+                                      value={t.identifier}
+                                    >
+                                      {t.token}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className='flex items-center rounded-md border border-gray-300 bg-white px-2 focus-within:border-slate-400'>
+                                <input
+                                  value={offerPrice}
+                                  onChange={(e) =>
+                                    setOfferPrice(e.target.value)
+                                  }
+                                  className='w-full h-9 text-sm outline-none border-none focus:ring-0'
+                                  placeholder='Amount'
+                                  type='number'
+                                  step='any'
+                                />
+                                <span className='text-xs font-semibold text-slate-500 ml-2 whitespace-nowrap'>
+                                  {
+                                    auction_tokens.find(
+                                      (t) => t.identifier === offerPaymentToken
+                                    )?.token
+                                  }
+                                </span>
+                              </div>
                             </div>
                             <div>
                               <label className='block text-xs text-slate-500 mb-1'>
@@ -1247,9 +1299,9 @@ export const MarketplaceListingDetail = () => {
                             <ActionMakeOffer
                               nftIdentifier={listing.identifier}
                               nftNonce={tokenNonce || 0}
-                              paymentToken={paymentToken}
+                              paymentToken={offerPaymentToken}
                               offerPrice={new BigNumber(offerPrice || '0')
-                                .shiftedBy(tokenInformations?.decimals || 0)
+                                .shiftedBy(offerTokenDecimals)
                                 .toFixed(0)}
                               deadline={
                                 parseInt(offerDuration) === 0
@@ -1266,16 +1318,16 @@ export const MarketplaceListingDetail = () => {
                               disabled={
                                 !offerPrice ||
                                 parseFloat(offerPrice) <= 0 ||
-                                !hasEnoughFunds(
+                                !hasEnoughFundsForOffer(
                                   new BigNumber(offerPrice || '0')
-                                    .shiftedBy(tokenInformations?.decimals || 0)
+                                    .shiftedBy(offerTokenDecimals)
                                     .toFixed(0)
                                 )
                               }
                             />
-                            {!hasEnoughFunds(
+                            {!hasEnoughFundsForOffer(
                               new BigNumber(offerPrice || '0')
-                                .shiftedBy(tokenInformations?.decimals || 0)
+                                .shiftedBy(offerTokenDecimals)
                                 .toFixed(0)
                             ) && (
                               <div className='mt-1 text-xs text-red-500'>
@@ -1288,8 +1340,8 @@ export const MarketplaceListingDetail = () => {
                                 : 'Your balance'}
                               :{' '}
                               <FormatAmount
-                                amount={buyerBalance.toFixed()}
-                                identifier={paymentToken}
+                                amount={offerBuyerBalance.toFixed()}
+                                identifier={offerPaymentToken}
                               />
                             </div>
                           </div>

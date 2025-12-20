@@ -42,6 +42,7 @@ export interface ActionAuctionTokenProps {
   opt_start_time?: NumericLike;
 
   disabled?: boolean;
+  onTransactionSent?: (sessionId: string) => void;
 }
 export const ActionAuctionToken = ({
   auctionned_token_identifier,
@@ -57,7 +58,8 @@ export const ActionAuctionToken = ({
   opt_accepted_payment_token_nonce,
   opt_start_time,
 
-  disabled
+  disabled,
+  onTransactionSent
 }: ActionAuctionTokenProps) => {
   const loading = useLoadTranslations('marketplace');
   const { t } = useTranslation();
@@ -75,7 +77,12 @@ export const ActionAuctionToken = ({
 
   // 🎯 Vérifier si on a un txHash après l'envoi de la transaction
   useEffect(() => {
-    if (transactionSessionId && hasPendingTransactions && !txHash) {
+    if (
+      transactionSessionId &&
+      hasPendingTransactions &&
+      !txHash &&
+      !onTransactionSent
+    ) {
       let foundHash = null;
 
       if (Array.isArray(transactions) && transactions.length > 0) {
@@ -177,6 +184,9 @@ export const ActionAuctionToken = ({
 
     if (sessionId) {
       setTransactionSessionId(sessionId);
+      if (onTransactionSent) {
+        onTransactionSent(sessionId);
+      }
     }
   };
 

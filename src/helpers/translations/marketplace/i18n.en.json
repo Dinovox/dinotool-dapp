@@ -137,5 +137,9 @@
   "insufficient_funds": "Insufficient funds",
   "your_balance": "Your balance",
   "make_offer": "Make an offer",
-  "unit_price": "Unit Price"
+  "unit_price": "Unit Price",
+  "creation_in_progress": "Creation in progress",
+  "waiting_for_confirmation": "Waiting for transaction confirmation",
+  "do_not_close": "Do not close this window.",
+  "ended": "Ended"
 }

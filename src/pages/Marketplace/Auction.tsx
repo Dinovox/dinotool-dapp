@@ -63,11 +63,21 @@ function Countdown({ endTime }: { endTime: number }) {
   // Also checking 0 explicitly depending on interpretation, but usually 0 = expired/started?
   // User said "u64max" is infinite.
   if (endTime > 32503680000000) {
-    return <span>{t('infinite')}</span>;
+    return (
+      <div className='invisible text-sm font-medium px-2 py-1 rounded-md text-center'>
+        <span>-</span>
+      </div>
+    );
   }
 
   let diff = Math.max(0, endTime - now);
-  if (diff === 0) return <span>0s</span>;
+  if (diff === 0) {
+    return (
+      <div className='invisible text-sm font-medium px-2 py-1 rounded-md text-center'>
+        <span>-</span>
+      </div>
+    );
+  }
 
   // Convert to seconds
   const s = Math.floor(diff / 1000);
@@ -95,7 +105,11 @@ function Countdown({ endTime }: { endTime: number }) {
 
   parts.push(`${seconds}s`);
 
-  return <span>{parts.join(' ')}</span>;
+  return (
+    <div className='text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-center'>
+      <span>{parts.join(' ')}</span>
+    </div>
+  );
 }
 
 const Badge = ({
@@ -193,6 +207,16 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
     return auction.max_bid && new BigNumber(auction.max_bid).gt(0);
   }, [auction.max_bid]);
 
+  const [isEnded, setIsEnded] = useState(false);
+  useEffect(() => {
+    if (!auction.auction?.endTime) return;
+    // endTime is in ms in the normalized auction object
+    const check = () => setIsEnded(Date.now() >= auction.auction!.endTime);
+    check();
+    const id = setInterval(check, 1000);
+    return () => clearInterval(id);
+  }, [auction.auction?.endTime]);
+
   return (
     <Link
       to={`/marketplace/listings/${encodeURIComponent(auction.id)}`}
@@ -226,7 +250,7 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
               {t('marketplace:creator')}
             </Badge>
           )}
-          {isWinner && (
+          {isWinner && auction.auctionType?.name !== 'SftOnePerPayment' && (
             <Badge className='!bg-green-100 !text-green-700 !border-green-200'>
               {t('marketplace:winning')}
             </Badge>
@@ -319,24 +343,30 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
         </div>
 
         <div className='mt-auto pt-3 border-t border-gray-100 space-y-2'>
-          <div className='text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-center'>
-            <Countdown endTime={auction?.auction?.endTime || 0} />
-          </div>
+          <Countdown endTime={auction?.auction?.endTime || 0} />
 
           <div className='flex gap-1.5'>
             {/* Show Bid Now if: not a direct sale (max_price != start_price) */}
             {!isDirectSale && (
-              <div className='flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm hover:shadow'>
-                {t('marketplace:bid_now')}
+              <div
+                className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-lg transition-colors shadow-sm ${
+                  isEnded
+                    ? 'bg-gray-100 text-gray-500'
+                    : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow'
+                }`}
+              >
+                {isEnded ? t('marketplace:ended') : t('marketplace:bid_now')}
               </div>
             )}
             {/* Show Buy Now if: max_price > 0 */}
             {hasBuyNow && (
               <div
-                className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-lg transition-colors shadow-sm hover:shadow ${
-                  isDirectSale
-                    ? 'bg-gray-900 text-white hover:bg-gray-800'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-lg transition-colors shadow-sm ${
+                  isEnded
+                    ? 'bg-gray-100 text-gray-400 border border-gray-200'
+                    : isDirectSale
+                    ? 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:shadow'
                 }`}
               >
                 {t('marketplace:buy_now')}
