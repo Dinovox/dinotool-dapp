@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGetPendingTransactions } from 'lib';
 import { signAndSendTransactions } from 'helpers';
 import {
@@ -44,6 +45,7 @@ export const ActionBid = ({
   >(null);
   const { address } = useGetAccountInfo();
   const { network } = useGetNetworkConfig();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (transactionSessionId && transactions[transactionSessionId]) {
@@ -115,9 +117,15 @@ export const ActionBid = ({
     const sessionId = await signAndSendTransactions({
       transactions: [transaction],
       transactionsDisplayInfo: {
-        processingMessage: 'Processing bid transaction',
-        errorMessage: 'An error occurred during bid placement',
-        successMessage: 'Bid placed successfully'
+        processingMessage: t
+          ? t('marketplace:transaction_processing_bid')
+          : 'Processing bid transaction',
+        errorMessage: t
+          ? t('marketplace:transaction_error_bid')
+          : 'An error occurred during bid placement',
+        successMessage: t
+          ? t('marketplace:transaction_success_bid')
+          : 'Bid placed successfully'
       }
     });
 
@@ -134,14 +142,21 @@ export const ActionBid = ({
           disabled={disabled}
           className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {label || (directBuy ? 'Buy' : 'Place bid')}
+          {label ||
+            (directBuy
+              ? t
+                ? t('marketplace:buy_btn')
+                : 'Buy'
+              : t
+              ? t('marketplace:place_bid_btn')
+              : 'Place bid')}
         </button>
       ) : (
         <button
           disabled
           className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white opacity-50 cursor-not-allowed'
         >
-          Processing...
+          {t ? t('marketplace:processing_btn') : 'Processing...'}
         </button>
       )}
     </>

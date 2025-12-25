@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import { Auction } from 'pages/Marketplace/Auction';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 
 /** ---------------- Types ---------------- **/
 type MarketSource = 'dinovox' | 'xoxno';
@@ -39,6 +41,7 @@ export const MarketplaceListings = () => {
   const [page, setPage] = React.useState<number>(
     parseInt(sp('page') || '1', 10)
   );
+  const { t } = useTranslation();
   const pageSize = 12;
 
   // Fetch real auctions
@@ -63,19 +66,22 @@ export const MarketplaceListings = () => {
     }
   };
 
+  const loading = useLoadTranslations('marketplace');
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
       <Breadcrumb
         items={[
           { label: 'Home', path: '/' },
-          { label: 'Marketplace', path: '/marketplace' },
-          { label: 'Listings' }
+          { label: t('marketplace:marketplace'), path: '/marketplace' },
+          { label: t('marketplace:listings') }
         ]}
       />
       {/* Header */}
       <div className='flex items-center gap-2'>
         <div className='h-6 w-6 rounded-md bg-slate-200' />
-        <h1 className='text-2xl font-semibold text-slate-900'>All listings</h1>
+        <h1 className='text-2xl font-semibold text-slate-900'>
+          {t('marketplace:listings')}
+        </h1>
       </div>
 
       {/* Toolbar (search only) */}

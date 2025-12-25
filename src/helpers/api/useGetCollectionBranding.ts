@@ -30,7 +30,7 @@ export const useGetCollectionBranding = (collectionIdentifier: string) => {
     setLoading(true);
     setError(null);
 
-    const url = `/collections/${collectionIdentifier}/branding`;
+    const url = `/marketplace/collections/${collectionIdentifier}/branding`;
     const config: AxiosRequestConfig = {
       baseURL: dinoclaim_api
     };

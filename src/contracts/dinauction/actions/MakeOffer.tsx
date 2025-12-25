@@ -24,7 +24,6 @@ export interface ActionMakeOfferProps {
   offerPrice: string; // Amount to pay (in wei)
   paymentToken: string; // 'EGLD' or Identifier
   deadline: number; // Timestamp
-  auctionId?: string | number; // Optional
   disabled?: boolean;
   onSuccess?: () => void;
   label?: React.ReactNode;
@@ -37,7 +36,6 @@ export const ActionMakeOffer = ({
   offerPrice,
   paymentToken,
   deadline,
-  auctionId,
   disabled,
   onSuccess,
   label
@@ -108,10 +106,6 @@ export const ActionMakeOffer = ({
       bigToHex(nftAmountBigInt) +
       '@' +
       bigToHex(deadlineBigInt);
-
-    if (auctionId) {
-      argsPayload += '@' + bigToHex(BigInt(auctionId));
-    }
 
     if (isEGLD) {
       // EGLD: sendOffer@args

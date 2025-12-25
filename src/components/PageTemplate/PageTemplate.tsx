@@ -28,7 +28,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
     <div className={`page-template-wrapper ${className}`}>
       <div className='page-template-container' style={{ maxWidth }}>
         {/* Page Title */}
-        {showTitle && (
+        {showTitle && title && (
           <div className='page-template-title-wrapper'>
             <div className='mintGazTitle dinoTitle'>{title}</div>
           </div>

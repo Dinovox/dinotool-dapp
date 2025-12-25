@@ -8,9 +8,15 @@ import {
   friends_collections
 } from 'config';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
-import { useGetCollectionStats } from 'helpers/api/useGetCollectionStats';
+import {
+  useGetCollectionStats,
+  getBestStat
+} from 'helpers/api/useGetCollectionStats';
 import { useGetCollectionBranding } from 'helpers/api/useGetCollectionBranding';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
+import { PageTemplate } from 'components/PageTemplate';
+import { useTranslation } from 'react-i18next';
+import useLoadTranslations from 'hooks/useLoadTranslations';
 
 type MarketSource = 'local' | 'xoxno';
 
@@ -157,10 +163,49 @@ function CardFooter({
   );
 }
 
-const CollectionCard = ({ collection }: { collection: Collection }) => {
-  const { stats } = useGetCollectionStats(collection.collection);
+const CollectionCard = ({
+  collection,
+  statsIndex
+}: {
+  collection: Collection;
+  statsIndex: number;
+}) => {
+  const { stats: collectionStats } = useGetCollectionStats(
+    collection.collection
+  );
   const { branding } = useGetCollectionBranding(collection.collection);
 
+  const tokens = React.useMemo(() => {
+    const t = collectionStats?.tokens?.length
+      ? [...collectionStats.tokens]
+      : ['EGLD'];
+    return t.sort((a, b) => {
+      if (a === 'EGLD') return -1;
+      if (b === 'EGLD') return 1;
+      if (a.startsWith('USDC') && !b.startsWith('USDC')) return -1;
+      if (!a.startsWith('USDC') && b.startsWith('USDC')) return 1;
+      return a.localeCompare(b);
+    });
+  }, [collectionStats]);
+
+  const currentToken = tokens[statsIndex % tokens.length];
+
+  const stats = {
+    floor: {
+      amount: collectionStats?.floor?.ask?.[currentToken],
+      token: currentToken
+    },
+    volume24h: {
+      amount: collectionStats?.volume?.['24h']?.[currentToken],
+      token: currentToken
+    },
+    volume7d: {
+      amount: collectionStats?.volume?.['7d']?.[currentToken],
+      token: currentToken
+    }
+  };
+
+  const { t } = useTranslation();
   return (
     <Card>
       {/* Aperçu plus large */}
@@ -216,37 +261,56 @@ const CollectionCard = ({ collection }: { collection: Collection }) => {
       </CardHeader>
 
       <CardContent className='grid grid-cols-2 gap-4'>
-        <div>
+        <div className='min-w-0'>
           <div className='text-xs text-slate-500'>Floor</div>
-          <div className='text-sm font-medium text-slate-900'>
-            {stats?.floor_ask_egld ? (
-              <FormatAmount amount={stats.floor_ask_egld} identifier='EGLD' />
+          <div
+            key={statsIndex}
+            className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
+          >
+            {stats.floor.amount ? (
+              <FormatAmount
+                amount={stats.floor.amount}
+                identifier={stats.floor.token}
+              />
             ) : (
               '-'
             )}
           </div>
         </div>
-        <div>
+        <div className='min-w-0'>
           <div className='text-xs text-slate-500'>Listings</div>
-          <div className='text-sm font-medium text-slate-900'>
+          <div className='text-sm font-medium text-slate-900 h-6 truncate'>
             {collection.listingsActive}
           </div>
         </div>
-        <div>
+        <div className='min-w-0'>
           <div className='text-xs text-slate-500'>Vol. 24h</div>
-          <div className='text-sm font-medium text-slate-900'>
-            {stats?.volume_24h ? (
-              <FormatAmount amount={stats.volume_24h} identifier='EGLD' />
+          <div
+            key={statsIndex}
+            className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
+          >
+            {stats.volume24h.amount ? (
+              <FormatAmount
+                amount={stats.volume24h.amount}
+                identifier={stats.volume24h.token}
+              />
             ) : (
               '-'
             )}
           </div>
         </div>
-        <div>
+        <div className='min-w-0'>
           <div className='text-xs text-slate-500'>Vol. 7d</div>
-          <div className='text-sm font-medium text-slate-900'>
-            {stats?.volume_7d ? (
-              <FormatAmount amount={stats.volume_7d} identifier='EGLD' />
+          <div
+            key={statsIndex}
+            className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
+          >
+            {stats.volume7d.amount ? (
+              <FormatAmount
+                amount={stats.volume7d.amount}
+                identifier={stats.volume7d.token}
+                displayDecimals={2}
+              />
             ) : (
               '-'
             )}
@@ -259,7 +323,7 @@ const CollectionCard = ({ collection }: { collection: Collection }) => {
           to={`/marketplace/collections/${collection.collection}`}
           className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
         >
-          View collection
+          {t('marketplace:view_collection')}
         </Link>
       </CardFooter>
     </Card>
@@ -276,6 +340,17 @@ export const MarketplaceCollections = () => {
   const [friendsOnly, setFriendsOnly] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 12;
+
+  useLoadTranslations('marketplace');
+  const { t } = useTranslation();
+
+  const [statsIndex, setStatsIndex] = useState(0);
+
+  // Global rotation timer
+  React.useEffect(() => {
+    const interval = setInterval(() => setStatsIndex((i) => i + 1), 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSearch = () => {
     setQuery(inputValue);
@@ -366,60 +441,57 @@ export const MarketplaceCollections = () => {
 
   return (
     <div className='mx-auto max-w-7xl px-4 py-6 space-y-6'>
-      <Breadcrumb
-        items={[
+      <PageTemplate
+        title='Collections'
+        breadcrumbItems={[
           { label: 'Home', path: '/' },
-          { label: 'Marketplace', path: '/marketplace' },
+          { label: t('marketplace:marketplace'), path: '/marketplace' },
           { label: 'Collections' }
         ]}
-      />
-      {/* Header */}
-      <div className='flex items-center gap-2'>
-        <div className='h-6 w-6 rounded-md bg-slate-200' />
-        <h1 className='text-2xl font-semibold text-slate-900'>Collections</h1>
-      </div>
-
-      {/* Toolbar */}
-      <div className='flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
-        <div className='flex items-center gap-2 w-full md:max-w-xl'>
-          <div className='flex-1 flex flex-col gap-2'>
-            <label className='text-xs font-medium text-slate-600'>Search</label>
-            <input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder='Search by collection name…'
-              className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400 w-full'
-            />
+      >
+        {/* Toolbar */}
+        <div className='flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
+          <div className='flex items-center gap-2 w-full md:max-w-xl'>
+            <div className='flex-1 flex flex-col gap-2'>
+              <label className='text-xs font-medium text-slate-600'>
+                Search
+              </label>
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder='Search by collection name…'
+                className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400 w-full'
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              className='mt-auto h-10 px-4 rounded-md border border-gray-200 bg-gray-100 text-sm font-medium hover:bg-gray-200 active:bg-gray-300 transition text-slate-900'
+            >
+              Search
+            </button>
           </div>
-          <button
-            onClick={handleSearch}
-            className='mt-auto h-10 px-4 rounded-md border border-gray-200 bg-gray-100 text-sm font-medium hover:bg-gray-200 active:bg-gray-300 transition text-slate-900'
-          >
-            Search
-          </button>
-        </div>
 
-        <div className='flex flex-wrap items-center gap-3'>
-          <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
-            <input
-              type='checkbox'
-              checked={ownedOnly}
-              onChange={(e) => setOwnedOnly(e.target.checked)}
-            />
-            Owned by DinoVox
-          </label>
+          <div className='flex flex-wrap items-center gap-3'>
+            <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
+              <input
+                type='checkbox'
+                checked={ownedOnly}
+                onChange={(e) => setOwnedOnly(e.target.checked)}
+              />
+              Owned by DinoVox
+            </label>
 
-          <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
-            <input
-              type='checkbox'
-              checked={friendsOnly}
-              onChange={(e) => setFriendsOnly(e.target.checked)}
-            />
-            Friends of DinoVox
-          </label>
+            <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
+              <input
+                type='checkbox'
+                checked={friendsOnly}
+                onChange={(e) => setFriendsOnly(e.target.checked)}
+              />
+              Friends of DinoVox
+            </label>
 
-          {/* <div className='flex items-center gap-2'>
+            {/* <div className='flex items-center gap-2'>
             <label className='text-xs font-medium text-slate-600'>Sort</label>
             <select
               value={sort}
@@ -435,40 +507,45 @@ export const MarketplaceCollections = () => {
               <option value='listingsDesc'>Listings ↓</option>
             </select>
           </div> */}
+          </div>
         </div>
-      </div>
 
-      {/* Grid */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
-        {filtered.map((c) => (
-          <CollectionCard key={c.collection} collection={c} />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className='text-center text-sm text-slate-500 py-16'>
-          No collections match your filters.
+        {/* Grid */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
+          {filtered.map((c) => (
+            <CollectionCard
+              key={c.collection}
+              collection={c}
+              statsIndex={statsIndex}
+            />
+          ))}
         </div>
-      )}
 
-      {/* Pagination */}
-      <div className='mt-8 flex items-center justify-center gap-2'>
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className='h-9 px-4 rounded-md border bg-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50'
-        >
-          Previous
-        </button>
-        <span className='text-sm text-slate-600'>Page {page}</span>
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={accountCollections.length < pageSize}
-          className='h-9 px-4 rounded-md border bg-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50'
-        >
-          Next
-        </button>
-      </div>
+        {filtered.length === 0 && (
+          <div className='text-center text-sm text-slate-500 py-16'>
+            No collections match your filters.
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className='mt-8 flex items-center justify-center gap-2'>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className='h-9 px-4 rounded-md border bg-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50'
+          >
+            Previous
+          </button>
+          <span className='text-sm text-slate-600'>Page {page}</span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={accountCollections.length < pageSize}
+            className='h-9 px-4 rounded-md border bg-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50'
+          >
+            Next
+          </button>
+        </div>
+      </PageTemplate>
     </div>
   );
 };

@@ -78,7 +78,10 @@ import {
   friends_collections
 } from 'config';
 import { useGetCollectionBranding } from 'helpers/api/useGetCollectionBranding';
-import { useGetCollectionStats } from 'helpers/api/useGetCollectionStats';
+import {
+  useGetCollectionStats,
+  getBestStat
+} from 'helpers/api/useGetCollectionStats';
 import { FormatAmount } from 'helpers/api/useGetEsdtInformations';
 
 // ... (imports remain the same)
@@ -261,7 +264,11 @@ const Badge = ({
 const MarketplaceCollectionCard = ({ c }: { c: Collection }) => {
   const { t } = useTranslation();
   const { branding } = useGetCollectionBranding(c.slug);
-  const { stats } = useGetCollectionStats(c.slug);
+  const { stats: collectionStats } = useGetCollectionStats(c.slug);
+
+  const stats = {
+    floorPrice: getBestStat(collectionStats?.floor?.ask)
+  };
 
   const isOwnedByDinovox = dinovox_collections.includes(c.slug);
   const isFriendOfDinovox = friends_collections.includes(c.slug);
@@ -300,8 +307,11 @@ const MarketplaceCollectionCard = ({ c }: { c: Collection }) => {
           </div>
           <div className='text-sm text-slate-500'>
             {c.itemsCount} {t('marketplace:items')} • {t('marketplace:floor')}{' '}
-            {stats?.floor_ask_egld ? (
-              <FormatAmount amount={stats.floor_ask_egld} identifier='EGLD' />
+            {stats.floorPrice.amount ? (
+              <FormatAmount
+                amount={stats.floorPrice.amount}
+                identifier={stats.floorPrice.token}
+              />
             ) : (
               '-'
             )}

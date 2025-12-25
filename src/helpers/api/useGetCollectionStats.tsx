@@ -3,14 +3,46 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { dinoclaim_api } from 'config';
 
 export interface CollectionStats {
-  floor_ask_egld: string;
-  last_floor_ask_egld: string;
-  best_global_offer_egld: string;
-  best_specific_offer_egld: string;
-  volume_24h: string;
-  volume_7d: string;
-  volume_all_time: string;
+  floor: {
+    ask: Record<string, string>;
+    last_known: Record<string, string>;
+  };
+  offers: {
+    best_global: Record<string, string>;
+    best_specific: Record<string, string>;
+  };
+  volume: {
+    '24h': Record<string, string>;
+    '7d': Record<string, string>;
+    all_time: Record<string, string>;
+  };
+  tokens: string[];
 }
+
+export const getBestStat = (
+  record?: Record<string, string>
+): { amount: string | undefined; token: string } => {
+  if (!record) return { amount: undefined, token: 'EGLD' };
+
+  // 1. EGLD
+  if (record['EGLD'] && record['EGLD'] !== '0') {
+    return { amount: record['EGLD'], token: 'EGLD' };
+  }
+
+  // 2. USDC
+  const usdcKey = Object.keys(record).find((k) => k.startsWith('USDC'));
+  if (usdcKey && record[usdcKey] !== '0') {
+    return { amount: record[usdcKey], token: usdcKey };
+  }
+
+  // 3. Fallback: First non-zero
+  const anyKey = Object.keys(record).find((k) => record[k] !== '0');
+  if (anyKey) {
+    return { amount: record[anyKey], token: anyKey };
+  }
+
+  return { amount: undefined, token: 'EGLD' };
+};
 
 export const useGetCollectionStats = (collectionIdentifier: string) => {
   const [stats, setStats] = useState<CollectionStats | null>(null);
@@ -39,7 +71,7 @@ export const useGetCollectionStats = (collectionIdentifier: string) => {
     setLoading(true);
     setError(null);
 
-    const url = `/collections/${collectionIdentifier}/stats`;
+    const url = `/marketplace/collections/${collectionIdentifier}/stats`;
     const config: AxiosRequestConfig = {
       baseURL: dinoclaim_api
     };

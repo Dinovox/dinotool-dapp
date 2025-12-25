@@ -105,7 +105,8 @@ export const Header = () => {
                 '/collections',
                 '/nfts',
                 '/claim',
-                '/claimadmin'
+                '/claimadmin',
+                '/marketplace'
               ].some((route) => currentRouteName.startsWith(route))
                 ? DinoToolsAlpha
                 : dinovoxLogo
