@@ -3,7 +3,8 @@ import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
 import { mintcontractAddress } from 'config';
 import { useGetNetworkConfig } from 'lib';
 import mintgaz_json from 'contracts/mintgaz.abi.json';
-
+import axios from 'axios';
+import bigToHex from 'helpers/bigToHex';
 import { BigNumber } from 'bignumber.js';
 
 export const useGetMintable = () => {
@@ -33,7 +34,21 @@ export const useGetMintable = () => {
       });
 
       if (response && response.length > 0) {
-        setMintable(response[0]);
+        const val = response[0];
+        try {
+          const identifier = `${val.token_identifier}-${bigToHex(val.nonce)}`;
+          const balanceRes = await axios.get(
+            `${network.apiAddress}/accounts/${mintcontractAddress}/nfts/${identifier}`
+          );
+          if (balanceRes.data) {
+            val.amount = new BigNumber(balanceRes.data.balance || 0);
+          }
+        } catch (e) {
+          console.error('Error fetching SFT balance', e);
+        }
+        val.amount = new BigNumber(0);
+
+        setMintable(val);
       }
     } catch (err) {
       console.error('Unable to call getMintable', err);

@@ -541,7 +541,7 @@ export const MarketplaceCollectionById = () => {
                 to={`/marketplace/sell?collection=${id}`}
                 className='rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 mr-2'
               >
-                {t('marketplace:sell_item')}
+                {t('marketplace:sell_an_item')}
               </Link>
               <button
                 onClick={() => setShowOfferForm(true)}
@@ -590,9 +590,12 @@ export const MarketplaceCollectionById = () => {
                     </select>
                     <input
                       value={offerPrice}
-                      onChange={(e) => setOfferPrice(e.target.value)}
+                      onChange={(e) =>
+                        setOfferPrice(e.target.value.replace(',', '.'))
+                      }
                       className='block w-full border-0 focus:ring-0 sm:text-sm h-10 px-3 outline-none'
                       placeholder='0.00'
+                      inputMode='decimal'
                     />
                   </div>
                 </div>
@@ -672,7 +675,9 @@ export const MarketplaceCollectionById = () => {
                       nftIdentifier={id}
                       nftNonce={parseInt(offerNonce)}
                       paymentToken={selectedPaymentToken.identifier}
-                      offerPrice={new BigNumber(offerPrice || '0')
+                      offerPrice={new BigNumber(
+                        offerPrice?.replace(',', '.') || '0'
+                      )
                         .shiftedBy(selectedPaymentToken.decimals)
                         .toFixed(0)}
                       deadline={
@@ -684,7 +689,7 @@ export const MarketplaceCollectionById = () => {
                       label={t('marketplace:make_offer_specific')}
                       disabled={
                         !offerPrice ||
-                        parseFloat(offerPrice) <= 0 ||
+                        parseFloat(offerPrice.replace(',', '.')) <= 0 ||
                         !hasEnoughFunds
                       }
                     />
@@ -694,7 +699,9 @@ export const MarketplaceCollectionById = () => {
                       collectionIdentifier={id}
                       nftAmount={1}
                       paymentToken={selectedPaymentToken.identifier}
-                      offerPrice={new BigNumber(offerPrice || '0')
+                      offerPrice={new BigNumber(
+                        offerPrice?.replace(',', '.') || '0'
+                      )
                         .shiftedBy(selectedPaymentToken.decimals)
                         .toFixed(0)}
                       deadline={
@@ -705,7 +712,7 @@ export const MarketplaceCollectionById = () => {
                       }
                       disabled={
                         !offerPrice ||
-                        parseFloat(offerPrice) <= 0 ||
+                        parseFloat(offerPrice.replace(',', '.')) <= 0 ||
                         !hasEnoughFunds
                       }
                     />

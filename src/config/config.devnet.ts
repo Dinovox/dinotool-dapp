@@ -18,7 +18,7 @@ export const lotteryContractAddress =
 export const vaultContractAddress =
   'erd1qqqqqqqqqqqqqpgq8uctjpczcsv49xr0clc3wfn98r5e48hcch9s2l2j55';
 export const marketplaceContractAddress =
-  'erd1qqqqqqqqqqqqqpgqgt7l8mmynwtyfw9y34en8u75vcdq8mpxch9stzzjcq';
+  'erd1qqqqqqqqqqqqqpgq5hez8w3yg9mx8zz80npy9lv9fqeprmymch9s07z6hq';
 
 export const API_URL = 'https://devnet-api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];

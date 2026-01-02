@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
 import { useGetNetworkConfig } from 'lib';
-import dinauctionAbi from '../dinauction.abi.json';
+import dinauctionAbi from '../dinovox-marketplace.abi.json';
 import { marketplaceContractAddress } from 'config';
 
 type UseGetAuctionsPaginatedParams = {

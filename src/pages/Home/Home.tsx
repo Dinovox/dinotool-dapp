@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import useLoadTranslations from '../../hooks/useLoadTranslations';
 
 import { environment } from 'config';
-import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
+// import { useGetMintable } from 'pages/Dashboard/widgets/MintGazAbi/hooks';
 
 import { useGetAccount } from 'lib';
 import { title } from 'process';
@@ -26,10 +26,11 @@ export const Home = () => {
 
   const [displayText, setDisplayText] = useState('🦖');
   const [isShaking, setIsShaking] = useState(false);
-  const mintable = useGetMintable();
+  // const mintable = useGetMintable();
   const fullText = '🦖 . . . #GRAOU!';
 
   const { address } = useGetAccount();
+  // image: mintable?.amount.isGreaterThan(0) ? cardGazette : cardSoldGraout
 
   // Images are 210px 150px
   const navItems = [
@@ -41,8 +42,8 @@ export const Home = () => {
     },
     {
       title: 'Dinogazette',
-      link: '/mint',
-      image: mintable?.amount.isGreaterThan(0) ? cardGazette : cardSoldGraout
+      link: '/dinoGazette',
+      image: cardGazette
     },
     {
       title: t('home:lotteries_title'),

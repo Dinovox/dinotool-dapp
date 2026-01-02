@@ -73,8 +73,16 @@ const CardContent: React.FC<
 > = ({ children, className = '' }) => (
   <div className={`p-4 pt-0 ${className}`}>{children}</div>
 );
-const Badge = ({ children }: { children: React.ReactNode }) => (
-  <span className='inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-700'>
+const Badge = ({
+  children,
+  className = ''
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <span
+    className={`inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-700 ${className}`}
+  >
     {children}
   </span>
 );
@@ -164,6 +172,7 @@ export const MarketplaceSell = () => {
   const [saleType, setSaleType] = React.useState<SaleType>('fixed');
   const [maxOnePerPayment, setMaxOnePerPayment] =
     React.useState<boolean>(false);
+  const [maxPerWallet, setMaxPerWallet] = React.useState('');
   // config (fixed)
   const [fixedPrice, setFixedPrice] = React.useState('0.50'); // EGLD
 
@@ -727,7 +736,9 @@ export const MarketplaceSell = () => {
                     <div className='flex items-center gap-2'>
                       <input
                         value={fixedPrice}
-                        onChange={(e) => setFixedPrice(e.target.value)}
+                        onChange={(e) =>
+                          setFixedPrice(e.target.value.replace(',', '.'))
+                        }
                         inputMode='decimal'
                         className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
@@ -776,15 +787,29 @@ export const MarketplaceSell = () => {
                             value={amountToSell}
                             onChange={(e) => {
                               const raw = e.target.value;
-                              const num =
-                                raw === ''
-                                  ? ''
-                                  : String(Math.max(0, Number(raw)));
-                              setAmountToSell(num);
+                              const balance = parseInt(selected.balance || '0');
+                              // If empty string, allow it (user clearing input)
+                              if (raw === '') {
+                                setAmountToSell('');
+                                return;
+                              }
+                              // Parse ensuring we don't go below 1 or above balance
+                              let num = parseInt(raw);
+                              if (isNaN(num)) num = 0;
+                              if (num > balance) num = balance;
+
+                              setAmountToSell(String(num));
                             }}
                             className='h-10 w-28 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                           />
-                          <Badge>
+                          <Badge
+                            className={
+                              parseInt(amountToSell || '0') >
+                              parseInt(selected.balance || '0')
+                                ? 'bg-red-500'
+                                : ''
+                            }
+                          >
                             {selected.balance} {t('marketplace:available')}
                           </Badge>
                         </div>
@@ -822,6 +847,33 @@ export const MarketplaceSell = () => {
                             : t('marketplace:sell_batch_desc')}
                         </p>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Max per wallet option for Unit sale */}
+                  {maxOnePerPayment && parseInt(amountToSell) > 1 && (
+                    <div>
+                      <label className='block text-sm text-slate-600 mb-1'>
+                        {t('marketplace:max_per_wallet')}
+                      </label>
+                      <input
+                        type='number'
+                        min={1}
+                        value={maxPerWallet}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const num =
+                            raw === '' ? '' : String(Math.max(0, Number(raw)));
+                          setMaxPerWallet(num);
+                        }}
+                        placeholder={t(
+                          'marketplace:max_per_wallet_placeholder'
+                        )}
+                        className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                      />
+                      <p className='mt-1 text-xs text-slate-500'>
+                        {t('marketplace:max_per_wallet_hint')}
+                      </p>
                     </div>
                   )}
 
@@ -873,7 +925,9 @@ export const MarketplaceSell = () => {
                       <div className='flex items-center gap-2'>
                         <input
                           value={minBid}
-                          onChange={(e) => setMinBid(e.target.value)}
+                          onChange={(e) =>
+                            setMinBid(e.target.value.replace(',', '.'))
+                          }
                           inputMode='decimal'
                           className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                         />
@@ -899,7 +953,9 @@ export const MarketplaceSell = () => {
                       </label>
                       <input
                         value={minBidStep}
-                        onChange={(e) => setMinBidStep(e.target.value)}
+                        onChange={(e) =>
+                          setMinBidStep(e.target.value.replace(',', '.'))
+                        }
                         inputMode='decimal'
                         className='h-10 w-28 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                       />
@@ -1004,7 +1060,9 @@ export const MarketplaceSell = () => {
                         <div className='flex items-center gap-2'>
                           <input
                             value={buyNowPrice}
-                            onChange={(e) => setBuyNowPrice(e.target.value)}
+                            onChange={(e) =>
+                              setBuyNowPrice(e.target.value.replace(',', '.'))
+                            }
                             inputMode='decimal'
                             className='h-10 w-48 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
                           />
@@ -1068,7 +1126,6 @@ export const MarketplaceSell = () => {
                   </div>
                 </div>
 
-                {/* Info commune: Quantité / Type de vente SFT */}
                 <div className='rounded-md border p-3'>
                   <div className='text-xs text-slate-500'>
                     {t('marketplace:qty') || 'Quantity'}
@@ -1081,6 +1138,11 @@ export const MarketplaceSell = () => {
                       </span>
                     )}
                   </div>
+                  {maxOnePerPayment && maxPerWallet && (
+                    <div className='mt-1 text-xs text-slate-600'>
+                      {t('marketplace:max_per_wallet')}: {maxPerWallet}
+                    </div>
+                  )}
                 </div>
 
                 {/* Info commune: Calendrier */}
@@ -1348,6 +1410,14 @@ export const MarketplaceSell = () => {
                             ? undefined
                             : s;
                         })()
+                  }
+                  opt_max_per_wallet={
+                    saleType === 'fixed' &&
+                    maxOnePerPayment &&
+                    maxPerWallet &&
+                    Number(maxPerWallet) > 0
+                      ? new BigNumber(maxPerWallet)
+                      : undefined
                   }
                   disabled={busy || !agreeTerms}
                   onTransactionSent={(sid) => {

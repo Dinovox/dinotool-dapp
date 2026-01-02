@@ -77,8 +77,7 @@ const NotificationItem = ({ event, onClose }: NotificationItemProps) => {
         setNonce(event.auctioned_token_nonce?.toString());
         setMessage(
           <span>
-            <strong>{event.nr_bought_tokens?.toString()}</strong> items bought
-            directly!
+            <strong>{event.nr_bought_tokens?.toString()}</strong> items bought!
           </span>
         );
         break;
@@ -106,6 +105,47 @@ const NotificationItem = ({ event, onClose }: NotificationItemProps) => {
         setTokenId(event.auction_token_id);
         setNonce(event.auctioned_token_nonce?.toString());
         setMessage(<span>Auction cancelled by seller.</span>);
+        break;
+      case 'offer_token_event':
+        setTitle('New Offer!');
+        setIcon('🤝');
+        setTokenId(event.offer_token_id);
+        setNonce(event.offer_token_nonce?.toString());
+        setMessage(
+          <span>
+            New offer of{' '}
+            <strong>
+              <FormatAmount
+                amount={event.payment_amount}
+                identifier={event.payment_token_type}
+              />
+            </strong>
+          </span>
+        );
+        break;
+      case 'withdraw_offer_token_event':
+        setTitle('Offer Withdrawn');
+        setIcon('↩️');
+        setTokenId(event.offer_token_id);
+        setNonce(event.offer_token_nonce?.toString());
+        setMessage(<span>Offer withdrawn by buyer.</span>);
+        break;
+      case 'accept_offer_token_event':
+        setTitle('Offer Accepted!');
+        setIcon('✅');
+        setTokenId(event.offer_token_id);
+        setNonce(event.offer_token_nonce?.toString());
+        setMessage(
+          <span>
+            Offer accepted! Item sold for{' '}
+            <strong>
+              <FormatAmount
+                amount={event.payment_amount}
+                identifier={event.payment_token_type}
+              />
+            </strong>
+          </span>
+        );
         break;
       default:
         setTitle('Marketplace Update');

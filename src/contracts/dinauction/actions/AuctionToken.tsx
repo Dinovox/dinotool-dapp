@@ -40,6 +40,7 @@ export interface ActionAuctionTokenProps {
   opt_sft_max_one_per_payment?: boolean;
   opt_accepted_payment_token_nonce?: NumericLike;
   opt_start_time?: NumericLike;
+  opt_max_per_wallet?: BigNumber;
 
   disabled?: boolean;
   onTransactionSent?: (sessionId: string) => void;
@@ -57,6 +58,7 @@ export const ActionAuctionToken = ({
   opt_sft_max_one_per_payment,
   opt_accepted_payment_token_nonce,
   opt_start_time,
+  opt_max_per_wallet,
 
   disabled,
   onTransactionSent
@@ -129,10 +131,12 @@ export const ActionAuctionToken = ({
       opt_accepted_payment_token_nonce !== null; // 0 is valid
     const hasStartTime =
       opt_start_time !== undefined && opt_start_time !== null;
+    const hasMaxPerWallet = opt_max_per_wallet !== undefined;
 
     // Determine how many optional args we need to send
     let argsNeeded = 0;
-    if (hasStartTime) argsNeeded = 4;
+    if (hasMaxPerWallet) argsNeeded = 5;
+    else if (hasStartTime) argsNeeded = 4;
     else if (hasPaymentTokenNonce) argsNeeded = 3;
     else if (hasSftMaxOne) argsNeeded = 2;
     else if (opt_min_bid_diff) argsNeeded = 1;
@@ -155,6 +159,11 @@ export const ActionAuctionToken = ({
     }
     if (argsNeeded >= 4) {
       args.push(opt_start_time ? bigToHex(BigInt(opt_start_time)) : '');
+    }
+    if (argsNeeded >= 5) {
+      args.push(
+        opt_max_per_wallet ? bigToHex(BigInt(opt_max_per_wallet.toFixed())) : ''
+      );
     }
 
     // Append args to payload

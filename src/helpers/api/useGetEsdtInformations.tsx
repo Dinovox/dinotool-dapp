@@ -138,7 +138,6 @@ export const FormatAmount: React.FC<FormatAmountProps> = ({
             maximumFractionDigits: 2
           })}
         </span>
-        ?
       </div>
     );
   }

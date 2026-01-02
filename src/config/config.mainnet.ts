@@ -44,3 +44,8 @@ export const dinoclaim_api = 'https://claim.dinovox.com';
 export const dino_claim_url = 'https://app.dinovox.com/claim';
 export const dinovox_collections = ['FAAPU-28e0bc'];
 export const friends_collections = ['DINOBOOST-9f6811'];
+
+export const auction_tokens = [
+  { token: 'EGLD', identifier: 'EGLD', decimals: 18 },
+  { token: 'USDC', identifier: 'USDC-350c4e', decimals: 6 }
+];

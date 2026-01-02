@@ -221,5 +221,10 @@
   "token_nonce_hint": "Leave empty to make a global offer for ANY item in this collection. Enter a number to offer for a specific item.",
   "search_token_id_nonce": "Search by token ID or nonce...",
   "filter_all": "All",
-  "filter_auctions": "Auctions"
+  "filter_auctions": "Auctions",
+  "max_per_wallet": "Max per wallet",
+  "max_per_wallet_placeholder": "Ex: 5",
+  "max_per_wallet_hint": "Leave empty if you do not want to set a limit.",
+  "max_per_wallet_reached": "Purchase limit reached for this wallet.",
+  "remaining_allowed": "Remaining allowed"
 }

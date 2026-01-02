@@ -19,7 +19,9 @@ import {
   MarketplaceCollectionById,
   MarketplaceListings,
   MarketplaceListingDetail,
-  MarketplaceSell
+  MarketplaceSell,
+  Faapu,
+  DinoGazette
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
@@ -139,6 +141,16 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       path: `${RouteNamesEnum.marketplace}/sell`,
       title: t('Sell'),
       component: MarketplaceSell
+    },
+    {
+      path: RouteNamesEnum.faapu,
+      title: 'Faapu',
+      component: Faapu
+    },
+    {
+      path: RouteNamesEnum.dinogazette,
+      title: 'DinoGazette',
+      component: DinoGazette
     }
   ];
 };

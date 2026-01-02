@@ -221,5 +221,10 @@
   "token_nonce_hint": "Laisser vide pour faire une offre globale sur TOUTE la collection. Entrez un numéro pour une offre spécifique.",
   "search_token_id_nonce": "Chercher par ID ou nonce...",
   "filter_all": "Tout",
-  "filter_auctions": "Enchères"
+  "filter_auctions": "Enchères",
+  "max_per_wallet": "Max par wallet",
+  "max_per_wallet_placeholder": "Ex: 5",
+  "max_per_wallet_hint": "Laissez vide si vous ne souhaitez pas définir de limite.",
+  "max_per_wallet_reached": "Limite d'achat atteinte pour ce portefeuille.",
+  "remaining_allowed": "Restant autorisé"
 }

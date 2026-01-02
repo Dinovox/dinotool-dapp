@@ -208,124 +208,130 @@ const CollectionCard = ({
   const { t } = useTranslation();
   return (
     <Card>
-      {/* Aperçu plus large */}
-      <div
-        className='h-40 w-full bg-center bg-cover rounded-t-2xl bg-slate-100'
-        style={{
-          backgroundImage: `url(${
-            branding?.images.banner || collection.banner || ''
-          })`
-        }}
-      />
+      <Link
+        to={`/marketplace/collections/${collection.collection}`}
+        className='block h-full group'
+      >
+        {/* Aperçu plus large */}
+        <div
+          className='h-40 w-full bg-center bg-cover rounded-t-2xl bg-slate-100'
+          style={{
+            backgroundImage: `url(${
+              branding?.images.banner || collection.banner || ''
+            })`
+          }}
+        />
 
-      {/* avatar/logo plus grand */}
-      <CardHeader className='-mt-12 flex items-center gap-4'>
-        {branding?.images.logo ? (
-          <img
-            src={branding.images.logo}
-            alt={collection.name}
-            className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
-          />
-        ) : (
-          <DisplayNftByToken
-            tokenIdentifier={collection.collection}
-            nonce='1'
-            variant='media-only'
-            className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
-          />
-        )}
-        <div className='space-y-1 overflow-hidden'>
-          <div className='text-base font-semibold text-slate-900 truncate'>
-            {collection.name}
-          </div>
-          <div className='text-xs text-slate-500 truncate'>
-            {collection.collection}
-          </div>
-          <div className='flex flex-wrap gap-1'>
-            {/* badge “owned” mis en avant */}
-            {collection.isOwnedByDinovox && <Badge tone='brand'>DinoVox</Badge>}
-            {/* badge “friends” */}
-            {collection.isFriendOfDinovox && <Badge tone='info'>Friends</Badge>}
+        {/* avatar/logo plus grand */}
+        <CardHeader className='-mt-12 flex items-center gap-4'>
+          {branding?.images.logo ? (
+            <img
+              src={branding.images.logo}
+              alt={collection.name}
+              className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
+            />
+          ) : (
+            <DisplayNftByToken
+              tokenIdentifier={collection.collection}
+              nonce='1'
+              variant='media-only'
+              className='h-20 w-20 rounded-2xl object-cover border-4 border-white shadow bg-white'
+            />
+          )}
+          <div className='space-y-1 overflow-hidden'>
+            <div className='text-base font-semibold text-slate-900 truncate'>
+              {collection.name}
+            </div>
+            <div className='text-xs text-slate-500 truncate'>
+              {collection.collection}
+            </div>
+            <div className='flex flex-wrap gap-1'>
+              {/* badge “owned” mis en avant */}
+              {collection.isOwnedByDinovox && (
+                <Badge tone='brand'>DinoVox</Badge>
+              )}
+              {/* badge “friends” */}
+              {collection.isFriendOfDinovox && (
+                <Badge tone='info'>Friends</Badge>
+              )}
 
-            {/* Branding Tags */}
-            {branding?.branding?.tags && branding.branding.tags.length > 0
-              ? branding.branding.tags.map((tag) => (
-                  <Badge key={tag}>{tag}</Badge>
-                ))
-              : /* sources fallback (excluding local) */
-                collection.sources
-                  .filter((s) => s !== 'local')
-                  .map((s) => <Badge key={s}>{s}</Badge>)}
+              {/* Branding Tags */}
+              {branding?.branding?.tags && branding.branding.tags.length > 0
+                ? branding.branding.tags.map((tag) => (
+                    <Badge key={tag}>{tag}</Badge>
+                  ))
+                : /* sources fallback (excluding local) */
+                  collection.sources
+                    .filter((s) => s !== 'local')
+                    .map((s) => <Badge key={s}>{s}</Badge>)}
+            </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent className='grid grid-cols-2 gap-4'>
-        <div className='min-w-0'>
-          <div className='text-xs text-slate-500'>Floor</div>
-          <div
-            key={statsIndex}
-            className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
-          >
-            {stats.floor.amount ? (
-              <FormatAmount
-                amount={stats.floor.amount}
-                identifier={stats.floor.token}
-              />
-            ) : (
-              '-'
-            )}
+        <CardContent className='grid grid-cols-2 gap-4'>
+          <div className='min-w-0'>
+            <div className='text-xs text-slate-500'>Floor</div>
+            <div
+              key={statsIndex}
+              className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
+            >
+              {stats.floor.amount ? (
+                <FormatAmount
+                  amount={stats.floor.amount}
+                  identifier={stats.floor.token}
+                />
+              ) : (
+                '-'
+              )}
+            </div>
           </div>
-        </div>
-        <div className='min-w-0'>
-          <div className='text-xs text-slate-500'>Listings</div>
-          <div className='text-sm font-medium text-slate-900 h-6 truncate'>
-            {collection.listingsActive}
+          <div className='min-w-0'>
+            <div className='text-xs text-slate-500'>Listings</div>
+            <div className='text-sm font-medium text-slate-900 h-6 truncate'>
+              {collection.listingsActive}
+            </div>
           </div>
-        </div>
-        <div className='min-w-0'>
-          <div className='text-xs text-slate-500'>Vol. 24h</div>
-          <div
-            key={statsIndex}
-            className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
-          >
-            {stats.volume24h.amount ? (
-              <FormatAmount
-                amount={stats.volume24h.amount}
-                identifier={stats.volume24h.token}
-              />
-            ) : (
-              '-'
-            )}
+          <div className='min-w-0'>
+            <div className='text-xs text-slate-500'>Vol. 24h</div>
+            <div
+              key={statsIndex}
+              className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
+            >
+              {stats.volume24h.amount ? (
+                <FormatAmount
+                  amount={stats.volume24h.amount}
+                  identifier={stats.volume24h.token}
+                />
+              ) : (
+                '-'
+              )}
+            </div>
           </div>
-        </div>
-        <div className='min-w-0'>
-          <div className='text-xs text-slate-500'>Vol. 7d</div>
-          <div
-            key={statsIndex}
-            className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
-          >
-            {stats.volume7d.amount ? (
-              <FormatAmount
-                amount={stats.volume7d.amount}
-                identifier={stats.volume7d.token}
-                displayDecimals={2}
-              />
-            ) : (
-              '-'
-            )}
+          <div className='min-w-0'>
+            <div className='text-xs text-slate-500'>Vol. 7d</div>
+            <div
+              key={statsIndex}
+              className='text-sm font-medium text-slate-900 h-6 truncate animate-fade-in'
+            >
+              {stats.volume7d.amount ? (
+                <FormatAmount
+                  amount={stats.volume7d.amount}
+                  identifier={stats.volume7d.token}
+                  displayDecimals={2}
+                />
+              ) : (
+                '-'
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
+        </CardContent>
 
-      <CardFooter>
-        <Link
-          to={`/marketplace/collections/${collection.collection}`}
-          className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
-        >
-          {t('marketplace:view_collection')}
-        </Link>
-      </CardFooter>
+        <CardFooter>
+          <span className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white group-hover:bg-slate-800 transition-colors'>
+            {t('marketplace:view_collection')}
+          </span>
+        </CardFooter>
+      </Link>
     </Card>
   );
 };
@@ -450,63 +456,98 @@ export const MarketplaceCollections = () => {
         ]}
       >
         {/* Toolbar */}
-        <div className='flex flex-col gap-3 md:flex-row md:items-end md:justify-between'>
-          <div className='flex items-center gap-2 w-full md:max-w-xl'>
-            <div className='flex-1 flex flex-col gap-2'>
-              <label className='text-xs font-medium text-slate-600'>
+        <div className='flex flex-col gap-4 mb-6'>
+          <div className='flex flex-col md:flex-row gap-4 justify-between items-start md:items-end'>
+            {/* Search */}
+            <div className='flex items-center gap-2 w-full md:max-w-xl'>
+              <div className='flex-1 flex flex-col gap-2'>
+                <label className='text-xs font-medium text-slate-600'>
+                  Search
+                </label>
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder='Search by collection name…'
+                  className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400 w-full'
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                className='mt-auto h-10 px-4 rounded-md border border-gray-200 bg-gray-100 text-sm font-medium hover:bg-gray-200 active:bg-gray-300 transition text-slate-900'
+              >
                 Search
-              </label>
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder='Search by collection name…'
-                className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400 w-full'
-              />
+              </button>
             </div>
-            <button
-              onClick={handleSearch}
-              className='mt-auto h-10 px-4 rounded-md border border-gray-200 bg-gray-100 text-sm font-medium hover:bg-gray-200 active:bg-gray-300 transition text-slate-900'
+
+            {/* Sell Button */}
+            <Link
+              to='/marketplace/sell'
+              className='h-10 inline-flex items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800'
             >
-              Search
-            </button>
+              <span className='mr-2'>+</span>
+              {t('marketplace:sell_an_item')}
+            </Link>
           </div>
 
-          <div className='flex flex-wrap items-center gap-3'>
-            <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
-              <input
-                type='checkbox'
-                checked={ownedOnly}
-                onChange={(e) => setOwnedOnly(e.target.checked)}
-              />
-              Owned by DinoVox
+          {/* Filters Block */}
+          <div className='flex flex-wrap items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200'>
+            <span className='text-sm font-semibold text-slate-700'>
+              Filters:
+            </span>
+            <label className='inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none hover:text-slate-900'>
+              <div className='relative flex items-center'>
+                <input
+                  type='checkbox'
+                  className='peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 shadow-sm checked:border-slate-900 checked:bg-slate-900 focus:ring-2 focus:ring-slate-900/20'
+                  checked={ownedOnly}
+                  onChange={(e) => setOwnedOnly(e.target.checked)}
+                />
+                <svg
+                  className='pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100'
+                  width='10'
+                  height='10'
+                  viewBox='0 0 12 12'
+                  fill='none'
+                >
+                  <path
+                    d='M10 3L4.5 8.5L2 6'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                </svg>
+              </div>
+              DinoVox
             </label>
 
-            <label className='inline-flex items-center gap-2 text-sm text-slate-700'>
-              <input
-                type='checkbox'
-                checked={friendsOnly}
-                onChange={(e) => setFriendsOnly(e.target.checked)}
-              />
-              Friends of DinoVox
+            <label className='inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none hover:text-slate-900'>
+              <div className='relative flex items-center'>
+                <input
+                  type='checkbox'
+                  className='peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 shadow-sm checked:border-blue-600 checked:bg-blue-600 focus:ring-2 focus:ring-blue-600/20'
+                  checked={friendsOnly}
+                  onChange={(e) => setFriendsOnly(e.target.checked)}
+                />
+                <svg
+                  className='pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100'
+                  width='10'
+                  height='10'
+                  viewBox='0 0 12 12'
+                  fill='none'
+                >
+                  <path
+                    d='M10 3L4.5 8.5L2 6'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                </svg>
+              </div>
+              Friends
             </label>
-
-            {/* <div className='flex items-center gap-2'>
-            <label className='text-xs font-medium text-slate-600'>Sort</label>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className='h-10 rounded-md border border-gray-300 bg-white px-3 text-sm'
-            >
-              <option value='best'>Best</option>
-              <option value='floorAsc'>Floor ↑</option>
-              <option value='floorDesc'>Floor ↓</option>
-              <option value='vol24hDesc'>Vol. 24h ↓</option>
-              <option value='vol7dDesc'>Vol. 7d ↓</option>
-              <option value='itemsDesc'>Items ↓</option>
-              <option value='listingsDesc'>Listings ↓</option>
-            </select>
-          </div> */}
           </div>
         </div>
 

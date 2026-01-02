@@ -1,0 +1,382 @@
+/* ============================================
+   LA GAZETTE DU DINO - VINTAGE MINT PAGE
+   Aged paper, ink, and retro press aesthetic
+   ============================================ */
+
+:root {
+  /* Vintage Palette */
+  --paper-bg: #f4e4bc; /* Aged paper */
+  --paper-texture: #e8d5a5; /* Slightly darker for texture/borders */
+  --ink-primary: #2c241b; /* Dark brown ink */
+  --ink-secondary: #5d4037; /* Lighter brown */
+  --ink-accent: #8d6e63; /* Sepia accent */
+
+  --stamp-red: #c0392b; /* Urgent stamp color */
+  --stamp-blue: #2980b9; /* Official stamp color */
+  --stamp-green: #27ae60; /* Success stamp color */
+
+  /* Layout */
+  --card-radius: 2px; /* Sharp, cut paper edges */
+  --border-width: 2px;
+
+  /* Typography */
+  --font-headline: 'Courier Prime', 'Courier New', monospace;
+  --font-body: 'Times New Roman', serif;
+  --font-label: 'Arial', sans-serif; /* For small utilitarian labels */
+}
+
+/* ============================================
+   MAIN CONTAINER & CARD
+   ============================================ */
+
+.gazette-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 100vh; /* Ensure full viewport height */
+}
+
+.gazette-card {
+  width: 100%;
+  max-width: 1600px; /* Wide layout */
+  background-color: var(--paper-bg);
+  /* Subtle paper texture simulation */
+  background-image: linear-gradient(var(--paper-bg) 50%, transparent 50%),
+    linear-gradient(90deg, var(--paper-bg) 50%, transparent 50%);
+  background-size: 4px 4px;
+
+  border: 4px solid var(--ink-primary);
+  box-shadow:
+    10px 10px 0px rgba(44, 36, 27, 0.2),
+    /* Hard shadow */ 0 0 40px rgba(0, 0, 0, 0.1); /* Soft ambient */
+
+  display: flex;
+  flex-direction: row; /* Side by side */
+  /* overflow: hidden; */ /* REMOVED - was preventing scroll */
+  position: relative;
+}
+
+/* Decorative corner accents (Polynesian motif simulation) */
+.gazette-card::before,
+.gazette-card::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--ink-primary);
+  z-index: 10;
+}
+.gazette-card::before {
+  top: 10px;
+  left: 10px;
+  border-right: none;
+  border-bottom: none;
+}
+.gazette-card::after {
+  bottom: 10px;
+  right: 10px;
+  border-left: none;
+  border-top: none;
+}
+
+/* ============================================
+   LEFT PANEL: ARTWORK (40%)
+   ============================================ */
+
+.gazette-visual-col {
+  flex: 0 0 40%;
+  border-right: 3px double var(--ink-primary);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.2); /* Slightly lighter area */
+}
+
+.gazette-visual-col.full-width {
+  flex: 0 0 100%;
+  border-right: none;
+  padding: 40px;
+}
+
+.gazette-image-frame {
+  width: 100%;
+  min-width: 400px;
+  max-width: 400px; /* Smaller max width to fit visual better */
+  /* aspect-ratio: 1 / 1; Maintain square shape */
+  padding: 15px;
+  border: 2px solid var(--ink-primary);
+  background: #fff;
+  box-shadow: 5px 5px 0px var(--ink-secondary);
+  transform: rotate(-1deg); /* Slight imperfection */
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Contain the prompter */
+}
+
+.gazette-image-frame.full-width {
+  max-width: 100%;
+  min-width: auto;
+  aspect-ratio: auto;
+  transform: rotate(0deg);
+  min-height: auto;
+}
+
+.gazette-prompter {
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden; /* Disable scroll as requested */
+  padding: 20px;
+  text-align: center;
+  font-family: 'Courier Prime', monospace;
+  font-size: 18px;
+  color: var(--ink-secondary);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  word-break: break-word; /* Ensure text wraps */
+}
+
+.gazette-prompter::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.gazette-image-frame:hover {
+  transform: rotate(0deg) scale(1.01);
+}
+
+.gazette-image-frame img {
+  width: 100%;
+  height: auto;
+  filter: sepia(20%) contrast(110%); /* Vintage photo feel */
+  display: block;
+  border: 1px solid #ddd;
+}
+
+.gazette-caption {
+  margin-top: 15px;
+  font-family: 'Brush Script MT', cursive; /* Handwritten style */
+  font-size: 24px;
+  color: var(--ink-secondary);
+  text-align: center;
+  transform: rotate(-2deg);
+}
+
+/* ============================================
+   RIGHT PANEL: INFO (60%)
+   ============================================ */
+
+.gazette-info-col {
+  flex: 1;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+.gazette-header {
+  border-bottom: 4px double var(--ink-primary);
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  text-align: center;
+}
+
+.gazette-headline {
+  font-family: var(--font-headline);
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--ink-primary);
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  margin: 0;
+  line-height: 1;
+}
+
+.gazette-subhead {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-secondary);
+  margin-top: 10px;
+}
+
+/* INFO GRID */
+.gazette-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns wide */
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.gazette-info-box {
+  border: 1px solid var(--ink-primary);
+  padding: 12px; /* Reduced padding */
+  background: rgba(255, 255, 255, 0.4);
+  position: relative;
+  transition: transform 0.2s;
+  overflow: hidden; /* Prevent spillover */
+}
+
+.gazette-info-box:hover {
+  transform: translateY(-2px);
+  background: #fff;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+.gazette-box-label {
+  font-family: var(--font-label);
+  font-size: 10px; /* Slightly smaller */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-secondary);
+  margin-bottom: 6px;
+  border-bottom: 1px dashed var(--ink-secondary);
+  padding-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.gazette-box-value {
+  font-family: var(--font-headline);
+  font-size: 16px; /* Reduced from 20px */
+  font-weight: 700;
+  color: var(--ink-primary);
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.gazette-box-value.large {
+  font-size: 22px; /* Reduced from 28px */
+  color: var(--stamp-red);
+}
+
+/* ============================================
+   ACTIONS & BUTTONS
+   ============================================ */
+
+.gazette-actions {
+  margin-top: auto; /* Push to bottom */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 2px dashed var(--ink-primary);
+}
+
+.mint-button {
+  background-color: var(--ink-primary);
+  color: var(--paper-bg);
+  font-family: var(--font-headline);
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 20px 60px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  /* Rough edges simulation via clip-path or box-shadow */
+  box-shadow: 5px 5px 0px var(--ink-accent);
+  transition: all 0.2s;
+  letter-spacing: 2px;
+}
+
+.mint-button:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0px var(--ink-accent);
+  background-color: #000;
+}
+
+.mint-button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--ink-accent);
+}
+
+.mint-button:disabled {
+  background-color: #999;
+  color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Stamp Effect Overlay for Sold Out */
+.stamp-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border: 4px solid var(--stamp-red);
+  color: var(--stamp-red);
+  font-family: 'Impact', sans-serif;
+  font-size: 48px;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .gazette-info-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 cols on smaller screens */
+  }
+}
+
+@media (max-width: 900px) {
+  .gazette-wrapper {
+    padding: 40px 20px;
+    min-height: 100vh; /* Full viewport height */
+    display: flex;
+    align-items: flex-start; /* Allow scroll from top */
+  }
+
+  .gazette-card {
+    flex-direction: column;
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .gazette-visual-col {
+    border-right: none;
+    border-bottom: 3px double var(--ink-primary);
+    padding: 20px;
+    flex: 0 0 auto; /* Don't grow, natural height */
+  }
+
+  .gazette-image-frame {
+    min-width: auto;
+    max-width: 100%;
+  }
+
+  .gazette-info-col {
+    padding: 20px;
+    flex: 1 0 auto; /* Allow to grow but not shrink below content */
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .gazette-headline {
+    font-size: 32px;
+  }
+
+  .gazette-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .mint-button {
+    font-size: 18px;
+    padding: 15px 40px;
+  }
+}

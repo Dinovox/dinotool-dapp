@@ -7,7 +7,11 @@ import { Collection } from 'helpers/api/getCollections';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-import { useGetAccountInfo, useGetPendingTransactions } from 'lib';
+import {
+  useGetAccountInfo,
+  useGetPendingTransactions,
+  useGetNetworkConfig
+} from 'lib';
 import { CreateSft } from './modals/CreateSft';
 import { AddRoles } from './modals/AddRoles';
 import { ChangeToDynamic } from './modals/ChangeToDynamic';
@@ -29,7 +33,7 @@ import { Section } from './Section';
 import { Grid } from './Grid';
 import { NftGrid } from './NftGrid';
 import { t } from 'i18next';
-import { ArrowRight, Leaf, Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, Leaf, Plus, Sparkles, ExternalLink } from 'lucide-react';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { DecorativeIconCorners } from 'components/DecorativeIconCorners';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
@@ -57,6 +61,7 @@ export const CollectionDetail = () => {
   // const [tokenIdentifier, setTokenIdentifier] = useState<string>('');
 
   const { address } = useGetAccountInfo();
+  const { network } = useGetNetworkConfig();
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
 
@@ -184,6 +189,18 @@ export const CollectionDetail = () => {
             <p className='text-gray-600 mt-3 text-lg'>
               {t('collections:controls_collection_info')}
             </p>
+            <div className='flex items-center gap-2 mt-2 text-lg text-gray-600'>
+              <span className='font-semibold'>Ticker:</span>
+              <a
+                href={`${network.explorerAddress}/collections/${collection.collection}`}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-blue-600 hover:underline flex items-center gap-1'
+              >
+                {collection.ticker}
+                <ExternalLink className='h-4 w-4' />
+              </a>
+            </div>
             <p className='text-gray-600 mt-3 text-lg'>
               Owner: <ShortenedAddress address={collection.owner} />
             </p>

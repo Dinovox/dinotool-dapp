@@ -3,9 +3,15 @@ import { Abi, Address, DevnetEntrypoint } from '@multiversx/sdk-core';
 import { useGetNetworkConfig, useGetPendingTransactions } from 'lib';
 import dinauctionAbi from '../dinovox-marketplace.abi.json';
 import { marketplaceContractAddress } from 'config';
+import BigNumber from 'bignumber.js';
 
-export const useGetFullAuctionData = (auctionId?: string | number) => {
-  const [auction, setAuction] = useState<any>(null);
+export const useGetUserPurchasedAmount = (
+  auctionId?: string | number,
+  userAddress?: string
+) => {
+  const [purchasedAmount, setPurchasedAmount] = useState<BigNumber>(
+    new BigNumber(0)
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const lastFetchTimeRef = useRef<number>(0);
@@ -15,16 +21,15 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
 
   const { network } = useGetNetworkConfig();
 
-  const fetchAuction = useCallback(async () => {
-    if (!auctionId) {
-      setAuction(null);
+  const fetchPurchasedAmount = useCallback(async () => {
+    if (!auctionId || !userAddress) {
+      setPurchasedAmount(new BigNumber(0));
       return;
     }
 
-    // Skip fetch if there are pending transactions AND we fetched recently (within 10s)
-    // This prevents refetching during active transactions but allows recovery if stuck
+    // Skip fetch if there are pending transactions AND we fetched recently (within 5s)
     const now = Date.now();
-    if (hasPendingTransactions && now - lastFetchTimeRef.current < 10000) {
+    if (hasPendingTransactions && now - lastFetchTimeRef.current < 5000) {
       return;
     }
 
@@ -39,38 +44,37 @@ export const useGetFullAuctionData = (auctionId?: string | number) => {
 
       const response = await controller.query({
         contract: contractAddress,
-        function: 'getFullAuctionData',
-        arguments: [auctionId]
+        function: 'getUserPurchasedAmount',
+        arguments: [auctionId, new Address(userAddress)]
       });
 
       if (!response || response.length === 0) {
-        setAuction(null);
+        setPurchasedAmount(new BigNumber(0));
         return;
       }
 
-      console.log(response);
-      // The ABI defines the output as a single Auction struct
-      // controller.query usually returns an array of results.
-      // Since it returns one item, we take the first one.
-      setAuction(response[0]);
+      // The view returns a BigUint
+      const amount = new BigNumber(response[0].toString());
+      setPurchasedAmount(amount);
       lastFetchTimeRef.current = Date.now();
     } catch (err) {
-      console.error('Unable to call getFullAuctionData', err);
-      setError('Unable to load auction data');
-      setAuction(null);
+      console.error('Unable to call getUserPurchasedAmount', err);
+      setError('Unable to load purchased amount');
+      // On error, default to 0 to not block UI, but keep error state
+      setPurchasedAmount(new BigNumber(0));
     } finally {
       setIsLoading(false);
     }
-  }, [auctionId, network.apiAddress, hasPendingTransactions]);
+  }, [auctionId, userAddress, network.apiAddress, hasPendingTransactions]);
 
   useEffect(() => {
-    fetchAuction();
-  }, [fetchAuction]);
+    fetchPurchasedAmount();
+  }, [fetchPurchasedAmount]);
 
   return {
-    auction,
+    purchasedAmount,
     isLoading,
     error,
-    refresh: fetchAuction
+    refresh: fetchPurchasedAmount
   };
 };

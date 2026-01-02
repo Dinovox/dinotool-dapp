@@ -28,6 +28,7 @@ import { Breadcrumb } from 'components/ui/Breadcrumb';
 import { useGetNftActivity } from './hooks/useGetNftActivity';
 import ShortenedAddress from 'helpers/shortenedAddress';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
+import { useGetUserPurchasedAmount } from 'contracts/dinauction/helpers/useGetUserPurchasedAmount';
 import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import bigToHex from 'helpers/bigToHex';
 import { dinoclaim_api, auction_tokens } from 'config';
@@ -72,6 +73,7 @@ type Listing = {
     bidsCount: number; // Retained from original type
     history: Bid[]; // Retained from original type
     auctionedTokens: any; // Raw token struct
+    maxPerWallet?: BigNumber;
   };
   attributes?: Array<{ trait: string; value: string }>;
   status: 'active' | 'sold' | 'cancelled' | 'ended';
@@ -474,6 +476,11 @@ export const MarketplaceListingDetail = () => {
             parsed.auction.minBidDiff = new BigNumber(
               parsed.auction.minBidDiff
             );
+            if (parsed.auction.maxPerWallet) {
+              parsed.auction.maxPerWallet = new BigNumber(
+                parsed.auction.maxPerWallet
+              );
+            }
           }
           // Mark as ended/cached
           parsed.status = 'ended';
@@ -555,7 +562,10 @@ export const MarketplaceListingDetail = () => {
           rawAuction.creator_royalties_percentage?.toString() || '0',
         bidsCount: 0, // TODO: Fetch bids count if available or calculate from history
         history: [], // TODO: Fetch bid history if available
-        auctionedTokens: rawAuction.auctioned_tokens // Pass raw tokens
+        auctionedTokens: rawAuction.auctioned_tokens, // Pass raw tokens
+        maxPerWallet: rawAuction.max_per_wallet
+          ? new BigNumber(rawAuction.max_per_wallet.toString())
+          : undefined
       },
       status: Date.now() > endTime ? 'ended' : 'active',
       createdAt: startTime,
@@ -573,6 +583,23 @@ export const MarketplaceListingDetail = () => {
     tokenInformations,
     liveAuctionOverrides
   ]);
+
+  // 4.1 Fetch User Purchased Amount (for Max Per Wallet check) - AFTER listing is defined
+  const { purchasedAmount } = useGetUserPurchasedAmount(
+    rawAuction?.auction_id?.toString() || id,
+    address
+  );
+
+  // Calculate remaining allowed for this user
+  const remainingAllowed = useMemo(() => {
+    if (!listing?.auction?.maxPerWallet) return null; // No limit
+    const limit = listing.auction.maxPerWallet;
+    if (limit.lte(0)) return null;
+    const purchased = purchasedAmount || new BigNumber(0);
+    return limit.minus(purchased);
+  }, [listing?.auction?.maxPerWallet, purchasedAmount]);
+
+  const isLimitReached = remainingAllowed !== null && remainingAllowed.lte(0);
 
   // Cache listing when available
   useEffect(() => {
@@ -1005,6 +1032,41 @@ export const MarketplaceListingDetail = () => {
                       identifier={paymentToken}
                     />
                   </div>
+                  {/* SFT Lot Info */}
+                  {listing.auction?.auctionType?.name !== 'SftOnePerPayment' &&
+                    listing.auction?.auctionedTokens?.amount &&
+                    new BigNumber(
+                      listing.auction.auctionedTokens.amount.toString()
+                    ).gt(1) && (
+                      <div className='mt-2 flex flex-col gap-1 border-t border-slate-100 pt-2 text-sm text-slate-500'>
+                        <div className='flex justify-between items-center'>
+                          <span>{t('marketplace:qty')}:</span>
+                          <span className='font-medium text-slate-900'>
+                            {listing.auction.auctionedTokens.amount.toString()}
+                          </span>
+                        </div>
+                        <div className='flex justify-between items-center'>
+                          <span>{t('marketplace:unit_price')}:</span>
+                          <span className='font-medium text-slate-900'>
+                            <FormatAmount
+                              amount={(
+                                (isAuction && !isDirectSale
+                                  ? listing.auction.currentBid
+                                  : listing.auction.startPrice) ||
+                                new BigNumber(0)
+                              )
+                                .dividedBy(
+                                  new BigNumber(
+                                    listing.auction.auctionedTokens.amount.toString()
+                                  )
+                                )
+                                .toFixed(0)}
+                              identifier={paymentToken}
+                            />
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   {isAuction && !isDirectSale && (
                     <div className='mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-500'>
                       {listing.auction?.startPrice && (
@@ -1126,7 +1188,10 @@ export const MarketplaceListingDetail = () => {
                                     value={bidAmount}
                                     onChange={(e) => {
                                       setIsManualBid(true);
-                                      const val = e.target.value;
+                                      const val = e.target.value.replace(
+                                        ',',
+                                        '.'
+                                      );
                                       if (
                                         listing.auction?.maxBid &&
                                         listing.auction.maxBid.gt(0)
@@ -1152,7 +1217,9 @@ export const MarketplaceListingDetail = () => {
                                     nftType={listing.identifier}
                                     nftNonce={tokenNonce || '0'}
                                     paymentToken={paymentToken}
-                                    amount={new BigNumber(bidAmount || '0')
+                                    amount={new BigNumber(
+                                      bidAmount?.replace(',', '.') || '0'
+                                    )
                                       .shiftedBy(
                                         tokenInformations?.decimals || 0
                                       )
@@ -1226,26 +1293,7 @@ export const MarketplaceListingDetail = () => {
                                 <span>
                                   {t
                                     ? t('marketplace:insufficient_funds')
-                                    : 'Insufficient funds'}{' '}
-                                  {t
-                                    ? `${t('marketplace:context_bid')}`
-                                    : '(Bid)'}
-                                </span>
-                              )}
-
-                            {/* Direct Buy Error */}
-                            {listing.auction?.maxBid?.gt(0) &&
-                              address !== listing.auction?.currentWinner &&
-                              !hasEnoughFunds(
-                                listing.auction.maxBid.toFixed(0)
-                              ) && (
-                                <span>
-                                  {t
-                                    ? t('marketplace:insufficient_funds')
-                                    : 'Insufficient funds'}{' '}
-                                  {t
-                                    ? `${t('marketplace:context_buy_now')}`
-                                    : '(Buy Now)'}
+                                    : 'Insufficient funds'}
                                 </span>
                               )}
                           </div>
@@ -1322,7 +1370,9 @@ export const MarketplaceListingDetail = () => {
                                   <input
                                     value={offerPrice}
                                     onChange={(e) =>
-                                      setOfferPrice(e.target.value)
+                                      setOfferPrice(
+                                        e.target.value.replace(',', '.')
+                                      )
                                     }
                                     className='w-full h-9 text-sm outline-none border-none focus:ring-0'
                                     placeholder={
@@ -1330,8 +1380,7 @@ export const MarketplaceListingDetail = () => {
                                         ? t('marketplace:placeholder_amount')
                                         : 'Amount'
                                     }
-                                    type='number'
-                                    step='any'
+                                    inputMode='decimal'
                                   />
                                   <span className='text-xs font-semibold text-slate-500 ml-2 whitespace-nowrap'>
                                     {
@@ -1363,7 +1412,9 @@ export const MarketplaceListingDetail = () => {
                                 nftIdentifier={listing.identifier}
                                 nftNonce={tokenNonce || 0}
                                 paymentToken={offerPaymentToken}
-                                offerPrice={new BigNumber(offerPrice || '0')
+                                offerPrice={new BigNumber(
+                                  offerPrice?.replace(',', '.') || '0'
+                                )
                                   .shiftedBy(offerTokenDecimals)
                                   .toFixed(0)}
                                 deadline={
@@ -1379,16 +1430,21 @@ export const MarketplaceListingDetail = () => {
                                 }
                                 disabled={
                                   !offerPrice ||
-                                  parseFloat(offerPrice) <= 0 ||
+                                  parseFloat(offerPrice.replace(',', '.')) <=
+                                    0 ||
                                   !hasEnoughFundsForOffer(
-                                    new BigNumber(offerPrice || '0')
+                                    new BigNumber(
+                                      offerPrice?.replace(',', '.') || '0'
+                                    )
                                       .shiftedBy(offerTokenDecimals)
                                       .toFixed(0)
                                   )
                                 }
                               />
                               {!hasEnoughFundsForOffer(
-                                new BigNumber(offerPrice || '0')
+                                new BigNumber(
+                                  offerPrice?.replace(',', '.') || '0'
+                                )
                                   .shiftedBy(offerTokenDecimals)
                                   .toFixed(0)
                               ) && (
@@ -1488,9 +1544,27 @@ export const MarketplaceListingDetail = () => {
                                   listing.auction?.minBid
                                     ?.times(parseInt(qty) || 0)
                                     .toFixed() || '0'
-                                )
+                                ) ||
+                                isLimitReached ||
+                                (remainingAllowed !== null &&
+                                  new BigNumber(qty).gt(remainingAllowed))
                               }
                             />
+                            {isLimitReached && (
+                              <div className='mt-2 w-full rounded-md bg-red-50 p-2 text-xs text-center text-red-600 border border-red-200'>
+                                {t
+                                  ? t('marketplace:max_per_wallet_reached')
+                                  : 'Purchase limit reached for this wallet.'}
+                              </div>
+                            )}
+                            {!isLimitReached &&
+                              remainingAllowed !== null &&
+                              remainingAllowed.gt(0) && (
+                                <div className='mt-2 w-full rounded-md bg-amber-50 p-2 text-xs text-center text-amber-800 border border-amber-200'>
+                                  {t('marketplace:remaining_allowed')}:{' '}
+                                  {remainingAllowed.toString()}
+                                </div>
+                              )}
                             <div className='mt-2 flex justify-between items-center text-xs text-slate-500'>
                               <div className='text-red-500 font-semibold'>
                                 {!hasEnoughFunds(
@@ -1597,9 +1671,14 @@ export const MarketplaceListingDetail = () => {
                               </label>
                               <input
                                 value={offerPrice}
-                                onChange={(e) => setOfferPrice(e.target.value)}
+                                onChange={(e) =>
+                                  setOfferPrice(
+                                    e.target.value.replace(',', '.')
+                                  )
+                                }
                                 className='w-full h-9 rounded-md border border-gray-300 px-2 text-sm outline-none focus:border-slate-400'
                                 placeholder='Amount'
+                                inputMode='decimal'
                               />
                             </div>
                             <div>
@@ -1622,7 +1701,9 @@ export const MarketplaceListingDetail = () => {
                               nftIdentifier={listing.identifier}
                               nftNonce={tokenNonce || 0}
                               paymentToken={paymentToken}
-                              offerPrice={new BigNumber(offerPrice || '0')
+                              offerPrice={new BigNumber(
+                                offerPrice?.replace(',', '.') || '0'
+                              )
                                 .shiftedBy(tokenInformations?.decimals || 0)
                                 .toFixed(0)}
                               deadline={
@@ -1638,9 +1719,11 @@ export const MarketplaceListingDetail = () => {
                               }
                               disabled={
                                 !offerPrice ||
-                                parseFloat(offerPrice) <= 0 ||
+                                parseFloat(offerPrice.replace(',', '.')) <= 0 ||
                                 !hasEnoughFunds(
-                                  new BigNumber(offerPrice || '0')
+                                  new BigNumber(
+                                    offerPrice?.replace(',', '.') || '0'
+                                  )
                                     .shiftedBy(tokenInformations?.decimals || 0)
                                     .toFixed(0)
                                 )
