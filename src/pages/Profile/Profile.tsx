@@ -207,12 +207,12 @@ export const Profile = () => {
 
                 <div className='space-y-3 mb-8'>
                   {[
-                    { icon: User, text: 'Edit your profile details' },
+                    { icon: User, text: t('profile:edit_profile_details') },
                     {
                       icon: MessageCircle,
-                      text: 'Link Discord for roles & perks'
+                      text: t('profile:link_discord_perks')
                     },
-                    { icon: Gift, text: 'Claim rewards & exclusive drops' }
+                    { icon: Gift, text: t('profile:claim_rewards_drops') }
                   ].map((item, i) => (
                     <div
                       key={i}
@@ -234,7 +234,7 @@ export const Profile = () => {
 
                 <p className='text-center text-xs text-gray-400 flex items-center justify-center gap-1.5'>
                   <ShieldCheck size={14} />
-                  <span>Secure connection via MultiversX</span>
+                  <span>{t('profile:secure_connection')}</span>
                 </p>
               </motion.div>
             </div>
@@ -276,24 +276,24 @@ export const Profile = () => {
               <h2 className='text-xl font-bold text-gray-900 mb-1'>
                 {profile?.twitter?.username ||
                   profile?.discord?.username ||
-                  'Explorer'}
+                  t('profile:explorer')}
               </h2>
               <p className='text-sm text-gray-500 mb-6'>
                 {profile?.twitter
                   ? '@' + profile.twitter.username
-                  : 'DinoVox Member'}
+                  : t('profile:dinovox_member')}
               </p>
 
               <div className='bg-gray-50 rounded-xl p-3 border border-gray-100 mb-6'>
                 <p className='text-xs text-gray-400 uppercase font-semibold tracking-wider mb-2'>
-                  Wallet Address
+                  {t('profile:wallet_address')}
                 </p>
                 <div className='flex items-center justify-center gap-2'>
                   <ShortenedAddress address={address} />
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(address);
-                      message.success('Address copied!');
+                      message.success(t('profile:address_copied'));
                     }}
                     className='p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-gray-600'
                   >
@@ -305,7 +305,7 @@ export const Profile = () => {
               <div className='grid grid-cols-2 gap-3'>
                 <div className='bg-yellow-50 rounded-xl p-3 border border-yellow-100'>
                   <p className='text-xs text-yellow-600 font-medium mb-1'>
-                    EGLD Balance
+                    {t('profile:egld_balance')}
                   </p>
                   <p className='text-lg font-bold text-gray-900'>
                     <FormatAmount amount={egldBalance} identifier='egld' />
@@ -313,7 +313,7 @@ export const Profile = () => {
                 </div>
                 <div className='bg-green-50 rounded-xl p-3 border border-green-100'>
                   <p className='text-xs text-green-600 font-medium mb-1'>
-                    GRAOU Balance
+                    {t('profile:graou_balance')}
                   </p>
                   <p className='text-lg font-bold text-gray-900'>
                     <FormatAmount amount={graouBalance} identifier='graou' />
@@ -339,10 +339,10 @@ export const Profile = () => {
               </div>
               <div>
                 <h3 className='text-lg font-bold text-gray-900'>
-                  Social Connections
+                  {t('profile:social_connections')}
                 </h3>
                 <p className='text-sm text-gray-500'>
-                  Link your accounts to unlock community features
+                  {t('profile:social_connections_sub')}
                 </p>
               </div>
             </div>
@@ -365,7 +365,7 @@ export const Profile = () => {
                     />
                     {profile?.discord && (
                       <span className='px-2 py-1 bg-[#5865F2]/10 text-[#5865F2] text-xs font-bold rounded-lg'>
-                        CONNECTED
+                        {t('profile:connected')}
                       </span>
                     )}
                   </div>
@@ -382,20 +382,22 @@ export const Profile = () => {
                         onClick={handleDisconnectDiscord}
                         className='w-full py-2 px-4 bg-white border border-gray-200 text-red-500 text-sm font-medium rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors'
                       >
-                        Disconnect
+                        {t('profile:disconnect_btn')}
                       </button>
                     </>
                   ) : (
                     <>
-                      <p className='font-bold text-gray-900 mb-1'>Discord</p>
+                      <p className='font-bold text-gray-900 mb-1'>
+                        {t('profile:discord_title')}
+                      </p>
                       <p className='text-xs text-gray-500 mb-4'>
-                        Connect to join our server
+                        {t('profile:discord_connect_sub')}
                       </p>
                       <button
                         onClick={handleConnectDiscord}
                         className='w-full py-2 px-4 bg-[#5865F2] text-white text-sm font-medium rounded-xl hover:bg-[#4752c4] transition-colors shadow-lg shadow-[#5865F2]/20'
                       >
-                        Connect Discord
+                        {t('profile:connect_discord_btn')}
                       </button>
                     </>
                   )}
@@ -419,7 +421,7 @@ export const Profile = () => {
                     />
                     {profile?.twitter && (
                       <span className='px-2 py-1 bg-[#1DA1F2]/10 text-[#1DA1F2] text-xs font-bold rounded-lg'>
-                        CONNECTED
+                        {t('profile:connected')}
                       </span>
                     )}
                   </div>
@@ -436,20 +438,22 @@ export const Profile = () => {
                         onClick={handleDisconnectTwitter}
                         className='w-full py-2 px-4 bg-white border border-gray-200 text-red-500 text-sm font-medium rounded-xl hover:bg-red-50 hover:border-red-200 transition-colors'
                       >
-                        Disconnect
+                        {t('profile:disconnect_btn')}
                       </button>
                     </>
                   ) : (
                     <>
-                      <p className='font-bold text-gray-900 mb-1'>Twitter</p>
+                      <p className='font-bold text-gray-900 mb-1'>
+                        {t('profile:twitter_title')}
+                      </p>
                       <p className='text-xs text-gray-500 mb-4'>
-                        Link your X account
+                        {t('profile:twitter_connect_sub')}
                       </p>
                       <button
                         onClick={handleConnectTwitter}
                         className='w-full py-2 px-4 bg-[#1DA1F2] text-white text-sm font-medium rounded-xl hover:bg-[#0d8ddb] transition-colors shadow-lg shadow-[#1DA1F2]/20'
                       >
-                        Connect Twitter
+                        {t('profile:connect_twitter_btn')}
                       </button>
                     </>
                   )}
@@ -459,7 +463,7 @@ export const Profile = () => {
           </div>
 
           {/* Member Statistics */}
-          <div className='bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-lg p-8 text-white relative overflow-hidden'>
+          {/* <div className='bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-lg p-8 text-white relative overflow-hidden'>
             <div className='absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl -mr-16 -mt-16'></div>
             <div className='relative z-10'>
               <h3 className='text-lg font-bold mb-2'>Member Statistics</h3>
@@ -486,20 +490,20 @@ export const Profile = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* User's Active Auctions */}
           <div className='bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 p-8'>
             <div className='flex items-center gap-3 mb-6'>
-              <div className='p-2 bg-orange-50 rounded-xl text-orange-500'>
+              <div className='bg-orange-50 rounded-xl text-orange-500'>
                 <Gavel size={20} />
               </div>
               <div>
                 <h3 className='text-lg font-bold text-gray-900'>
-                  My Active Auctions
+                  {t('profile:active_auctions_title')}
                 </h3>
                 <p className='text-sm text-gray-500'>
-                  Manage your active auctions
+                  {t('profile:active_auctions_sub')}
                 </p>
               </div>
             </div>
@@ -507,7 +511,7 @@ export const Profile = () => {
             <div className='space-y-4'>
               {auctionsLoading && (
                 <div className='text-center py-8 text-gray-500'>
-                  Loading auctions...
+                  {t('profile:loading_auctions')}
                 </div>
               )}
 
@@ -516,7 +520,7 @@ export const Profile = () => {
                   auctionsData.auctions.length === 0) && (
                   <div className='text-center py-8 rounded-2xl bg-gray-50 border border-gray-100 border-dashed'>
                     <p className='text-gray-500 text-sm'>
-                      You have no active auctions.
+                      {t('profile:no_active_auctions')}
                     </p>
                   </div>
                 )}
@@ -532,19 +536,21 @@ export const Profile = () => {
                   >
                     <div>
                       <div className='font-bold text-gray-900 flex items-center gap-2 mb-1'>
-                        Auction #{auction.id}
+                        {t('profile:auction_id', { id: auction.id })}
                       </div>
                       <div className='text-sm text-gray-500'>
-                        Token:{' '}
+                        {t('profile:token_label')}{' '}
                         <span className='font-medium text-gray-700'>
                           {auction.tokenIdentifier}
                         </span>
                         <span className='ml-1 text-gray-400'>
-                          • Nonce #{auction.tokenNonce?.toString() || '0'}
+                          {t('profile:nonce_label', {
+                            nonce: auction.tokenNonce?.toString() || '0'
+                          })}
                         </span>
                       </div>
                       <div className='text-sm text-gray-500 mt-1'>
-                        Current Bid:{' '}
+                        {t('profile:current_bid_label')}{' '}
                         <FormatAmount
                           amount={auction.currentBid}
                           identifier={auction.paymentTokenIdentifier}
@@ -552,7 +558,7 @@ export const Profile = () => {
                       </div>
                       {isEnded && (
                         <span className='inline-block mt-1 text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded'>
-                          Ended
+                          {t('profile:ended_label')}
                         </span>
                       )}
                     </div>
@@ -562,7 +568,7 @@ export const Profile = () => {
                         to={`/marketplace/listings/${auction.id}`}
                         className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors'
                       >
-                        View Auction
+                        {t('profile:view_auction_btn')}
                       </Link>
                     </div>
                   </div>
@@ -574,15 +580,15 @@ export const Profile = () => {
           {/* User's Active Offers */}
           <div className='bg-white rounded-3xl shadow-lg shadow-gray-100/50 border border-gray-100 p-8'>
             <div className='flex items-center gap-3 mb-6'>
-              <div className='p-2 bg-purple-50 rounded-xl text-purple-500'>
+              <div className='bg-purple-50 rounded-xl text-purple-500'>
                 <Tag size={20} />
               </div>
               <div>
                 <h3 className='text-lg font-bold text-gray-900'>
-                  My Active Offers
+                  {t('profile:active_offers_title')}
                 </h3>
                 <p className='text-sm text-gray-500'>
-                  Manage your pending offers
+                  {t('profile:active_offers_sub')}
                 </p>
               </div>
             </div>
@@ -590,7 +596,7 @@ export const Profile = () => {
             <div className='space-y-4'>
               {offersLoading && (
                 <div className='text-center py-8 text-gray-500'>
-                  Loading offers...
+                  {t('profile:loading_offers')}
                 </div>
               )}
 
@@ -598,7 +604,7 @@ export const Profile = () => {
                 (!offersData?.offers || offersData.offers.length === 0) && (
                   <div className='text-center py-8 rounded-2xl bg-gray-50 border border-gray-100 border-dashed'>
                     <p className='text-gray-500 text-sm'>
-                      You have no active offers.
+                      {t('profile:no_active_offers')}
                     </p>
                   </div>
                 )}
@@ -620,12 +626,12 @@ export const Profile = () => {
                         />
                         {offer.offerTokenNonce === 0 && (
                           <span className='inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-600 ring-1 ring-inset ring-blue-700/10'>
-                            Collection Offer
+                            {t('profile:collection_offer_badge')}
                           </span>
                         )}
                       </div>
                       <div className='text-sm text-gray-500'>
-                        Collection:{' '}
+                        {t('profile:collection_label')}{' '}
                         <span className='font-medium text-gray-700'>
                           {offer.offerTokenIdentifier
                             ?.split('-')
@@ -634,13 +640,15 @@ export const Profile = () => {
                         </span>
                         {offer.offerTokenNonce > 0 && (
                           <span className='ml-1 text-gray-400'>
-                            • Item #{offer.offerTokenNonce}
+                            {t('profile:item_label', {
+                              nonce: offer.offerTokenNonce
+                            })}
                           </span>
                         )}
                       </div>
                       {isExpired && (
                         <span className='inline-block mt-1 text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded'>
-                          Expired
+                          {t('profile:expired_label')}
                         </span>
                       )}
                     </div>
@@ -648,7 +656,7 @@ export const Profile = () => {
                     <div>
                       <ActionWithdrawOffer
                         offerId={offer.id}
-                        label='Cancel Offer'
+                        label={t('profile:cancel_offer_btn')}
                       />
                     </div>
                   </div>

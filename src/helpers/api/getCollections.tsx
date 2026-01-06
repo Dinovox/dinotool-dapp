@@ -37,6 +37,8 @@ export interface Collection {
   canUpdateAttributes: boolean;
   canAddUri: boolean;
   canTransferNftCreateRole: boolean;
+  banner?: string;
+  description?: string;
 }
 
 export const useGetCollections = (collection: string) => {

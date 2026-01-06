@@ -213,7 +213,6 @@
   "loading_assets": "Loading your assets...",
   "no_assets_owned": "You don't own any assets required for this offer.",
   "owner": "Owner",
-  "sell_item": "Sell Item",
   "make_offer_specific": "Make Specific Offer",
   "make_offer_collection": "Make Collection Offer",
   "offer_price": "Offer Price",
@@ -226,5 +225,6 @@
   "max_per_wallet_placeholder": "Ex: 5",
   "max_per_wallet_hint": "Leave empty if you do not want to set a limit.",
   "max_per_wallet_reached": "Purchase limit reached for this wallet.",
-  "remaining_allowed": "Remaining allowed"
+  "remaining_allowed": "Remaining allowed",
+  "collection": "Collection"
 }

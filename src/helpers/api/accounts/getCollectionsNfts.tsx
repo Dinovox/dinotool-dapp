@@ -39,13 +39,18 @@ export interface CollectionNft {
   supply?: number;
 }
 
-export const useGetCollectionsNfts = (collection: string) => {
+export const useGetCollectionsNfts = (
+  collection: string,
+  options?: { from?: number; size?: number }
+) => {
   const [data, setData] = useState<CollectionNft[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const transactions = useGetPendingTransactions();
   const hasPendingTransactions = transactions.length > 0;
+
+  const { from = 0, size = 100 } = options || {};
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,7 +59,7 @@ export const useGetCollectionsNfts = (collection: string) => {
       setLoading(true);
       setError(null);
 
-      const url = `/collections/${collection}/nfts?withSupply=true&size=100`;
+      const url = `/collections/${collection}/nfts?withSupply=true&from=${from}&size=${size}`;
       const config: AxiosRequestConfig = {
         baseURL: API_URL
       };
@@ -72,7 +77,7 @@ export const useGetCollectionsNfts = (collection: string) => {
     };
 
     fetchData();
-  }, [collection, hasPendingTransactions]);
+  }, [collection, hasPendingTransactions, from, size]);
 
   return { data, loading, error };
 };

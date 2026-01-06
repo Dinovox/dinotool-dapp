@@ -35,6 +35,12 @@ import {
   auction_tokens
 } from 'config';
 import { PageTemplate } from 'components/PageTemplate';
+import { NftGrid } from 'pages/CollectionDetail/NftGrid';
+import {
+  useGetCollectionsNfts,
+  CollectionNft
+} from 'helpers/api/accounts/getCollectionsNfts';
+import { useLocation } from 'react-router-dom';
 /** ---------------- UI Components ---------------- **/
 const Badge = ({
   children,
@@ -87,26 +93,72 @@ export const MarketplaceCollectionById = () => {
   const { id = '' } = useParams<{ id: string }>();
   const { address } = useGetAccount();
   const { network } = useGetNetworkConfig();
-  const { hash } = window.location;
+  const { hash } = useLocation();
   useLoadTranslations('marketplace');
   const { t } = useTranslation();
   const [activeTab, setActiveTabState] = useState<
-    'listings' | 'offers' | 'activity'
+    'listings' | 'offers' | 'activity' | 'collection'
   >(
     hash === '#offers'
       ? 'offers'
       : hash === '#activity'
       ? 'activity'
+      : hash === '#collection'
+      ? 'collection'
       : 'listings'
   );
 
-  const setActiveTab = (tab: 'listings' | 'offers' | 'activity') => {
+  const setActiveTab = (
+    tab: 'listings' | 'offers' | 'activity' | 'collection'
+  ) => {
     setActiveTabState(tab);
     window.location.hash = tab;
   };
   const [page, setPage] = useState(1);
   const [offersPage, setOffersPage] = useState(1);
   const [activityPage, setActivityPage] = useState(1);
+
+  // Collection Tab State
+  const [collectionPage, setCollectionPage] = useState(0);
+  const COLLECTION_PAGE_SIZE = 100;
+  const [displayedCollectionNfts, setDisplayedCollectionNfts] = useState<
+    CollectionNft[]
+  >([]);
+
+  const { data: fetchedCollectionNfts, loading: collectionNftsLoading } =
+    useGetCollectionsNfts(id, {
+      from: collectionPage * COLLECTION_PAGE_SIZE,
+      size: COLLECTION_PAGE_SIZE
+    });
+
+  React.useEffect(() => {
+    if (
+      activeTab === 'collection' &&
+      fetchedCollectionNfts &&
+      fetchedCollectionNfts.length > 0
+    ) {
+      setDisplayedCollectionNfts((prev) => {
+        const newItems =
+          collectionPage === 0
+            ? fetchedCollectionNfts
+            : [...prev, ...fetchedCollectionNfts];
+        // Unique by identifier
+        const unique = Array.from(
+          new Map(newItems.map((item) => [item.identifier, item])).values()
+        );
+        return unique;
+      });
+    } else if (
+      collectionPage === 0 &&
+      !collectionNftsLoading &&
+      activeTab === 'collection'
+    ) {
+      // Only reset if empty and loading is done, mainly for initial load
+      if (fetchedCollectionNfts && fetchedCollectionNfts.length === 0) {
+        setDisplayedCollectionNfts([]);
+      }
+    }
+  }, [fetchedCollectionNfts, collectionPage, collectionNftsLoading, activeTab]);
   const [saleType, setSaleType] = useState<SaleType>('all');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
@@ -758,6 +810,16 @@ export const MarketplaceCollectionById = () => {
               )}
             </button>
             <button
+              onClick={() => setActiveTab('collection')}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${
+                activeTab === 'collection'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              {t('marketplace:collection') || 'Collection'}
+            </button>
+            <button
               onClick={() => setActiveTab('activity')}
               className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${
                 activeTab === 'activity'
@@ -1236,6 +1298,33 @@ export const MarketplaceCollectionById = () => {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {activeTab === 'collection' && (
+          <div className='mt-6'>
+            <Card id='collection'>
+              <CardHeader>
+                <NftGrid nfts={displayedCollectionNfts} />
+
+                {/* Load More Button */}
+                {fetchedCollectionNfts &&
+                  fetchedCollectionNfts.length === COLLECTION_PAGE_SIZE && (
+                    <div className='flex justify-center mt-8'>
+                      <button
+                        onClick={() => setCollectionPage((p) => p + 1)}
+                        disabled={collectionNftsLoading}
+                        className='group relative flex items-center justify-center space-x-3 rounded-lg bg-slate-900 px-6 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors'
+                      >
+                        {collectionNftsLoading ? 'Loading...' : 'Load More'}
+                      </button>
+                    </div>
+                  )}
+                {collectionNftsLoading && collectionPage > 0 && (
+                  <div className='text-center mt-2'>Loading more NFTs...</div>
+                )}
+              </CardHeader>
+            </Card>
+          </div>
         )}
 
         {/* Select In Wallet Modal */}

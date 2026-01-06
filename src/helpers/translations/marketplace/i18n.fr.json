@@ -213,7 +213,6 @@
   "loading_assets": "Chargement de vos actifs...",
   "no_assets_owned": "Vous ne possédez aucun actif requis pour cette offre.",
   "owner": "Propriétaire",
-  "sell_item": "Vendre un item",
   "make_offer_specific": "Faire une offre spécifique",
   "make_offer_collection": "Faire une offre de collection",
   "offer_price": "Prix de l'offre",
@@ -226,5 +225,6 @@
   "max_per_wallet_placeholder": "Ex: 5",
   "max_per_wallet_hint": "Laissez vide si vous ne souhaitez pas définir de limite.",
   "max_per_wallet_reached": "Limite d'achat atteinte pour ce portefeuille.",
-  "remaining_allowed": "Restant autorisé"
+  "remaining_allowed": "Restant autorisé",
+  "collection": "Collection"
 }
