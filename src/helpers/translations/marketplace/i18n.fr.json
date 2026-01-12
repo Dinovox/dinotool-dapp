@@ -226,5 +226,7 @@
   "max_per_wallet_hint": "Laissez vide si vous ne souhaitez pas définir de limite.",
   "max_per_wallet_reached": "Limite d'achat atteinte pour ce portefeuille.",
   "remaining_allowed": "Restant autorisé",
-  "collection": "Collection"
+  "collection": "Collection",
+  "ended_on": "Terminé le",
+  "remaining_qty": "Restant"
 }

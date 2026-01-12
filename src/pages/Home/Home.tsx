@@ -9,6 +9,9 @@ const cardLotteries = '/cards/lotteries.png';
 const cardDrop = '/cards/drop.png';
 const cardFeedback = '/cards/feedback.png';
 const cardWip = '/cards/wip.png';
+const cardQrCode = '/cards/qrcode.png';
+const cardCollections = '/cards/collections.png';
+const cardMarketplace = '/cards/marketplace.png';
 const cardSoldGraout = '/cards/sold.png';
 
 import { useTranslation } from 'react-i18next';
@@ -41,14 +44,20 @@ export const Home = () => {
       external: true
     },
     {
-      title: 'Dinogazette',
-      link: '/dinoGazette',
-      image: cardGazette
+      title: 'Marketplace',
+      link: '/marketplace',
+      image: cardMarketplace,
+      blured: environment == 'devnet' ? false : true
     },
     {
       title: t('home:lotteries_title'),
       link: '/lotteries',
       image: cardLotteries
+    },
+    {
+      title: 'Dinogazette',
+      link: '/dinoGazette',
+      image: cardGazette
     },
     {
       title: t('home:drop'),
@@ -58,12 +67,12 @@ export const Home = () => {
     {
       title: t('home:collections_title'),
       link: '/collections',
-      image: cardWip
+      image: cardCollections
     },
     {
       title: 'QR code reader',
       link: '/claim',
-      image: cardWip
+      image: cardQrCode
     },
     {
       title: t('home:feedback_title'),
@@ -81,12 +90,6 @@ export const Home = () => {
     {
       title: 'Vouchers',
       link: '/vouchers',
-      image: cardWip,
-      blured: environment == 'devnet' ? false : true
-    },
-    {
-      title: 'Marketplace',
-      link: '/marketplace',
       image: cardWip,
       blured: environment == 'devnet' ? false : true
     }

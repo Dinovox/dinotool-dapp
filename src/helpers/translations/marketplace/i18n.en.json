@@ -226,5 +226,7 @@
   "max_per_wallet_hint": "Leave empty if you do not want to set a limit.",
   "max_per_wallet_reached": "Purchase limit reached for this wallet.",
   "remaining_allowed": "Remaining allowed",
-  "collection": "Collection"
+  "collection": "Collection",
+  "ended_on": "Ended on",
+  "remaining_qty": "Remaining"
 }

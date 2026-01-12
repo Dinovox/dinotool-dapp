@@ -25,7 +25,7 @@ export const vaultContractAddress =
   'erd1qqqqqqqqqqqqqpgqmfharjsrrng96rhdxt6jtyjf2klqgpmrch9s6w67j8';
 
 export const marketplaceContractAddress =
-  'erd1qqqqqqqqqqqqqpgqc5x7tu8a6s6qe23fjzpc47ya6a6pr2fmch9s3zqu48';
+  'erd1qqqqqqqqqqqqqpgqq07a2mmhql3d75yvcht4q7t9p5z53ejrytsqza6fkp';
 
 export const API_URL = 'https://api.multiversx.com';
 export const sampleAuthenticatedDomains = [API_URL];
@@ -47,5 +47,6 @@ export const friends_collections = ['DINOBOOST-9f6811'];
 
 export const auction_tokens = [
   { token: 'EGLD', identifier: 'EGLD', decimals: 18 },
-  { token: 'USDC', identifier: 'USDC-350c4e', decimals: 6 }
+  { token: 'USDC', identifier: 'USDC-c76f1f', decimals: 6 },
+  { token: 'WBTC', identifier: 'WBTC-5349b3', decimals: 8 }
 ];

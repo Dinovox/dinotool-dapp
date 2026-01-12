@@ -1098,13 +1098,13 @@ export const MarketplaceListingDetail = () => {
                     </div>
                   )}
                 </div>
-
                 {/* Actions */}
                 {/* ---------------- ACTIONS ---------------- */}
-
-                {/* 1. SELLER: Cancel Auction (No Bids, Active) */}
+                {/* 1. SELLER: Cancel Auction (No Bids, Active) OR SftOnePerPayment Withdraw */}
                 {address === listing.seller &&
-                  listing.status === 'active' &&
+                  (listing.status === 'active' ||
+                    listing.auction?.auctionType?.name ===
+                      'SftOnePerPayment') &&
                   (!listing.auction?.currentBid ||
                     listing.auction.currentBid.isZero() ||
                     listing.auction.auctionType?.name ===
@@ -1115,14 +1115,14 @@ export const MarketplaceListingDetail = () => {
                       }
                     />
                   )}
-
                 {/* 2. CLAIM: End Auction (Seller OR Winner, Ended with Bids) */}
                 {(address === listing.seller ||
                   address === listing.auction?.currentWinner) &&
                   listing.status === 'ended' &&
                   !listing.isCached &&
                   listing.auction?.currentBid &&
-                  listing.auction.currentBid.gt(0) && (
+                  listing.auction.currentBid.gt(0) &&
+                  listing.auction.auctionType?.name !== 'SftOnePerPayment' && (
                     <div className='flex flex-col gap-3'>
                       {address === listing.auction?.currentWinner && (
                         <div className='rounded-xl border border-green-200 bg-green-50 p-4 text-center'>
@@ -1146,7 +1146,6 @@ export const MarketplaceListingDetail = () => {
                       />
                     </div>
                   )}
-
                 {/* 3. SELLER: Wait Message (Active with Bids) */}
                 {address === listing.seller &&
                   listing.status === 'active' &&
@@ -1157,7 +1156,6 @@ export const MarketplaceListingDetail = () => {
                       {t('marketplace:auction_has_bids_warning')}
                     </div>
                   )}
-
                 {/* 4. INACTIVE / ENDED Message (For non-participants or non-winners) */}
                 {listing.status !== 'active' &&
                   !(
@@ -1169,7 +1167,28 @@ export const MarketplaceListingDetail = () => {
                       {t('marketplace:listing_not_active')}
                     </div>
                   )}
-
+                {/* SftOnePerPayment Info (Date and Amount) */}
+                {listing.auction?.auctionType?.name === 'SftOnePerPayment' &&
+                  listing.auction?.endTime && (
+                    <div className='flex flex-col gap-1 text-sm text-gray-500 mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100'>
+                      <div className='flex justify-between'>
+                        <span>{t('marketplace:ended_on')}:</span>
+                        <span className='font-medium text-gray-900'>
+                          {new Date(
+                            Number(listing.auction.endTime)
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+                      {listing.auction?.auctionedTokens?.amount && (
+                        <div className='flex justify-between'>
+                          <span>{t('marketplace:remaining_qty')}:</span>
+                          <span className='font-medium text-gray-900'>
+                            {listing.auction.auctionedTokens.amount.toString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 {/* 5. BUYER ACTIONS (Active, Not Seller) */}
                 {listing.status === 'active' && address !== listing.seller && (
                   <>
@@ -1754,7 +1773,6 @@ export const MarketplaceListingDetail = () => {
                     )}
                   </>
                 )}
-
                 {/* Offers Section */}
                 {offersData?.offers && offersData.offers.length > 0 && (
                   <div className='mt-8 pt-6 border-t border-gray-100'>
@@ -1861,7 +1879,6 @@ export const MarketplaceListingDetail = () => {
                     </div>
                   </div>
                 )}
-
                 {/* Meta */}
                 <div className='grid grid-cols-2 gap-3 pt-2 text-sm'>
                   <div className='rounded-md border p-3'>
