@@ -16,6 +16,7 @@ import {
   waitForTransactionEvent,
   MARKETPLACE_EVENTS
 } from 'helpers/transactionEventHelper';
+import { TokenToFiat } from 'components/TokenToFiat';
 /* ---------------- Types ---------------- */
 type SaleType = 'fixed' | 'auction';
 type TokenAmount = { ticker: string; amount: string; decimals: number };
@@ -233,12 +234,17 @@ export const MarketplaceSell = () => {
 
   const checkTransactionStatus = async (hash: string) => {
     try {
+      console.log('Checking status for', hash);
       const events = await waitForTransactionEvent(hash, MARKETPLACE_EVENTS);
+      console.log('Events received', events);
       const auctionEvent = events.find(
         (e) => e.identifier === 'auction_token_event'
       );
       if (auctionEvent) {
+        console.log('Navigating to auction', auctionEvent.auction_id);
         navigate(`/marketplace/listings/${auctionEvent.auction_id}`);
+      } else {
+        console.warn('Auction event not found in transaction events');
       }
     } catch (e) {
       console.error(e);
@@ -754,6 +760,12 @@ export const MarketplaceSell = () => {
                         ))}
                       </select>
                     </div>
+                    <TokenToFiat
+                      amount={fixedPrice}
+                      tokenIdentifier={paymentToken}
+                      isDenominated={true}
+                      className='mt-1 text-xs text-slate-500 font-medium'
+                    />
                     <p className='mt-1 text-xs text-slate-500'>
                       {t('marketplace:price_hint')}
                     </p>
@@ -943,6 +955,12 @@ export const MarketplaceSell = () => {
                           ))}
                         </select>
                       </div>
+                      <TokenToFiat
+                        amount={minBid}
+                        tokenIdentifier={paymentToken}
+                        isDenominated={true}
+                        className='mt-1 text-xs text-slate-500 font-medium'
+                      />
                       <p className='mt-1 text-xs text-slate-500'>
                         {t('marketplace:min_price_hint')}
                       </p>
@@ -958,6 +976,12 @@ export const MarketplaceSell = () => {
                         }
                         inputMode='decimal'
                         className='h-10 w-28 rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                      />
+                      <TokenToFiat
+                        amount={minBidStep}
+                        tokenIdentifier={paymentToken}
+                        isDenominated={true}
+                        className='mt-1 text-xs text-slate-500 font-medium'
                       />
                       <p className='mt-1 text-xs text-slate-500'>
                         {t('marketplace:min_step_hint')}
@@ -1068,6 +1092,11 @@ export const MarketplaceSell = () => {
                           />
                           <Badge>{paymentToken}</Badge>
                         </div>
+                        <TokenToFiat
+                          amount={buyNowPrice}
+                          tokenIdentifier={paymentToken}
+                          className='mt-1 text-xs text-slate-500 font-medium'
+                        />
                         <p className='mt-1 text-xs text-slate-500'>
                           {t('marketplace:buy_now_hint')}
                         </p>

@@ -33,6 +33,7 @@ import DisplayNftByToken from 'helpers/DisplayNftByToken';
 import bigToHex from 'helpers/bigToHex';
 import { dinoclaim_api, auction_tokens } from 'config';
 import { PageTemplate } from 'components/PageTemplate';
+import { TokenToFiat } from 'components/TokenToFiat';
 
 /* ---------------- Types ---------------- */
 type MarketSource = 'dinovox' | 'xoxno';
@@ -1031,6 +1032,15 @@ export const MarketplaceListingDetail = () => {
                       }
                       identifier={paymentToken}
                     />
+                    <TokenToFiat
+                      amount={
+                        isAuction && !isDirectSale
+                          ? listing.auction?.currentBid?.toFixed() || '0'
+                          : listing.auction?.startPrice?.toFixed() || '0'
+                      }
+                      tokenIdentifier={paymentToken}
+                      className='text-sm text-slate-500 font-normal mt-1'
+                    />
                   </div>
                   {/* SFT Lot Info */}
                   {listing.auction?.auctionType?.name !== 'SftOnePerPayment' &&
@@ -1174,9 +1184,11 @@ export const MarketplaceListingDetail = () => {
                       <div className='flex justify-between'>
                         <span>{t('marketplace:ended_on')}:</span>
                         <span className='font-medium text-gray-900'>
-                          {new Date(
-                            Number(listing.auction.endTime)
-                          ).toLocaleString()}
+                          {Number(listing.auction.endTime) > 32503680000000
+                            ? t('marketplace:infinite')
+                            : new Date(
+                                Number(listing.auction.endTime)
+                              ).toLocaleString()}
                         </span>
                       </div>
                       {listing.auction?.auctionedTokens?.amount && (

@@ -60,11 +60,23 @@ export const decodeEvent = (
     // Check if first topic is the identifier
     if (event.topics.length > 0) {
       // Try to decode first topic as utf8 string to match identifier
-      const firstTopicBuffer = Buffer.from(event.topics[0], 'base64');
-      // Some identifiers might be encoded differently, but usually it's utf8
-      const firstTopic = firstTopicBuffer.toString('utf8');
+      let firstTopic = '';
+      try {
+        const firstTopicBuffer = Buffer.from(event.topics[0], 'base64');
+        firstTopic = firstTopicBuffer.toString('utf8');
+      } catch (e) {
+        // Ignore error
+      }
 
-      if (firstTopic === definition.identifier) {
+      // Check against decoded string OR against raw base64 (safer)
+      const expectedBase64 = Buffer.from(definition.identifier).toString(
+        'base64'
+      );
+
+      if (
+        firstTopic === definition.identifier ||
+        event.topics[0] === expectedBase64
+      ) {
         topicsOffset = 1;
       } else {
         return null;
@@ -133,16 +145,26 @@ export const waitForTransactionEvent = async (
       if (!response.ok) throw new Error('Failed to fetch transaction');
 
       const txData = await response.json();
-
-      if (txData.status === 'fail') {
-        throw new Error('Transaction failed');
-      }
-
       if (txData.status === 'success') {
         const foundEvents: DecodedEvent[] = [];
+        const allEvents: any[] = [];
 
+        // Collect all events from top-level logs
         if (txData.logs && txData.logs.events) {
-          for (const event of txData.logs.events) {
+          allEvents.push(...txData.logs.events);
+        }
+
+        // Collect all events from smart contract results (SCRs)
+        if (txData.results && Array.isArray(txData.results)) {
+          for (const res of txData.results) {
+            if (res.logs && res.logs.events) {
+              allEvents.push(...res.logs.events);
+            }
+          }
+        }
+
+        if (allEvents.length > 0) {
+          for (const event of allEvents) {
             for (const def of eventDefinitions) {
               const decoded = decodeEvent(event, def);
               if (decoded) {
@@ -152,8 +174,6 @@ export const waitForTransactionEvent = async (
           }
         }
 
-        // If we found events or if the tx is success but no events matched (maybe we just return empty?)
-        // But usually we want to wait until the TX is processed.
         return foundEvents;
       }
 

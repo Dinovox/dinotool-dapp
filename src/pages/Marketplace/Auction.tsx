@@ -9,6 +9,8 @@ import { dinovox_collections, friends_collections } from 'config';
 import { useTranslation } from 'react-i18next';
 import useLoadTranslations from 'hooks/useLoadTranslations';
 
+import { TokenToFiat } from 'components/TokenToFiat';
+
 // Types adapted from Marketplace.tsx
 type TokenAmount = {
   ticker: string;
@@ -285,10 +287,15 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
                     ? t('marketplace:unit_price')
                     : t('marketplace:price')}
                 </span>
-                <span className='font-bold text-gray-900'>
+                <span className='font-bold text-gray-900 flex flex-col items-end'>
                   <FormatAmount
                     amount={auction?.max_bid}
                     identifier={auction?.payment_token}
+                  />
+                  <TokenToFiat
+                    amount={auction?.max_bid || '0'}
+                    tokenIdentifier={auction?.payment_token}
+                    className='text-xs text-gray-500 font-normal'
                   />
                 </span>
               </div>
@@ -312,13 +319,22 @@ export const Auction = ({ auction: rawAuction }: { auction: any }) => {
                 <span className='text-gray-500'>
                   {t('marketplace:current_bid')}
                 </span>
-                <span className='font-bold text-gray-900'>
+                <span className='font-bold text-gray-900 flex flex-col items-end'>
                   <FormatAmount
                     amount={
                       auction?.auction?.current_bid?.amount ||
                       auction?.auction?.startPrice?.amount
                     }
                     identifier={auction?.payment_token}
+                  />
+                  <TokenToFiat
+                    amount={
+                      auction?.auction?.current_bid?.amount ||
+                      auction?.auction?.startPrice?.amount ||
+                      '0'
+                    }
+                    tokenIdentifier={auction?.payment_token}
+                    className='text-xs text-gray-500 font-normal'
                   />
                 </span>
               </div>

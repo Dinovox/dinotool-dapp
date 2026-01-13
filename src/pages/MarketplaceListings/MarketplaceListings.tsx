@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useGetAuctionsPaginated } from 'contracts/dinauction/helpers/useGetAuctionsPaginated';
 import { Auction } from 'pages/Marketplace/Auction';
 import { Breadcrumb } from 'components/ui/Breadcrumb';
@@ -77,11 +77,19 @@ export const MarketplaceListings = () => {
         ]}
       />
       {/* Header */}
-      <div className='flex items-center gap-2'>
-        <div className='h-6 w-6 rounded-md bg-slate-200' />
-        <h1 className='text-2xl font-semibold text-slate-900'>
-          {t('marketplace:listings')}
-        </h1>
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <div className='h-6 w-6 rounded-md bg-slate-200' />
+          <h1 className='text-2xl font-semibold text-slate-900'>
+            {t('marketplace:listings')}
+          </h1>
+        </div>
+        <Link
+          to='/marketplace/sell'
+          className='inline-flex h-9 items-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800'
+        >
+          {t('marketplace:sell_an_item')}
+        </Link>
       </div>
 
       {/* Toolbar (search only) */}

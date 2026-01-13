@@ -46,8 +46,7 @@ export const Home = () => {
     {
       title: 'Marketplace',
       link: '/marketplace',
-      image: cardMarketplace,
-      blured: environment == 'devnet' ? false : true
+      image: cardMarketplace
     },
     {
       title: t('home:lotteries_title'),
