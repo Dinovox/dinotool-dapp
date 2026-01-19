@@ -19,5 +19,6 @@ export enum RouteNamesEnum {
   marketplaceCollections = '/marketplace/collections',
   marketplaceCollectionDetail = '/marketplace/collections/:id',
   faapu = '/faapu',
-  dinogazette = '/dinogazette'
+  dinogazette = '/dinogazette',
+  wallet = '/wallet'
 }

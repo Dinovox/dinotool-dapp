@@ -12,6 +12,7 @@ const cardWip = '/cards/wip.png';
 const cardQrCode = '/cards/qrcode.png';
 const cardCollections = '/cards/collections.png';
 const cardMarketplace = '/cards/marketplace.png';
+const cardWallet = '/cards/wallet.png';
 const cardSoldGraout = '/cards/sold.png';
 
 import { useTranslation } from 'react-i18next';
@@ -52,6 +53,11 @@ export const Home = () => {
       title: t('home:lotteries_title'),
       link: '/lotteries',
       image: cardLotteries
+    },
+    {
+      title: 'My wallet',
+      link: '/wallet',
+      image: cardWallet
     },
     {
       title: 'Dinogazette',

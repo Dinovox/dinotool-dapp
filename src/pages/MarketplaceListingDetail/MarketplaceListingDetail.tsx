@@ -460,37 +460,6 @@ export const MarketplaceListingDetail = () => {
   // 4. Normalize Data
   const listing: Listing | null = useMemo(() => {
     if (!rawAuction) {
-      // Try to get from cache if not found in contract
-      const cached = localStorage.getItem(`listing_cache_${id}`);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          // Rehydrate BigNumbers
-          if (parsed.auction) {
-            parsed.auction.startPrice = new BigNumber(
-              parsed.auction.startPrice
-            );
-            parsed.auction.currentBid = new BigNumber(
-              parsed.auction.currentBid
-            );
-            parsed.auction.maxBid = new BigNumber(parsed.auction.maxBid);
-            parsed.auction.minBidDiff = new BigNumber(
-              parsed.auction.minBidDiff
-            );
-            if (parsed.auction.maxPerWallet) {
-              parsed.auction.maxPerWallet = new BigNumber(
-                parsed.auction.maxPerWallet
-              );
-            }
-          }
-          // Mark as ended/cached
-          parsed.status = 'ended';
-          parsed.isCached = true;
-          return parsed;
-        } catch (e) {
-          console.error('Failed to parse cached listing', e);
-        }
-      }
       return null;
     }
 
@@ -601,13 +570,6 @@ export const MarketplaceListingDetail = () => {
   }, [listing?.auction?.maxPerWallet, purchasedAmount]);
 
   const isLimitReached = remainingAllowed !== null && remainingAllowed.lte(0);
-
-  // Cache listing when available
-  useEffect(() => {
-    if (listing && !listing.isCached) {
-      localStorage.setItem(`listing_cache_${id}`, JSON.stringify(listing));
-    }
-  }, [listing, id]);
 
   const loading =
     loadingAuction || (!listing && tokenIdentifier && !nftInfo?.identifier);

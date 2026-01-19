@@ -21,7 +21,8 @@ import {
   MarketplaceListingDetail,
   MarketplaceSell,
   Faapu,
-  DinoGazette
+  DinoGazette,
+  Wallet
 } from 'pages';
 import { RouteType } from 'types';
 import { useTranslation } from 'react-i18next';
@@ -151,6 +152,11 @@ export const useRoutesWithTranslation = (): RouteWithTitleType[] => {
       path: RouteNamesEnum.dinogazette,
       title: 'DinoGazette',
       component: DinoGazette
+    },
+    {
+      path: RouteNamesEnum.wallet,
+      title: 'Mon Wallet',
+      component: Wallet
     }
   ];
 };
