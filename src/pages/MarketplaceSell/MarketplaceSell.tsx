@@ -263,7 +263,7 @@ export const MarketplaceSell = () => {
     } else {
       const d = new Date(
         Date.now() +
-          365 * 24 * 3600 * 1000 -
+          1 * 24 * 3600 * 1000 -
           new Date().getTimezoneOffset() * 60000
       );
       setEndAt(d.toISOString().slice(0, 16));

@@ -49,6 +49,7 @@ type Bid = {
 
 type Listing = {
   id: string; // Listing ID
+  auction_type: { name: string };
   source: MarketSource;
   saleType: SaleType;
   identifier: string; // NFT identifier
@@ -95,8 +96,17 @@ function useCountdown(endTime?: number) {
     return () => clearInterval(id);
   }, [endTime]);
 
+  /*
+   * If endTime is provided, returns formatted time left.
+   * If now < endTime, it is standard countdown.
+   * If now > endTime, returns 0s.
+   * Logic for "Starts in" vs "Ends in" relies on parent passing correct target.
+   */
   if (!endTime) return '—';
   if (endTime > 32503680000000) return t('marketplace:infinite');
+
+  // If the target is in the past, return 0
+  if (now >= endTime) return '0d 0h 0m 0s';
 
   const left = Math.max(0, endTime - now);
   const s = Math.floor(left / 1000);
@@ -492,6 +502,7 @@ export const MarketplaceListingDetail = () => {
 
     const listingData: Listing = {
       id: id,
+      auction_type: rawAuction.auction_type,
       source: 'dinovox', // Contract is always dinovox for now
       saleType:
         rawAuction.auction_type?.name === 'SftOnePerPayment'
@@ -574,7 +585,11 @@ export const MarketplaceListingDetail = () => {
   const loading =
     loadingAuction || (!listing && tokenIdentifier && !nftInfo?.identifier);
 
-  const timeLeft = useCountdown(listing?.auction?.endTime);
+  const hasStarted = Date.now() >= (listing?.auction?.startTime || 0);
+
+  const timeLeft = useCountdown(
+    hasStarted ? listing?.auction?.endTime : listing?.auction?.startTime
+  );
 
   // Construct active NFT object for DisplayNft
   const activeNft = useMemo(() => {
@@ -1056,8 +1071,8 @@ export const MarketplaceListingDetail = () => {
                             {t ? t('marketplace:bid_step') : 'Bid Step'}
                           </span>
                           <FormatAmount
-                            amount={listing.auction.minBidDiff.toFixed()}
                             identifier={paymentToken}
+                            amount={listing.auction.minBidDiff.toFixed()}
                           />
                         </div>
                       )}
@@ -1065,11 +1080,16 @@ export const MarketplaceListingDetail = () => {
                   )}
                   {isAuction && (
                     <div className='mt-3 flex items-center gap-2 text-sm'>
-                      <Badge>{t('marketplace:ends_in')}</Badge>
+                      <Badge>
+                        {hasStarted
+                          ? t('marketplace:ends_in')
+                          : t('marketplace:starts_in')}
+                      </Badge>
                       <span className='font-medium'>{timeLeft}</span>
                     </div>
                   )}
                 </div>
+
                 {/* Actions */}
                 {/* ---------------- ACTIONS ---------------- */}
                 {/* 1. SELLER: Cancel Auction (No Bids, Active) OR SftOnePerPayment Withdraw */}
@@ -1179,6 +1199,7 @@ export const MarketplaceListingDetail = () => {
                                 <>
                                   <input
                                     value={bidAmount}
+                                    disabled={!hasStarted}
                                     onChange={(e) => {
                                       setIsManualBid(true);
                                       const val = e.target.value.replace(
@@ -1202,7 +1223,7 @@ export const MarketplaceListingDetail = () => {
                                     }}
                                     placeholder={`Bid in ${paymentToken}`}
                                     inputMode='decimal'
-                                    className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400'
+                                    className='h-10 flex-1 rounded-md border border-gray-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:opacity-50 disabled:bg-slate-50'
                                   />
 
                                   <ActionBid
@@ -1218,6 +1239,7 @@ export const MarketplaceListingDetail = () => {
                                       )
                                       .toFixed(0)}
                                     disabled={
+                                      !hasStarted ||
                                       !bidAmount ||
                                       parseFloat(bidAmount) <= 0 ||
                                       (validationMinBid
@@ -1263,6 +1285,7 @@ export const MarketplaceListingDetail = () => {
                                     </>
                                   }
                                   disabled={
+                                    !hasStarted ||
                                     !hasEnoughFunds(
                                       listing.auction.maxBid.toFixed(0)
                                     )
@@ -1271,6 +1294,12 @@ export const MarketplaceListingDetail = () => {
                               </>
                             )}
                         </div>
+
+                        {!hasStarted && (
+                          <div className='rounded-md bg-amber-50 p-3 text-sm text-center text-amber-800 border border-amber-200 font-medium'>
+                            {t('marketplace:auction_not_started')}
+                          </div>
+                        )}
 
                         {/* Consolidated Auction Status (Error + Balance) */}
                         <div className='flex justify-between items-start text-xs'>
@@ -1512,6 +1541,7 @@ export const MarketplaceListingDetail = () => {
                                 {t ? t('marketplace:available') : 'available'}
                               </div>
                             </div>
+
                             <ActionBuySft
                               auctionId={
                                 new BigNumber(listing.auction?.auctionId || id)
@@ -1526,6 +1556,7 @@ export const MarketplaceListingDetail = () => {
                                 ) || new BigNumber(0)
                               }
                               disabled={
+                                !hasStarted ||
                                 !qty ||
                                 parseInt(qty) <= 0 ||
                                 parseInt(qty) >
@@ -1543,6 +1574,11 @@ export const MarketplaceListingDetail = () => {
                                   new BigNumber(qty).gt(remainingAllowed))
                               }
                             />
+                            {!hasStarted && (
+                              <div className='mt-2 rounded-md bg-amber-50 p-3 text-sm text-center text-amber-800 border border-amber-200 font-medium'>
+                                {t('marketplace:auction_not_started')}
+                              </div>
+                            )}
                             {isLimitReached && (
                               <div className='mt-2 w-full rounded-md bg-red-50 p-2 text-xs text-center text-red-600 border border-red-200'>
                                 {t
@@ -1865,14 +1901,13 @@ export const MarketplaceListingDetail = () => {
                   </div>
                   <div className='rounded-md border p-3'>
                     <div className='text-xs text-slate-500'>
-                      {t ? t('marketplace:label_collection') : 'Collection'}
+                      {t ? t('marketplace:start_time') : 'Start Date'}
                     </div>
-                    <Link
-                      className='font-medium underline'
-                      to={`/marketplace/collections/${listing.collection}`}
-                    >
-                      {listing.collection}
-                    </Link>
+                    <div className='font-medium'>
+                      {new Date(
+                        listing.auction?.startTime || 0
+                      ).toLocaleString()}
+                    </div>
                   </div>
                   {isAuction && (
                     <>

@@ -575,11 +575,7 @@ export const MarketplaceCollectionById = () => {
                 {t('marketplace:owner')}
               </div>
               <div className='text-sm font-mono text-slate-900 truncate'>
-                {collection?.owner
-                  ? `${collection.owner.slice(0, 8)}...${collection.owner.slice(
-                      -4
-                    )}`
-                  : '-'}
+                <ShortenedAddress address={collection?.owner} />
               </div>
             </CardHeader>
           </Card>

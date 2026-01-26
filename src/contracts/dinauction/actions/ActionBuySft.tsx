@@ -155,7 +155,8 @@ export const ActionBuySft = ({
           disabled={disabled}
           className='inline-flex h-10 items-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {t('marketplace:buy_now')} ({buyStepAmount.toString()} items)
+          {t('marketplace:buy_now_sft')} {buyStepAmount.toString()}{' '}
+          {buyStepAmount.gt(1) ? 'items' : 'item'}
         </button>
       ) : (
         <button

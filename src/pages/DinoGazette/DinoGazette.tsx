@@ -27,7 +27,7 @@ export const DinoGazette = () => {
   const { address, balance } = useGetAccount();
 
   // Constant Auction ID
-  const AUCTION_ID = '4';
+  const AUCTION_ID = '0';
 
   const { auction: rawAuction } = useGetFullAuctionData(AUCTION_ID);
 

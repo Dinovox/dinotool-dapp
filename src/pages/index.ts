@@ -25,3 +25,4 @@ export * from './MarketplaceSell';
 export * from './Faapu/Faapu';
 export * from './DinoGazette/DinoGazette';
 export * from './Wallet';
+export * from './Royalties';
